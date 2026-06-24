@@ -1,21 +1,19 @@
 import { useState } from "react";
 
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import * as Clipboard from "expo-clipboard";
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { Stack, router } from "expo-router";
 
-import { ArrowLeft, Check, Copy, X } from "lucide-react-native";
+import { Check, Copy } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { BottomSheet } from "@/components/shared/bottom-sheet";
-import { IconButton } from "@/components/shared/icon-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { ScreenContainer } from "@/components/shared/screen-container";
 import { Badge } from "@/components/ui/badge";
 import { useAppStore } from "@/features/debts/store/app-store";
 import type { Debt } from "@/features/debts/types";
+import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
 type DebtDetailScreenProps = {
@@ -25,21 +23,16 @@ type DebtDetailScreenProps = {
 export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const debt = useAppStore((s) => s.getDebt(debtId));
-  const addPayment = useAppStore((s) => s.addPayment);
-
   const [copied, setCopied] = useState(false);
-  const [showPayment, setShowPayment] = useState(false);
-  const [payAmount, setPayAmount] = useState("");
-  const [payNote, setPayNote] = useState("");
 
   if (!debt) {
     return (
-      <ScreenContainer style={{ paddingTop: insets.top, padding: 20 }}>
-        <IconButton onPress={() => router.back()}>
-          <ArrowLeft color="#4A4A42" size={16} strokeWidth={2} />
-        </IconButton>
-        <Text style={styles.title}>Debt not found</Text>
-      </ScreenContainer>
+      <>
+        <Stack.Screen options={{ title: "Debt not found" }} />
+        <View style={styles.missing}>
+          <Text style={styles.missingText}>This debt could not be found.</Text>
+        </View>
+      </>
     );
   }
 
@@ -53,149 +46,90 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
     setTimeout(() => setCopied(false), 2000);
   };
 
-  const handleSavePayment = () => {
-    const amount = parseInt(payAmount, 10);
-    if (!amount) return;
-    addPayment(debt.id, amount, payNote);
-    setShowPayment(false);
-    setPayAmount("");
-    setPayNote("");
+  const openRecordPayment = () => {
+    router.push(`/record-payment?debtId=${debt.id}`);
   };
 
   return (
-    <ScreenContainer padded={false} style={{ paddingTop: insets.top }}>
-      <View style={styles.header}>
-        <IconButton onPress={() => router.back()}>
-          <ArrowLeft color="#4A4A42" size={16} strokeWidth={2} />
-        </IconButton>
-        <View style={styles.headerMain}>
-          <Text numberOfLines={1} style={styles.headerTitle}>
-            {debt.name}
-          </Text>
-          <Badge status={debt.status} />
-        </View>
-      </View>
+    <>
+      <Stack.Screen
+        options={{
+          headerRight: () => <Badge status={debt.status} />,
+          title: debt.name,
+        }}
+      />
+      <View collapsable={false} style={styles.screen}>
+        <ScrollView
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: debt.status === "paid" ? 24 : 120 + insets.bottom },
+          ]}
+          showsVerticalScrollIndicator={false}
+        >
+          {debt.status === "paid" ? (
+            <PaidSummary debt={debt} firstName={firstName} />
+          ) : (
+            <ActiveSummary debt={debt} pct={pct} />
+          )}
 
-      <ScrollView
-        contentContainerStyle={[
-          styles.content,
-          { paddingBottom: debt.status === "paid" ? 40 : 120 + insets.bottom },
-        ]}
-        showsVerticalScrollIndicator={false}
-      >
-        {debt.status === "paid" ? (
-          <PaidSummary debt={debt} firstName={firstName} />
-        ) : (
-          <ActiveSummary debt={debt} pct={pct} />
-        )}
-
-        <View style={styles.card}>
-          <Text style={styles.cardLabel}>Reason</Text>
-          <Text style={styles.cardBody}>{debt.reason}</Text>
-        </View>
-
-        {debt.payments.length > 0 ? (
           <View style={styles.card}>
-            <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Payment history</Text>
-            {debt.payments.map((payment, index) => (
-              <View key={payment.id} style={styles.timelineRow}>
-                <View style={styles.timelineRail}>
-                  <View style={styles.timelineDot} />
-                  {index < debt.payments.length - 1 ? <View style={styles.timelineLine} /> : null}
-                </View>
-                <View style={styles.timelineBody}>
-                  <View style={styles.timelineTop}>
-                    <Text style={styles.paymentAmount}>{formatCurrency(payment.amount)} paid</Text>
-                    <Text style={styles.paymentDate}>{payment.date}</Text>
-                  </View>
-                  {payment.note ? <Text style={styles.paymentNote}>{payment.note}</Text> : null}
-                </View>
-              </View>
-            ))}
+            <Text style={styles.cardLabel}>Reason</Text>
+            <Text style={styles.cardBody}>{debt.reason}</Text>
           </View>
-        ) : null}
+
+          {debt.payments.length > 0 ? (
+            <View style={styles.card}>
+              <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Payment history</Text>
+              {debt.payments.map((payment, index) => (
+                <View key={payment.id} style={styles.timelineRow}>
+                  <View style={styles.timelineRail}>
+                    <View style={styles.timelineDot} />
+                    {index < debt.payments.length - 1 ? <View style={styles.timelineLine} /> : null}
+                  </View>
+                  <View style={styles.timelineBody}>
+                    <View style={styles.timelineTop}>
+                      <Text style={styles.paymentAmount}>
+                        {formatCurrency(payment.amount)} paid
+                      </Text>
+                      <Text style={styles.paymentDate}>{payment.date}</Text>
+                    </View>
+                    {payment.note ? <Text style={styles.paymentNote}>{payment.note}</Text> : null}
+                  </View>
+                </View>
+              ))}
+            </View>
+          ) : null}
+
+          {debt.status !== "paid" ? (
+            <View style={styles.card}>
+              <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Follow-up message</Text>
+              <Text style={styles.messageBox}>{followUpMsg}</Text>
+              <Pressable onPress={handleCopy} style={styles.copyBtn}>
+                {copied ? (
+                  <Check color="#16A34A" size={14} strokeWidth={2.5} />
+                ) : (
+                  <Copy color="#1A3A2A" size={14} strokeWidth={2.5} />
+                )}
+                <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
+                  {copied ? "Copied!" : "Copy message"}
+                </Text>
+              </Pressable>
+            </View>
+          ) : null}
+        </ScrollView>
 
         {debt.status !== "paid" ? (
-          <View style={styles.card}>
-            <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Follow-up message</Text>
-            <Text style={styles.messageBox}>{followUpMsg}</Text>
-            <Pressable onPress={handleCopy} style={styles.copyBtn}>
-              {copied ? (
-                <Check color="#16A34A" size={14} strokeWidth={2.5} />
-              ) : (
-                <Copy color="#1A3A2A" size={14} strokeWidth={2.5} />
-              )}
-              <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
-                {copied ? "Copied!" : "Copy message"}
-              </Text>
-            </Pressable>
-          </View>
+          <LinearGradient
+            colors={["rgba(247,245,241,0)", "rgba(247,245,241,0.95)", "#F7F5F1"]}
+            style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
+          >
+            <PressableScale onPress={openRecordPayment} style={styles.primaryBtn}>
+              <Text style={styles.primaryBtnText}>Add payment</Text>
+            </PressableScale>
+          </LinearGradient>
         ) : null}
-      </ScrollView>
-
-      {debt.status !== "paid" ? (
-        <LinearGradient
-          colors={["rgba(247,245,241,0)", "rgba(247,245,241,0.95)", "#F7F5F1"]}
-          style={[styles.footer, { paddingBottom: insets.bottom + 40 }]}
-        >
-          <PressableScale onPress={() => setShowPayment(true)} style={styles.primaryBtn}>
-            <Text style={styles.primaryBtnText}>Add payment</Text>
-          </PressableScale>
-        </LinearGradient>
-      ) : null}
-
-      <BottomSheet onClose={() => setShowPayment(false)} visible={showPayment}>
-        <View style={styles.sheetHeader}>
-          <Text style={styles.sheetTitle}>Add payment</Text>
-          <Pressable onPress={() => setShowPayment(false)} hitSlop={8}>
-            <X color="#8A8A82" size={16} />
-          </Pressable>
-        </View>
-
-        <View style={styles.sheetField}>
-          <Text style={styles.label}>Amount paid</Text>
-          <View>
-            <Text style={styles.prefix}>KES</Text>
-            <TextInput
-              autoFocus
-              keyboardType="number-pad"
-              onChangeText={setPayAmount}
-              placeholder="0"
-              placeholderTextColor="#DDDDD8"
-              style={[styles.sheetInput, styles.amountInput]}
-              value={payAmount}
-            />
-          </View>
-          <Pressable onPress={() => setPayAmount(String(debt.remaining))}>
-            <Text style={styles.fullAmountLink}>
-              Mark full remaining ({formatCurrency(debt.remaining)})
-            </Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.sheetField}>
-          <Text style={styles.label}>Note (optional)</Text>
-          <TextInput
-            onChangeText={setPayNote}
-            placeholder="e.g. M-Pesa, cash, bank transfer"
-            placeholderTextColor="#C8C8C0"
-            style={styles.sheetInput}
-            value={payNote}
-          />
-        </View>
-
-        <PressableScale
-          disabled={!payAmount || parseInt(payAmount, 10) <= 0}
-          onPress={handleSavePayment}
-          style={[
-            styles.primaryBtn,
-            (!payAmount || parseInt(payAmount, 10) <= 0) && styles.saveBtnDisabled,
-          ]}
-        >
-          <Text style={styles.primaryBtnText}>Save payment</Text>
-        </PressableScale>
-      </BottomSheet>
-    </ScreenContainer>
+      </View>
+    </>
   );
 }
 
@@ -246,33 +180,20 @@ function PaidSummary({ debt, firstName }: { debt: Debt; firstName: string }) {
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-  },
-  headerMain: {
+  screen: {
     flex: 1,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
-    minWidth: 0,
+    backgroundColor: APP_BACKGROUND,
   },
-  headerTitle: {
+  missing: {
     flex: 1,
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#1A1A18",
+    alignItems: "center",
+    justifyContent: "center",
+    padding: 20,
+    backgroundColor: APP_BACKGROUND,
   },
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#1A1A18",
-    marginTop: 16,
+  missingText: {
+    fontSize: 16,
+    color: "#8A8A82",
   },
   content: {
     paddingHorizontal: 20,
@@ -507,59 +428,5 @@ const styles = StyleSheet.create({
     color: "#FFFFFF",
     fontSize: 15,
     fontWeight: "600",
-  },
-  saveBtnDisabled: {
-    opacity: 0.3,
-  },
-  sheetHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 20,
-  },
-  sheetTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#1A1A18",
-  },
-  sheetField: {
-    gap: 8,
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: "#8A8A82",
-    textTransform: "uppercase",
-    letterSpacing: 1.6,
-  },
-  prefix: {
-    position: "absolute",
-    left: 16,
-    top: 18,
-    fontSize: 14,
-    fontWeight: "700",
-    color: "#8A8A82",
-    zIndex: 1,
-  },
-  sheetInput: {
-    backgroundColor: "#F7F5F1",
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 14,
-    color: "#1A1A18",
-  },
-  amountInput: {
-    paddingLeft: 60,
-    fontSize: 20,
-    fontWeight: "700",
-    fontVariant: ["tabular-nums"],
-  },
-  fullAmountLink: {
-    marginTop: 8,
-    fontSize: 12,
-    fontWeight: "700",
-    color: "#1A3A2A",
   },
 });

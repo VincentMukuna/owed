@@ -1,9 +1,10 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { ChevronRight } from "lucide-react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Stack } from "expo-router";
 
-import { ScreenContainer } from "@/components/shared/screen-container";
+import { ChevronRight } from "lucide-react-native";
+
+import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
 
 const SECTIONS = [
   {
@@ -31,50 +32,38 @@ const SECTIONS = [
 ];
 
 export function SettingsScreen() {
-  const insets = useSafeAreaInsets();
-
   return (
-    <ScreenContainer padded={false} style={{ paddingTop: insets.top }}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
-      </View>
-
-      <ScrollView
-        contentContainerStyle={styles.scroll}
-        showsVerticalScrollIndicator={false}
-      >
-        {SECTIONS.map((section) => (
-          <View key={section.title} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <View style={styles.card}>
-              {section.items.map((item, index) => (
-                <View key={item.label} style={[styles.row, index > 0 && styles.rowBorder]}>
-                  <Text style={styles.icon}>{item.icon}</Text>
-                  <Text style={styles.label}>{item.label}</Text>
-                  <View style={styles.valueWrap}>
-                    {item.value ? <Text style={styles.value}>{item.value}</Text> : null}
-                    <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+    <>
+      <Stack.Title large>Settings</Stack.Title>
+      <View collapsable={false} style={styles.screen}>
+        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+          {SECTIONS.map((section) => (
+            <View key={section.title} style={styles.section}>
+              <Text style={styles.sectionTitle}>{section.title}</Text>
+              <View style={styles.card}>
+                {section.items.map((item, index) => (
+                  <View key={item.label} style={[styles.row, index > 0 && styles.rowBorder]}>
+                    <Text style={styles.icon}>{item.icon}</Text>
+                    <Text style={styles.label}>{item.label}</Text>
+                    <View style={styles.valueWrap}>
+                      {item.value ? <Text style={styles.value}>{item.value}</Text> : null}
+                      <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                    </View>
                   </View>
-                </View>
-              ))}
+                ))}
+              </View>
             </View>
-          </View>
-        ))}
-      </ScrollView>
-    </ScreenContainer>
+          ))}
+        </ScrollView>
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#1A1A18",
+  screen: {
+    flex: 1,
+    backgroundColor: APP_BACKGROUND,
   },
   scroll: {
     paddingHorizontal: 20,

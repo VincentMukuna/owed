@@ -1,9 +1,12 @@
-/* eslint-disable react-hooks/immutability -- Reanimated shared values are mutated by design */
 import type { ReactNode } from "react";
 
 import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from "react-native";
 
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+
+import { lightImpact } from "@/lib/haptics";
+
+/* eslint-disable react-hooks/immutability -- Reanimated shared values are mutated by design */
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
@@ -35,6 +38,9 @@ export function PressableScale({
       disabled={disabled}
       style={[style, animatedStyle, disabled && { opacity: 0.3 }]}
       onPressIn={(event) => {
+        if (!disabled) {
+          lightImpact();
+        }
         scale.value = withTiming(scaleTo, { duration: 100 });
         onPressIn?.(event);
       }}

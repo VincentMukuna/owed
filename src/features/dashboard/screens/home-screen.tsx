@@ -1,18 +1,18 @@
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { router } from "expo-router";
+import { Stack, router } from "expo-router";
 
 import { Bell, Wallet } from "lucide-react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DebtCard } from "@/components/debts/debt-card";
 import { SummaryStatCard } from "@/components/debts/summary-stat-card";
+import { HomeHeaderRight } from "@/components/navigation/home-header-right";
 import { FabButton } from "@/components/shared/fab-button";
 import { IconButton } from "@/components/shared/icon-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { ScreenContainer } from "@/components/shared/screen-container";
 import { useAppStore } from "@/features/debts/store/app-store";
 import type { Debt } from "@/features/debts/types";
+import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 function Section({
@@ -40,8 +40,19 @@ function Section({
   );
 }
 
+function HomeHeaderActions() {
+  if (Platform.OS === "ios") {
+    return <HomeHeaderRight />;
+  }
+
+  return (
+    <IconButton>
+      <Bell color="#4A4A42" size={16} strokeWidth={1.5} />
+    </IconButton>
+  );
+}
+
 export function HomeScreen() {
-  const insets = useSafeAreaInsets();
   const debts = useAppStore((s) => s.debts);
 
   const active = debts.filter((d) => d.status !== "paid");
@@ -56,92 +67,81 @@ export function HomeScreen() {
   const openDebt = (debt: Debt) => router.push(`/debt/${debt.id}`);
   const openAdd = () => router.push("/add-debt");
 
-  if (debts.length === 0) {
-    return (
-      <ScreenContainer style={{ paddingTop: insets.top }}>
-        <View style={styles.emptyHeader}>
-          <Text style={styles.kicker}>Owed</Text>
-          <Text style={styles.pageTitle}>Home</Text>
-        </View>
-        <View style={styles.emptyBody}>
-          <View style={styles.emptyIcon}>
-            <Wallet color="#B8B8B0" size={24} strokeWidth={1.5} />
-          </View>
-          <Text style={styles.emptyTitle}>No money tracked yet.</Text>
-          <Text style={styles.emptyCopy}>
-            {"Add the first amount someone owes you and we'll help you remember the details."}
-          </Text>
-          <PressableScale onPress={openAdd} style={styles.emptyBtn}>
-            <Text style={styles.emptyBtnText}>Add debt</Text>
-          </PressableScale>
-        </View>
-      </ScreenContainer>
-    );
-  }
-
   return (
-    <ScreenContainer padded={false} style={{ paddingTop: insets.top }}>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.kicker}>Good morning</Text>
-          <Text style={styles.pageTitleLg}>{"Here's what you're owed"}</Text>
-        </View>
-        <IconButton>
-          <Bell color="#4A4A42" size={16} strokeWidth={1.5} />
-        </IconButton>
+    <>
+      <Stack.Screen options={{ headerRight: () => <HomeHeaderActions /> }} />
+      <Stack.Title large>Home</Stack.Title>
+
+      <View collapsable={false} style={styles.screen}>
+        {debts.length === 0 ? (
+          <View style={styles.emptyBody}>
+            <View style={styles.emptyIcon}>
+              <Wallet color="#B8B8B0" size={24} strokeWidth={1.5} />
+            </View>
+            <Text style={styles.emptyTitle}>No money tracked yet.</Text>
+            <Text style={styles.emptyCopy}>
+              {"Add the first amount someone owes you and we'll help you remember the details."}
+            </Text>
+            <PressableScale onPress={openAdd} style={styles.emptyBtn}>
+              <Text style={styles.emptyBtnText}>Add debt</Text>
+            </PressableScale>
+          </View>
+        ) : (
+          <ScrollView
+            contentContainerStyle={[
+              styles.scroll,
+              Platform.OS === "android" && styles.scrollWithFab,
+            ]}
+            showsVerticalScrollIndicator={false}
+          >
+            <Text style={styles.kicker}>Good morning</Text>
+            <Text style={styles.pageTitleLg}>{"Here's what you're owed"}</Text>
+
+            <View style={styles.heroCard}>
+              <View style={[styles.heroOrb, styles.heroOrbTop]} />
+              <View style={[styles.heroOrb, styles.heroOrbBottom]} />
+              <Text style={styles.heroLabel}>Total owed to you</Text>
+              <Text style={styles.heroAmount}>{formatCurrency(totalOwed)}</Text>
+              <Text style={styles.heroMeta}>
+                Across {active.length} active {active.length === 1 ? "promise" : "promises"}
+              </Text>
+            </View>
+
+            <View style={styles.statsGrid}>
+              <View style={styles.statCell}>
+                <SummaryStatCard label="Active" value={String(active.length)} color="#94A3B8" />
+              </View>
+              <View style={styles.statCell}>
+                <SummaryStatCard label="Overdue" value={String(overdue.length)} color="#F87171" />
+              </View>
+              <View style={styles.statCell}>
+                <SummaryStatCard label="Due soon" value={String(dueSoon.length)} color="#F59E0B" />
+              </View>
+              <View style={styles.statCell}>
+                <SummaryStatCard
+                  label="Paid this month"
+                  value={formatCurrency(paidThisMonth)}
+                  color="#10B981"
+                />
+              </View>
+            </View>
+
+            <Section title="Due soon" debts={dueSoon} onDebtPress={openDebt} />
+            <Section title="Overdue" titleColor="#F87171" debts={overdue} onDebtPress={openDebt} />
+            <Section title="Active" debts={activePartial} onDebtPress={openDebt} />
+          </ScrollView>
+        )}
+
+        {Platform.OS === "android" && debts.length > 0 ? <FabButton onPress={openAdd} /> : null}
       </View>
-
-      <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: 88 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.heroCard}>
-          <View style={[styles.heroOrb, styles.heroOrbTop]} />
-          <View style={[styles.heroOrb, styles.heroOrbBottom]} />
-          <Text style={styles.heroLabel}>Total owed to you</Text>
-          <Text style={styles.heroAmount}>{formatCurrency(totalOwed)}</Text>
-          <Text style={styles.heroMeta}>
-            Across {active.length} active {active.length === 1 ? "promise" : "promises"}
-          </Text>
-        </View>
-
-        <View style={styles.statsGrid}>
-          <View style={styles.statCell}>
-            <SummaryStatCard label="Active" value={String(active.length)} color="#94A3B8" />
-          </View>
-          <View style={styles.statCell}>
-            <SummaryStatCard label="Overdue" value={String(overdue.length)} color="#F87171" />
-          </View>
-          <View style={styles.statCell}>
-            <SummaryStatCard label="Due soon" value={String(dueSoon.length)} color="#F59E0B" />
-          </View>
-          <View style={styles.statCell}>
-            <SummaryStatCard
-              label="Paid this month"
-              value={formatCurrency(paidThisMonth)}
-              color="#10B981"
-            />
-          </View>
-        </View>
-
-        <Section title="Due soon" debts={dueSoon} onDebtPress={openDebt} />
-        <Section title="Overdue" titleColor="#F87171" debts={overdue} onDebtPress={openDebt} />
-        <Section title="Active" debts={activePartial} onDebtPress={openDebt} />
-      </ScrollView>
-
-      <FabButton onPress={openAdd} />
-    </ScreenContainer>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  screen: {
+    flex: 1,
+    backgroundColor: APP_BACKGROUND,
   },
   kicker: {
     fontSize: 11,
@@ -150,21 +150,20 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
-  pageTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#1A1A18",
-    marginTop: 4,
-  },
   pageTitleLg: {
     fontSize: 20,
     fontWeight: "700",
     color: "#1A1A18",
     marginTop: 2,
+    marginBottom: 20,
   },
   scroll: {
     paddingHorizontal: 20,
+    paddingBottom: 24,
     gap: 20,
+  },
+  scrollWithFab: {
+    paddingBottom: 88,
   },
   heroCard: {
     backgroundColor: "#1A3A2A",
@@ -232,16 +231,12 @@ const styles = StyleSheet.create({
   sectionList: {
     gap: 10,
   },
-  emptyHeader: {
-    paddingTop: 16,
-    paddingBottom: 20,
-  },
   emptyBody: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
-    paddingBottom: 80,
+    paddingBottom: 40,
   },
   emptyIcon: {
     width: 56,

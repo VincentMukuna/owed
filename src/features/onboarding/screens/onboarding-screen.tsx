@@ -92,7 +92,7 @@ export function OnboardingScreen() {
         >
           <Text style={styles.primaryBtnText}>Add first debt</Text>
         </PressableScale>
-        <PressableScale onPress={() => router.replace("/(tabs)")} style={styles.ghostBtn}>
+        <PressableScale onPress={() => router.replace("/(tabs)/index")} style={styles.ghostBtn}>
           <Text style={styles.ghostBtnText}>Explore app</Text>
         </PressableScale>
       </LinearGradient>

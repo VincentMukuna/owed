@@ -11,6 +11,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { Toast } from "@/components/shared/toast";
 import { useAppStore } from "@/features/debts/store/app-store";
 import { queryClient } from "@/lib/api/query-client";
+import {
+  APP_BACKGROUND,
+  MODAL_SCREEN_OPTIONS,
+  STACK_SCREEN_OPTIONS,
+} from "@/lib/navigation/stack-options";
 
 export default function RootLayout() {
   useEffect(() => {
@@ -24,17 +29,43 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            animation: "fade_from_bottom",
-            contentStyle: { backgroundColor: "#F7F5F1" },
+            contentStyle: { backgroundColor: APP_BACKGROUND },
           }}
         >
+          <Stack.Screen name="index" />
           <Stack.Screen name="onboarding" options={{ animation: "fade" }} />
-          <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />
+          <Stack.Screen name="(tabs)" />
           <Stack.Screen
             name="add-debt"
-            options={{ presentation: "modal", animation: "slide_from_bottom" }}
+            options={{
+              ...MODAL_SCREEN_OPTIONS,
+              presentation: "modal",
+              animation: "slide_from_bottom",
+              headerShown: true,
+              title: "Add debt",
+            }}
           />
-          <Stack.Screen name="debt/[id]" options={{ animation: "slide_from_right" }} />
+          <Stack.Screen
+            name="debt/[id]"
+            options={{
+              ...STACK_SCREEN_OPTIONS,
+              headerShown: true,
+              headerLargeTitleEnabled: false,
+              animation: "slide_from_right",
+            }}
+          />
+          <Stack.Screen
+            name="record-payment"
+            options={{
+              ...MODAL_SCREEN_OPTIONS,
+              presentation: "modal",
+              animation: "slide_from_bottom",
+              headerShown: true,
+              title: "Add payment",
+              sheetGrabberVisible: true,
+              sheetAllowedDetents: [0.55, 1],
+            }}
+          />
         </Stack>
         <Toast />
       </QueryClientProvider>

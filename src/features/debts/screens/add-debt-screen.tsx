@@ -2,17 +2,15 @@ import { useState } from "react";
 
 import { ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 
-import { LinearGradient } from "expo-linear-gradient";
-import { router, useLocalSearchParams } from "expo-router";
+import { Stack, router, useLocalSearchParams } from "expo-router";
 
-import { ArrowLeft, Bell } from "lucide-react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Bell } from "lucide-react-native";
 
-import { IconButton } from "@/components/shared/icon-button";
+import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { ScreenContainer } from "@/components/shared/screen-container";
 import { useAppStore } from "@/features/debts/store/app-store";
 import type { NewDebt } from "@/features/debts/types";
+import { selectionChange } from "@/lib/haptics";
 import { getInitials } from "@/lib/utils/formatters";
 
 const QUICK_DATES = ["Today", "Tomorrow", "Friday", "Next week"];
@@ -22,11 +20,10 @@ function exitAddDebt() {
     router.back();
     return;
   }
-  router.replace("/(tabs)");
+  router.replace("/(tabs)/index");
 }
 
 export function AddDebtScreen() {
-  const insets = useSafeAreaInsets();
   const { from } = useLocalSearchParams<{ from?: string }>();
   const fromOnboarding = from === "onboarding";
   const addDebt = useAppStore((s) => s.addDebt);
@@ -57,23 +54,23 @@ export function AddDebtScreen() {
 
     addDebt(payload);
     if (fromOnboarding) {
-      router.replace("/(tabs)");
+      router.replace("/(tabs)/index");
       return;
     }
     exitAddDebt();
   };
 
   return (
-    <ScreenContainer padded={false} style={{ paddingTop: insets.top }}>
-      <View style={styles.header}>
-        <IconButton onPress={exitAddDebt}>
-          <ArrowLeft color="#4A4A42" size={16} strokeWidth={2} />
-        </IconButton>
-        <Text style={styles.title}>Add debt</Text>
-      </View>
-
+    <>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <HeaderSaveButton disabled={!canSave} label="Save" onPress={handleSave} />
+          ),
+        }}
+      />
       <ScrollView
-        contentContainerStyle={[styles.form, { paddingBottom: 144 + insets.bottom }]}
+        contentContainerStyle={styles.form}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -109,6 +106,7 @@ export function AddDebtScreen() {
                 <PressableScale
                   key={label}
                   onPress={() => {
+                    selectionChange();
                     setQuickDate(label);
                     setDueDate("");
                   }}
@@ -152,27 +150,17 @@ export function AddDebtScreen() {
             </View>
           </View>
           <Switch
-            onValueChange={setReminder}
+            onValueChange={(value) => {
+              selectionChange();
+              setReminder(value);
+            }}
             thumbColor="#FFFFFF"
             trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
             value={reminder}
           />
         </View>
       </ScrollView>
-
-      <LinearGradient
-        colors={["rgba(247,245,241,0)", "rgba(247,245,241,0.95)", "#F7F5F1"]}
-        style={[styles.footer, { paddingBottom: insets.bottom + 40 }]}
-      >
-        <PressableScale
-          disabled={!canSave}
-          onPress={handleSave}
-          style={[styles.saveBtn, !canSave && styles.saveBtnDisabled]}
-        >
-          <Text style={styles.saveBtnText}>Save debt</Text>
-        </PressableScale>
-      </LinearGradient>
-    </ScreenContainer>
+    </>
   );
 }
 
@@ -186,21 +174,10 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 }
 
 const styles = StyleSheet.create({
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 20,
-  },
-  title: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: "#1A1A18",
-  },
   form: {
     paddingHorizontal: 20,
+    paddingTop: 8,
+    paddingBottom: 32,
     gap: 16,
   },
   field: {
@@ -289,32 +266,5 @@ const styles = StyleSheet.create({
   reminderSub: {
     fontSize: 12,
     color: "#8A8A82",
-  },
-  footer: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    paddingHorizontal: 20,
-    paddingTop: 20,
-  },
-  saveBtn: {
-    backgroundColor: "#1A3A2A",
-    borderRadius: 16,
-    paddingVertical: 16,
-    alignItems: "center",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 4,
-  },
-  saveBtnDisabled: {
-    opacity: 0.3,
-  },
-  saveBtnText: {
-    color: "#FFFFFF",
-    fontSize: 15,
-    fontWeight: "600",
   },
 });

@@ -1,17 +1,18 @@
 import { useMemo, useState } from "react";
 
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Platform, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { router } from "expo-router";
+import { Stack, router } from "expo-router";
 
 import { List } from "lucide-react-native";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { DebtCard } from "@/components/debts/debt-card";
+import { HeaderAddButton } from "@/components/navigation/header-add-button";
 import { FabButton } from "@/components/shared/fab-button";
-import { ScreenContainer } from "@/components/shared/screen-container";
 import { useAppStore } from "@/features/debts/store/app-store";
 import type { DebtStatus } from "@/features/debts/types";
+import { selectionChange } from "@/lib/haptics";
+import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
 
 type FilterKey = "all" | "active" | "overdue" | "paid";
 
@@ -24,7 +25,6 @@ const SORT_ORDER: Record<DebtStatus, number> = {
 };
 
 export function DebtsScreen() {
-  const insets = useSafeAreaInsets();
   const debts = useAppStore((s) => s.debts);
   const [filter, setFilter] = useState<FilterKey>("all");
 
@@ -61,69 +61,75 @@ export function DebtsScreen() {
   const sorted = [...filtered].sort((a, b) => SORT_ORDER[a.status] - SORT_ORDER[b.status]);
 
   return (
-    <ScreenContainer padded={false} style={{ paddingTop: insets.top }}>
-      <View style={styles.header}>
-        <Text style={styles.title}>Debts</Text>
-      </View>
+    <>
+      <Stack.Screen
+        options={{
+          headerRight: Platform.OS === "ios" ? () => <HeaderAddButton /> : undefined,
+        }}
+      />
+      <Stack.Title large>Debts</Stack.Title>
 
-      <View style={styles.tabsWrap}>
-        <View style={styles.tabs}>
-          {tabs.map((tab) => {
-            const active = filter === tab.key;
-            return (
-              <Pressable
-                key={tab.key}
-                onPress={() => setFilter(tab.key)}
-                style={[styles.tab, active && styles.tabActive]}
-              >
-                <Text style={[styles.tabText, active && styles.tabTextActive]}>
-                  {tab.label}
-                  {tab.count > 0 && !active ? (
-                    <Text style={styles.tabCount}> {tab.count}</Text>
-                  ) : null}
-                </Text>
-              </Pressable>
-            );
-          })}
+      <View collapsable={false} style={styles.screen}>
+        <View style={styles.tabsWrap}>
+          <View style={styles.tabs}>
+            {tabs.map((tab) => {
+              const active = filter === tab.key;
+              return (
+                <Pressable
+                  key={tab.key}
+                  onPress={() => {
+                    selectionChange();
+                    setFilter(tab.key);
+                  }}
+                  style={[styles.tab, active && styles.tabActive]}
+                >
+                  <Text style={[styles.tabText, active && styles.tabTextActive]}>
+                    {tab.label}
+                    {tab.count > 0 && !active ? (
+                      <Text style={styles.tabCount}> {tab.count}</Text>
+                    ) : null}
+                  </Text>
+                </Pressable>
+              );
+            })}
+          </View>
         </View>
-      </View>
 
-      <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: 88 }]}
-        showsVerticalScrollIndicator={false}
-      >
-        {sorted.length === 0 ? (
-          <View style={styles.empty}>
-            <View style={styles.emptyIcon}>
-              <List color="#B8B8B0" size={20} strokeWidth={1.5} />
+        <ScrollView
+          contentContainerStyle={[styles.scroll, Platform.OS === "android" && styles.scrollWithFab]}
+          showsVerticalScrollIndicator={false}
+        >
+          {sorted.length === 0 ? (
+            <View style={styles.empty}>
+              <View style={styles.emptyIcon}>
+                <List color="#B8B8B0" size={20} strokeWidth={1.5} />
+              </View>
+              <Text style={styles.emptyTitle}>Nothing here</Text>
+              <Text style={styles.emptyCopy}>No debts in this category.</Text>
             </View>
-            <Text style={styles.emptyTitle}>Nothing here</Text>
-            <Text style={styles.emptyCopy}>No debts in this category.</Text>
-          </View>
-        ) : (
-          <View style={styles.list}>
-            {sorted.map((debt) => (
-              <DebtCard key={debt.id} debt={debt} onPress={() => router.push(`/debt/${debt.id}`)} />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+          ) : (
+            <View style={styles.list}>
+              {sorted.map((debt) => (
+                <DebtCard
+                  key={debt.id}
+                  debt={debt}
+                  onPress={() => router.push(`/debt/${debt.id}`)}
+                />
+              ))}
+            </View>
+          )}
+        </ScrollView>
 
-      <FabButton onPress={() => router.push("/add-debt")} />
-    </ScreenContainer>
+        {Platform.OS === "android" ? <FabButton onPress={() => router.push("/add-debt")} /> : null}
+      </View>
+    </>
   );
 }
 
 const styles = StyleSheet.create({
-  header: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    paddingBottom: 12,
-  },
-  title: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#1A1A18",
+  screen: {
+    flex: 1,
+    backgroundColor: APP_BACKGROUND,
   },
   tabsWrap: {
     paddingHorizontal: 20,
@@ -165,6 +171,10 @@ const styles = StyleSheet.create({
   scroll: {
     paddingHorizontal: 20,
     paddingTop: 4,
+    paddingBottom: 24,
+  },
+  scrollWithFab: {
+    paddingBottom: 88,
   },
   list: {
     gap: 10,

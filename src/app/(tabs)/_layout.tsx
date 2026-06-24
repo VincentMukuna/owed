@@ -11,46 +11,32 @@ export default function TabLayout() {
         default: { color: "#C0C0B8", fontSize: 10, fontWeight: "700" },
         selected: { color: "#1A3A2A", fontSize: 10, fontWeight: "700" },
       }}
+      minimizeBehavior="onScrollDown"
+      tabBarRespectsIMEInsets
       tintColor="#1A3A2A"
     >
-      <NativeTabs.Trigger
-        contentStyle={{ backgroundColor: TAB_BACKGROUND }}
-        disableTransparentOnScrollEdge
-        name="index"
-      >
+      <NativeTabs.Trigger contentStyle={{ backgroundColor: TAB_BACKGROUND }} name="index">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "home", selected: "home_filled" }}
           sf={{ default: "house", selected: "house.fill" }}
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger
-        contentStyle={{ backgroundColor: TAB_BACKGROUND }}
-        disableTransparentOnScrollEdge
-        name="debts"
-      >
+      <NativeTabs.Trigger contentStyle={{ backgroundColor: TAB_BACKGROUND }} name="debts">
         <NativeTabs.Trigger.Label>Debts</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "list", selected: "list" }}
           sf={{ default: "list.bullet", selected: "list.bullet" }}
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger
-        contentStyle={{ backgroundColor: TAB_BACKGROUND }}
-        disableTransparentOnScrollEdge
-        name="activity"
-      >
+      <NativeTabs.Trigger contentStyle={{ backgroundColor: TAB_BACKGROUND }} name="activity">
         <NativeTabs.Trigger.Label>Activity</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "history", selected: "history" }}
           sf={{ default: "clock", selected: "clock.fill" }}
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger
-        contentStyle={{ backgroundColor: TAB_BACKGROUND }}
-        disableTransparentOnScrollEdge
-        name="settings"
-      >
+      <NativeTabs.Trigger contentStyle={{ backgroundColor: TAB_BACKGROUND }} name="settings">
         <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "settings", selected: "settings" }}
