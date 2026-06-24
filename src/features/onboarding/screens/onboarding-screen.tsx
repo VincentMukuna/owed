@@ -86,7 +86,7 @@ export function OnboardingScreen() {
         style={[styles.footer, { paddingBottom: insets.bottom + 48 }]}
       >
         <PressableScale
-          onPress={() => router.replace("/add-debt")}
+          onPress={() => router.push({ pathname: "/add-debt", params: { from: "onboarding" } })}
           scaleTo={0.97}
           style={styles.primaryBtn}
         >

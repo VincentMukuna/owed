@@ -3,7 +3,7 @@ import { useState } from "react";
 import { ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 import { ArrowLeft, Bell } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -17,8 +17,18 @@ import { getInitials } from "@/lib/utils/formatters";
 
 const QUICK_DATES = ["Today", "Tomorrow", "Friday", "Next week"];
 
+function exitAddDebt() {
+  if (router.canGoBack()) {
+    router.back();
+    return;
+  }
+  router.replace("/(tabs)");
+}
+
 export function AddDebtScreen() {
   const insets = useSafeAreaInsets();
+  const { from } = useLocalSearchParams<{ from?: string }>();
+  const fromOnboarding = from === "onboarding";
   const addDebt = useAppStore((s) => s.addDebt);
 
   const [name, setName] = useState("");
@@ -46,13 +56,17 @@ export function AddDebtScreen() {
     };
 
     addDebt(payload);
-    router.back();
+    if (fromOnboarding) {
+      router.replace("/(tabs)");
+      return;
+    }
+    exitAddDebt();
   };
 
   return (
     <ScreenContainer padded={false} style={{ paddingTop: insets.top }}>
       <View style={styles.header}>
-        <IconButton onPress={() => router.back()}>
+        <IconButton onPress={exitAddDebt}>
           <ArrowLeft color="#4A4A42" size={16} strokeWidth={2} />
         </IconButton>
         <Text style={styles.title}>Add debt</Text>
