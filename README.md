@@ -9,7 +9,8 @@ Owed is a private memory and follow-up tool, not a lending platform. It helps yo
 - [Expo SDK 56](https://docs.expo.dev/) + [Expo Router](https://docs.expo.dev/router/introduction/) (file-based routing)
 - React Native 0.85, React 19, TypeScript
 - [Unistyles](https://www.unistyl.es/) for theming
-- [Zustand](https://github.com/pmndrs/zustand) for client state (in-memory MVP)
+- [expo-sqlite](https://docs.expo.dev/versions/v56.0.0/sdk/sqlite/) for local persistence (normalized SQLite schema)
+- [Zustand](https://github.com/pmndrs/zustand) for ephemeral UI state (toasts)
 - [TanStack Query](https://tanstack.com/query), React Hook Form, Zod
 
 ## Getting started
@@ -68,4 +69,4 @@ Product and design specs live in [`docs/`](./docs/):
 
 ## MVP status
 
-The current build is an MVP with sample data and in-memory state that resets on launch. Core flows include onboarding, home summary, debt list and detail, add debt, activity feed, and settings.
+The current build persists debts, payments, and activity events in SQLite on device. Data survives app restarts. Core flows include onboarding, home summary, debt list and detail, add debt, record payment, activity feed, and settings.
