@@ -42,3 +42,13 @@ export type RecordPaymentInput = {
   paidAt?: string;
   note?: string;
 };
+
+export type ActivityViewType = "payment" | "add" | "paid";
+
+export type ActivityView = {
+  id: string;
+  text: string;
+  sub: string;
+  time: string;
+  type: ActivityViewType;
+};

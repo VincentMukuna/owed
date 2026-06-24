@@ -72,6 +72,27 @@ export function formatPaymentDate(isoDateTime: string, now: Date = new Date()): 
   return `${month} ${day}, ${formatTime(date)}`;
 }
 
+export function formatRelativeTime(isoDateTime: string, now: Date = new Date()): string {
+  const date = parseISODateTime(isoDateTime);
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfEventDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffMs = startOfToday.getTime() - startOfEventDay.getTime();
+  const diffDays = Math.round(diffMs / (24 * 60 * 60 * 1000));
+
+  if (diffDays === 0) {
+    return `Today, ${formatTime(date)}`;
+  }
+
+  const month = MONTH_SHORT[date.getMonth()];
+  const day = date.getDate();
+
+  if (date.getHours() !== 0 || date.getMinutes() !== 0) {
+    return `${month} ${day}, ${formatTime(date)}`;
+  }
+
+  return `${month} ${day}`;
+}
+
 export function toISODate(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");

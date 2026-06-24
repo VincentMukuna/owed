@@ -5,6 +5,7 @@ import type { DebtsRow, PaymentsRow, PeopleRow } from "@/lib/db/row-types";
 import { createId } from "@/lib/id";
 
 import type { CreateDebtInput, RecordPaymentInput } from "../view-models";
+import { activityRepository } from "./activity-repository";
 import { personRepository } from "./person-repository";
 
 type DebtPersonRow = DebtsRow & {
@@ -173,6 +174,14 @@ export const debtRepository = {
       debtRow.updated_at,
     );
 
+    await activityRepository.create({
+      type: "debt_created",
+      debtId: id,
+      personId: person.id,
+      amount: input.originalAmount,
+      occurredAt: now,
+    });
+
     return toDebtWithRelations(debtRow, personRow, []);
   },
 
@@ -193,6 +202,17 @@ export const debtRepository = {
     if (!updated) {
       throw new Error("Debt not found after recording payment");
     }
+
+    const eventType = updated.remainingAmount <= 0 ? "debt_paid" : "payment_recorded";
+
+    await activityRepository.create({
+      type: eventType,
+      debtId,
+      personId: updated.person.id,
+      paymentId,
+      amount: input.amount,
+      occurredAt: paidAt,
+    });
 
     return updated;
   },
