@@ -1,13 +1,16 @@
-import { useEffect } from 'react';
-import { QueryClientProvider } from '@tanstack/react-query';
-import { Stack } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
-import { StyleSheet } from 'react-native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { useEffect } from "react";
 
-import { Toast } from '@/components/shared/Toast';
-import { useAppStore } from '@/features/debts/store/appStore';
-import { queryClient } from '@/lib/api/queryClient';
+import { StyleSheet } from "react-native";
+
+import { Stack } from "expo-router";
+import { StatusBar } from "expo-status-bar";
+
+import { QueryClientProvider } from "@tanstack/react-query";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+
+import { Toast } from "@/components/shared/toast";
+import { useAppStore } from "@/features/debts/store/app-store";
+import { queryClient } from "@/lib/api/query-client";
 
 export default function RootLayout() {
   useEffect(() => {
@@ -21,13 +24,17 @@ export default function RootLayout() {
         <Stack
           screenOptions={{
             headerShown: false,
-            animation: 'fade_from_bottom',
-            contentStyle: { backgroundColor: '#F7F5F1' },
-          }}>
-          <Stack.Screen name="onboarding" options={{ animation: 'fade' }} />
-          <Stack.Screen name="(tabs)" options={{ animation: 'fade' }} />
-          <Stack.Screen name="add-debt" options={{ presentation: 'modal', animation: 'slide_from_bottom' }} />
-          <Stack.Screen name="debt/[id]" options={{ animation: 'slide_from_right' }} />
+            animation: "fade_from_bottom",
+            contentStyle: { backgroundColor: "#F7F5F1" },
+          }}
+        >
+          <Stack.Screen name="onboarding" options={{ animation: "fade" }} />
+          <Stack.Screen name="(tabs)" options={{ animation: "fade" }} />
+          <Stack.Screen
+            name="add-debt"
+            options={{ presentation: "modal", animation: "slide_from_bottom" }}
+          />
+          <Stack.Screen name="debt/[id]" options={{ animation: "slide_from_right" }} />
         </Stack>
         <Toast />
       </QueryClientProvider>

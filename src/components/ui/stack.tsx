@@ -1,20 +1,16 @@
-import type { ReactNode } from 'react';
-import { View, type ViewProps } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import type { ReactNode } from "react";
+
+import { View, type ViewProps } from "react-native";
+
+import { StyleSheet } from "react-native-unistyles";
 
 type StackProps = ViewProps & {
   children: ReactNode;
-  gap?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
-  direction?: 'column' | 'row';
+  gap?: "xs" | "sm" | "md" | "lg" | "xl";
+  direction?: "column" | "row";
 };
 
-export function Stack({
-  children,
-  gap = 'md',
-  direction = 'column',
-  style,
-  ...props
-}: StackProps) {
+export function Stack({ children, gap = "md", direction = "column", style, ...props }: StackProps) {
   styles.useVariants({ gap, direction });
 
   return (
@@ -29,11 +25,11 @@ const styles = StyleSheet.create((theme) => ({
     variants: {
       direction: {
         column: {
-          flexDirection: 'column',
+          flexDirection: "column",
         },
         row: {
-          flexDirection: 'row',
-          alignItems: 'center',
+          flexDirection: "row",
+          alignItems: "center",
         },
       },
       gap: {

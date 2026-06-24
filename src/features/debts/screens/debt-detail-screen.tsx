@@ -1,26 +1,22 @@
-import * as Clipboard from 'expo-clipboard';
-import { LinearGradient } from 'expo-linear-gradient';
-import { router } from 'expo-router';
-import { ArrowLeft, Check, Copy, X } from 'lucide-react-native';
-import { useState } from 'react';
-import {
-  Pressable,
-  ScrollView,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useState } from "react";
 
-import { BottomSheet } from '@/components/shared/BottomSheet';
-import { IconButton } from '@/components/shared/IconButton';
-import { PressableScale } from '@/components/shared/PressableScale';
-import { ScreenContainer } from '@/components/shared/ScreenContainer';
-import { Badge } from '@/components/ui/Badge';
-import { useAppStore } from '@/features/debts/store/appStore';
-import type { Debt } from '@/features/debts/types';
-import { formatCurrency, getFirstName } from '@/lib/utils/formatters';
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+
+import * as Clipboard from "expo-clipboard";
+import { LinearGradient } from "expo-linear-gradient";
+import { router } from "expo-router";
+
+import { ArrowLeft, Check, Copy, X } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { BottomSheet } from "@/components/shared/bottom-sheet";
+import { IconButton } from "@/components/shared/icon-button";
+import { PressableScale } from "@/components/shared/pressable-scale";
+import { ScreenContainer } from "@/components/shared/screen-container";
+import { Badge } from "@/components/ui/badge";
+import { useAppStore } from "@/features/debts/store/app-store";
+import type { Debt } from "@/features/debts/types";
+import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
 type DebtDetailScreenProps = {
   debtId: number;
@@ -33,8 +29,8 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
 
   const [copied, setCopied] = useState(false);
   const [showPayment, setShowPayment] = useState(false);
-  const [payAmount, setPayAmount] = useState('');
-  const [payNote, setPayNote] = useState('');
+  const [payAmount, setPayAmount] = useState("");
+  const [payNote, setPayNote] = useState("");
 
   if (!debt) {
     return (
@@ -62,8 +58,8 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
     if (!amount) return;
     addPayment(debt.id, amount, payNote);
     setShowPayment(false);
-    setPayAmount('');
-    setPayNote('');
+    setPayAmount("");
+    setPayNote("");
   };
 
   return (
@@ -81,9 +77,13 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingBottom: debt.status === 'paid' ? 40 : 120 + insets.bottom }]}
-        showsVerticalScrollIndicator={false}>
-        {debt.status === 'paid' ? (
+        contentContainerStyle={[
+          styles.content,
+          { paddingBottom: debt.status === "paid" ? 40 : 120 + insets.bottom },
+        ]}
+        showsVerticalScrollIndicator={false}
+      >
+        {debt.status === "paid" ? (
           <PaidSummary debt={debt} firstName={firstName} />
         ) : (
           <ActiveSummary debt={debt} pct={pct} />
@@ -115,7 +115,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
           </View>
         ) : null}
 
-        {debt.status !== 'paid' ? (
+        {debt.status !== "paid" ? (
           <View style={styles.card}>
             <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Follow-up message</Text>
             <Text style={styles.messageBox}>{followUpMsg}</Text>
@@ -126,17 +126,18 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
                 <Copy color="#1A3A2A" size={14} strokeWidth={2.5} />
               )}
               <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
-                {copied ? 'Copied!' : 'Copy message'}
+                {copied ? "Copied!" : "Copy message"}
               </Text>
             </Pressable>
           </View>
         ) : null}
       </ScrollView>
 
-      {debt.status !== 'paid' ? (
+      {debt.status !== "paid" ? (
         <LinearGradient
-          colors={['rgba(247,245,241,0)', 'rgba(247,245,241,0.95)', '#F7F5F1']}
-          style={[styles.footer, { paddingBottom: insets.bottom + 40 }]}>
+          colors={["rgba(247,245,241,0)", "rgba(247,245,241,0.95)", "#F7F5F1"]}
+          style={[styles.footer, { paddingBottom: insets.bottom + 40 }]}
+        >
           <PressableScale onPress={() => setShowPayment(true)} style={styles.primaryBtn}>
             <Text style={styles.primaryBtnText}>Add payment</Text>
           </PressableScale>
@@ -189,7 +190,8 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
           style={[
             styles.primaryBtn,
             (!payAmount || parseInt(payAmount, 10) <= 0) && styles.saveBtnDisabled,
-          ]}>
+          ]}
+        >
           <Text style={styles.primaryBtnText}>Save payment</Text>
         </PressableScale>
       </BottomSheet>
@@ -202,7 +204,7 @@ function ActiveSummary({ debt, pct }: { debt: Debt; pct: number }) {
     <View style={styles.summaryCard}>
       <Text style={styles.summaryHint}>Amount remaining</Text>
       <Text style={styles.summaryAmount}>{formatCurrency(debt.remaining)}</Text>
-      {debt.status === 'partial' ? (
+      {debt.status === "partial" ? (
         <View style={styles.partialBlock}>
           <View style={styles.partialMeta}>
             <Text style={styles.partialMetaText}>Original: {formatCurrency(debt.amount)}</Text>
@@ -245,8 +247,8 @@ function PaidSummary({ debt, firstName }: { debt: Debt; firstName: string }) {
 
 const styles = StyleSheet.create({
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 12,
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -254,22 +256,22 @@ const styles = StyleSheet.create({
   },
   headerMain: {
     flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     gap: 8,
     minWidth: 0,
   },
   headerTitle: {
     flex: 1,
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1A1A18',
+    fontWeight: "700",
+    color: "#1A1A18",
   },
   title: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1A1A18',
+    fontWeight: "700",
+    color: "#1A1A18",
     marginTop: 16,
   },
   content: {
@@ -277,12 +279,12 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   summaryCard: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-    shadowColor: '#000',
+    borderColor: "rgba(0,0,0,0.06)",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -290,67 +292,67 @@ const styles = StyleSheet.create({
   },
   summaryHint: {
     fontSize: 12,
-    color: '#B8B8B0',
-    fontWeight: '500',
+    color: "#B8B8B0",
+    fontWeight: "500",
   },
   summaryAmount: {
     fontSize: 34,
-    fontWeight: '700',
-    color: '#1A1A18',
+    fontWeight: "700",
+    color: "#1A1A18",
     lineHeight: 36,
     marginTop: 2,
-    fontVariant: ['tabular-nums'],
+    fontVariant: ["tabular-nums"],
   },
   partialBlock: {
     marginTop: 16,
   },
   partialMeta: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    justifyContent: "space-between",
     marginBottom: 8,
   },
   partialMetaText: {
     fontSize: 12,
-    color: '#8A8A82',
+    color: "#8A8A82",
   },
   progressTrackLg: {
     height: 6,
-    backgroundColor: '#F1F5F9',
+    backgroundColor: "#F1F5F9",
     borderRadius: 999,
-    overflow: 'hidden',
+    overflow: "hidden",
   },
   progressFillLg: {
-    height: '100%',
-    backgroundColor: '#818CF8',
+    height: "100%",
+    backgroundColor: "#818CF8",
     borderRadius: 999,
   },
   summaryFooter: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 20,
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: 'rgba(0,0,0,0.05)',
+    borderTopColor: "rgba(0,0,0,0.05)",
   },
   summaryFooterLabel: {
     fontSize: 11,
-    color: '#B8B8B0',
-    fontWeight: '500',
+    color: "#B8B8B0",
+    fontWeight: "500",
   },
   summaryFooterValue: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#1A1A18',
+    fontWeight: "600",
+    color: "#1A1A18",
     marginTop: 2,
   },
   paidCard: {
-    backgroundColor: '#ECFDF5',
+    backgroundColor: "#ECFDF5",
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: '#D1FAE5',
-    alignItems: 'center',
-    shadowColor: '#000',
+    borderColor: "#D1FAE5",
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -360,40 +362,40 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 999,
-    backgroundColor: '#D1FAE5',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#D1FAE5",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 12,
   },
   paidTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#065F46',
+    fontWeight: "700",
+    color: "#065F46",
   },
   paidCopy: {
     fontSize: 14,
-    color: '#059669',
+    color: "#059669",
     marginTop: 4,
   },
   paidAmount: {
     fontSize: 24,
-    fontWeight: '700',
-    color: '#047857',
+    fontWeight: "700",
+    color: "#047857",
     marginTop: 12,
-    fontVariant: ['tabular-nums'],
+    fontVariant: ["tabular-nums"],
   },
   paidDate: {
     fontSize: 12,
-    color: '#10B981',
+    color: "#10B981",
     marginTop: 4,
   },
   card: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-    shadowColor: '#000',
+    borderColor: "rgba(0,0,0,0.06)",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -401,9 +403,9 @@ const styles = StyleSheet.create({
   },
   cardLabel: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#B8B8B0',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    color: "#B8B8B0",
+    textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   cardLabelSpaced: {
@@ -411,28 +413,28 @@ const styles = StyleSheet.create({
   },
   cardBody: {
     fontSize: 14,
-    color: '#1A1A18',
+    color: "#1A1A18",
     marginTop: 6,
   },
   timelineRow: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 12,
   },
   timelineRail: {
     width: 20,
-    alignItems: 'center',
+    alignItems: "center",
   },
   timelineDot: {
     width: 10,
     height: 10,
     borderRadius: 999,
-    backgroundColor: '#34D399',
+    backgroundColor: "#34D399",
     marginTop: 4,
   },
   timelineLine: {
     width: 1,
     flex: 1,
-    backgroundColor: '#EFEFEC',
+    backgroundColor: "#EFEFEC",
     marginVertical: 4,
   },
   timelineBody: {
@@ -440,50 +442,50 @@ const styles = StyleSheet.create({
     paddingBottom: 16,
   },
   timelineTop: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
   },
   paymentAmount: {
     fontSize: 14,
-    fontWeight: '700',
-    color: '#1A1A18',
-    fontVariant: ['tabular-nums'],
+    fontWeight: "700",
+    color: "#1A1A18",
+    fontVariant: ["tabular-nums"],
   },
   paymentDate: {
     fontSize: 12,
-    color: '#B8B8B0',
+    color: "#B8B8B0",
   },
   paymentNote: {
     fontSize: 12,
-    color: '#8A8A82',
+    color: "#8A8A82",
     marginTop: 2,
   },
   messageBox: {
     fontSize: 14,
-    color: '#4A4A42',
+    color: "#4A4A42",
     lineHeight: 22,
-    backgroundColor: '#F7F5F1',
+    backgroundColor: "#F7F5F1",
     borderRadius: 12,
     padding: 14,
     marginTop: 12,
   },
   copyBtn: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     gap: 8,
     marginTop: 12,
   },
   copyText: {
     fontSize: 12,
-    fontWeight: '700',
-    color: '#1A3A2A',
+    fontWeight: "700",
+    color: "#1A3A2A",
   },
   copyTextSuccess: {
-    color: '#16A34A',
+    color: "#16A34A",
   },
   footer: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
     bottom: 0,
@@ -491,34 +493,34 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   primaryBtn: {
-    backgroundColor: '#1A3A2A',
+    backgroundColor: "#1A3A2A",
     borderRadius: 16,
     paddingVertical: 16,
-    alignItems: 'center',
-    shadowColor: '#000',
+    alignItems: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 4,
   },
   primaryBtnText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
   },
   saveBtnDisabled: {
     opacity: 0.3,
   },
   sheetHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     marginBottom: 20,
   },
   sheetTitle: {
     fontSize: 18,
-    fontWeight: '700',
-    color: '#1A1A18',
+    fontWeight: "700",
+    color: "#1A1A18",
   },
   sheetField: {
     gap: 8,
@@ -526,38 +528,38 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#8A8A82',
-    textTransform: 'uppercase',
+    fontWeight: "700",
+    color: "#8A8A82",
+    textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   prefix: {
-    position: 'absolute',
+    position: "absolute",
     left: 16,
     top: 18,
     fontSize: 14,
-    fontWeight: '700',
-    color: '#8A8A82',
+    fontWeight: "700",
+    color: "#8A8A82",
     zIndex: 1,
   },
   sheetInput: {
-    backgroundColor: '#F7F5F1',
+    backgroundColor: "#F7F5F1",
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 14,
-    color: '#1A1A18',
+    color: "#1A1A18",
   },
   amountInput: {
     paddingLeft: 60,
     fontSize: 20,
-    fontWeight: '700',
-    fontVariant: ['tabular-nums'],
+    fontWeight: "700",
+    fontVariant: ["tabular-nums"],
   },
   fullAmountLink: {
     marginTop: 8,
     fontSize: 12,
-    fontWeight: '700',
-    color: '#1A3A2A',
+    fontWeight: "700",
+    color: "#1A3A2A",
   },
 });

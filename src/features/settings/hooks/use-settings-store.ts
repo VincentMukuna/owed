@@ -1,6 +1,6 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
-import { APP_CONFIG } from '@/constants/config';
+import { APP_CONFIG } from "@/constants/config";
 
 type SettingsState = {
   defaultCurrency: string;

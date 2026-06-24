@@ -1,4 +1,4 @@
-export type DebtStatus = 'active' | 'due-soon' | 'overdue' | 'partial' | 'paid';
+export type DebtStatus = "active" | "due-soon" | "overdue" | "partial" | "paid";
 
 export interface DebtPayment {
   id: number;
@@ -21,9 +21,9 @@ export interface Debt {
   reminder: boolean;
 }
 
-export type NewDebt = Omit<Debt, 'id' | 'payments'>;
+export type NewDebt = Omit<Debt, "id" | "payments">;
 
-export type ActivityType = 'payment' | 'add' | 'overdue' | 'paid';
+export type ActivityType = "payment" | "add" | "overdue" | "paid";
 
 export interface Activity {
   id: number;

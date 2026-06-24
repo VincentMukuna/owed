@@ -1,4 +1,4 @@
-import { APP_CONFIG } from '@/constants/config';
+import { APP_CONFIG } from "@/constants/config";
 
 export function formatCurrency(
   amount: number,
@@ -13,7 +13,7 @@ export function getInitials(name: string): string {
     .split(/\s+/)
     .slice(0, 2)
     .map((word) => word[0])
-    .join('')
+    .join("")
     .toUpperCase();
 }
 

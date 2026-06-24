@@ -1,19 +1,26 @@
-import { Bell, Wallet } from 'lucide-react-native';
-import { router } from 'expo-router';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { DebtCard } from '@/components/debts/DebtCard';
-import { SummaryStatCard } from '@/components/debts/SummaryStatCard';
-import { FabButton } from '@/components/shared/FabButton';
-import { IconButton } from '@/components/shared/IconButton';
-import { PressableScale } from '@/components/shared/PressableScale';
-import { ScreenContainer } from '@/components/shared/ScreenContainer';
-import { useAppStore } from '@/features/debts/store/appStore';
-import type { Debt } from '@/features/debts/types';
-import { formatCurrency } from '@/lib/utils/formatters';
+import { router } from "expo-router";
 
-function Section({ title, titleColor, debts, onDebtPress }: {
+import { Bell, Wallet } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { DebtCard } from "@/components/debts/debt-card";
+import { SummaryStatCard } from "@/components/debts/summary-stat-card";
+import { FabButton } from "@/components/shared/fab-button";
+import { IconButton } from "@/components/shared/icon-button";
+import { PressableScale } from "@/components/shared/pressable-scale";
+import { ScreenContainer } from "@/components/shared/screen-container";
+import { useAppStore } from "@/features/debts/store/app-store";
+import type { Debt } from "@/features/debts/types";
+import { formatCurrency } from "@/lib/utils/formatters";
+
+function Section({
+  title,
+  titleColor,
+  debts,
+  onDebtPress,
+}: {
   title: string;
   titleColor?: string;
   debts: Debt[];
@@ -37,15 +44,17 @@ export function HomeScreen() {
   const insets = useSafeAreaInsets();
   const debts = useAppStore((s) => s.debts);
 
-  const active = debts.filter((d) => d.status !== 'paid');
+  const active = debts.filter((d) => d.status !== "paid");
   const totalOwed = active.reduce((sum, d) => sum + d.remaining, 0);
-  const overdue = debts.filter((d) => d.status === 'overdue');
-  const dueSoon = debts.filter((d) => d.status === 'due-soon');
-  const paidThisMonth = debts.filter((d) => d.status === 'paid').reduce((sum, d) => sum + d.amount, 0);
-  const activePartial = active.filter((d) => d.status === 'active' || d.status === 'partial');
+  const overdue = debts.filter((d) => d.status === "overdue");
+  const dueSoon = debts.filter((d) => d.status === "due-soon");
+  const paidThisMonth = debts
+    .filter((d) => d.status === "paid")
+    .reduce((sum, d) => sum + d.amount, 0);
+  const activePartial = active.filter((d) => d.status === "active" || d.status === "partial");
 
   const openDebt = (debt: Debt) => router.push(`/debt/${debt.id}`);
-  const openAdd = () => router.push('/add-debt');
+  const openAdd = () => router.push("/add-debt");
 
   if (debts.length === 0) {
     return (
@@ -60,7 +69,7 @@ export function HomeScreen() {
           </View>
           <Text style={styles.emptyTitle}>No money tracked yet.</Text>
           <Text style={styles.emptyCopy}>
-            Add the first amount someone owes you and we'll help you remember the details.
+            {"Add the first amount someone owes you and we'll help you remember the details."}
           </Text>
           <PressableScale onPress={openAdd} style={styles.emptyBtn}>
             <Text style={styles.emptyBtnText}>Add debt</Text>
@@ -75,7 +84,7 @@ export function HomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.kicker}>Good morning</Text>
-          <Text style={styles.pageTitleLg}>Here's what you're owed</Text>
+          <Text style={styles.pageTitleLg}>{"Here's what you're owed"}</Text>
         </View>
         <IconButton>
           <Bell color="#4A4A42" size={16} strokeWidth={1.5} />
@@ -84,14 +93,15 @@ export function HomeScreen() {
 
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingBottom: 112 + insets.bottom }]}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.heroCard}>
           <View style={[styles.heroOrb, styles.heroOrbTop]} />
           <View style={[styles.heroOrb, styles.heroOrbBottom]} />
           <Text style={styles.heroLabel}>Total owed to you</Text>
           <Text style={styles.heroAmount}>{formatCurrency(totalOwed)}</Text>
           <Text style={styles.heroMeta}>
-            Across {active.length} active {active.length === 1 ? 'promise' : 'promises'}
+            Across {active.length} active {active.length === 1 ? "promise" : "promises"}
           </Text>
         </View>
 
@@ -106,7 +116,11 @@ export function HomeScreen() {
             <SummaryStatCard label="Due soon" value={String(dueSoon.length)} color="#F59E0B" />
           </View>
           <View style={styles.statCell}>
-            <SummaryStatCard label="Paid this month" value={formatCurrency(paidThisMonth)} color="#10B981" />
+            <SummaryStatCard
+              label="Paid this month"
+              value={formatCurrency(paidThisMonth)}
+              color="#10B981"
+            />
           </View>
         </View>
 
@@ -125,27 +139,27 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 16,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   kicker: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#8A8A82',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    color: "#8A8A82",
+    textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   pageTitle: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#1A1A18',
+    fontWeight: "700",
+    color: "#1A1A18",
     marginTop: 4,
   },
   pageTitleLg: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#1A1A18',
+    fontWeight: "700",
+    color: "#1A1A18",
     marginTop: 2,
   },
   scroll: {
@@ -153,16 +167,16 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   heroCard: {
-    backgroundColor: '#1A3A2A',
+    backgroundColor: "#1A3A2A",
     borderRadius: 16,
     padding: 20,
-    overflow: 'hidden',
-    position: 'relative',
+    overflow: "hidden",
+    position: "relative",
   },
   heroOrb: {
-    position: 'absolute',
+    position: "absolute",
     borderRadius: 999,
-    backgroundColor: 'rgba(255,255,255,0.04)',
+    backgroundColor: "rgba(255,255,255,0.04)",
   },
   heroOrbTop: {
     width: 144,
@@ -178,31 +192,31 @@ const styles = StyleSheet.create({
   },
   heroLabel: {
     fontSize: 11,
-    fontWeight: '600',
-    color: 'rgba(255,255,255,0.5)',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    color: "rgba(255,255,255,0.5)",
+    textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   heroAmount: {
     fontSize: 38,
-    fontWeight: '700',
-    color: '#FFFFFF',
+    fontWeight: "700",
+    color: "#FFFFFF",
     lineHeight: 40,
     marginTop: 4,
-    fontVariant: ['tabular-nums'],
+    fontVariant: ["tabular-nums"],
   },
   heroMeta: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.4)',
+    color: "rgba(255,255,255,0.4)",
     marginTop: 8,
   },
   statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
+    flexDirection: "row",
+    flexWrap: "wrap",
     gap: 10,
   },
   statCell: {
-    width: '48%',
+    width: "48%",
     flexGrow: 1,
   },
   section: {
@@ -210,9 +224,9 @@ const styles = StyleSheet.create({
   },
   sectionTitle: {
     fontSize: 11,
-    fontWeight: '600',
-    color: '#8A8A82',
-    textTransform: 'uppercase',
+    fontWeight: "600",
+    color: "#8A8A82",
+    textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   sectionList: {
@@ -224,8 +238,8 @@ const styles = StyleSheet.create({
   },
   emptyBody: {
     flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     paddingHorizontal: 24,
     paddingBottom: 80,
   },
@@ -233,34 +247,34 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 16,
-    backgroundColor: '#EFEFEC',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#EFEFEC",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 16,
   },
   emptyTitle: {
     fontSize: 16,
-    fontWeight: '600',
-    color: '#1A1A18',
+    fontWeight: "600",
+    color: "#1A1A18",
   },
   emptyCopy: {
     fontSize: 14,
-    color: '#8A8A82',
-    textAlign: 'center',
+    color: "#8A8A82",
+    textAlign: "center",
     lineHeight: 22,
     marginTop: 6,
     maxWidth: 220,
   },
   emptyBtn: {
     marginTop: 20,
-    backgroundColor: '#1A3A2A',
+    backgroundColor: "#1A3A2A",
     paddingHorizontal: 24,
     paddingVertical: 12,
     borderRadius: 12,
   },
   emptyBtnText: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 14,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

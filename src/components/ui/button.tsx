@@ -1,11 +1,13 @@
-import type { ReactNode } from 'react';
-import { Pressable, Text } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import type { ReactNode } from "react";
+
+import { Pressable, Text } from "react-native";
+
+import { StyleSheet } from "react-native-unistyles";
 
 type ButtonProps = {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'ghost';
-  size?: 'sm' | 'md' | 'lg';
+  variant?: "primary" | "secondary" | "ghost";
+  size?: "sm" | "md" | "lg";
   fullWidth?: boolean;
   disabled?: boolean;
   onPress?: () => void;
@@ -13,8 +15,8 @@ type ButtonProps = {
 
 export function Button({
   children,
-  variant = 'primary',
-  size = 'md',
+  variant = "primary",
+  size = "md",
   fullWidth = false,
   disabled = false,
   onPress,
@@ -31,7 +33,8 @@ export function Button({
       accessibilityRole="button"
       disabled={disabled}
       onPress={onPress}
-      style={styles.button}>
+      style={styles.button}
+    >
       <Text style={styles.label}>{children}</Text>
     </Pressable>
   );
@@ -39,8 +42,8 @@ export function Button({
 
 const styles = StyleSheet.create((theme) => ({
   button: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: theme.radius.lg,
 
     variants: {
@@ -54,7 +57,7 @@ const styles = StyleSheet.create((theme) => ({
           borderColor: theme.colors.borderStrong,
         },
         ghost: {
-          backgroundColor: 'transparent',
+          backgroundColor: "transparent",
         },
       },
       size: {
@@ -73,7 +76,7 @@ const styles = StyleSheet.create((theme) => ({
       },
       fullWidth: {
         true: {
-          width: '100%',
+          width: "100%",
         },
       },
       disabled: {
@@ -85,7 +88,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   label: {
     fontSize: 15,
-    fontWeight: '600',
+    fontWeight: "600",
     color: theme.colors.text,
 
     variants: {

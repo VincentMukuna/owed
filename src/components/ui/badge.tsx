@@ -1,16 +1,17 @@
-import { View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { View } from "react-native";
 
-import type { DebtStatus } from '@/features/debts/types';
+import { StyleSheet } from "react-native-unistyles";
 
-import { Text } from './Text';
+import type { DebtStatus } from "@/features/debts/types";
+
+import { Text } from "./text";
 
 const STATUS_LABELS: Record<DebtStatus, string> = {
-  active: 'Active',
-  'due-soon': 'Due soon',
-  overdue: 'Overdue',
-  partial: 'Partial',
-  paid: 'Paid',
+  active: "Active",
+  "due-soon": "Due soon",
+  overdue: "Overdue",
+  partial: "Partial",
+  paid: "Paid",
 };
 
 type BadgeProps = {
@@ -30,9 +31,9 @@ export function Badge({ status }: BadgeProps) {
 
 const styles = StyleSheet.create((theme) => ({
   badge: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    alignSelf: 'flex-start',
+    flexDirection: "row",
+    alignItems: "center",
+    alignSelf: "flex-start",
     gap: 6,
     paddingHorizontal: 10,
     paddingVertical: 4,
@@ -43,8 +44,8 @@ const styles = StyleSheet.create((theme) => ({
         active: {
           backgroundColor: theme.colors.status.active.bg,
         },
-        'due-soon': {
-          backgroundColor: theme.colors.status['due-soon'].bg,
+        "due-soon": {
+          backgroundColor: theme.colors.status["due-soon"].bg,
         },
         overdue: {
           backgroundColor: theme.colors.status.overdue.bg,
@@ -66,7 +67,7 @@ const styles = StyleSheet.create((theme) => ({
     variants: {
       status: {
         active: { backgroundColor: theme.colors.status.active.dot },
-        'due-soon': { backgroundColor: theme.colors.status['due-soon'].dot },
+        "due-soon": { backgroundColor: theme.colors.status["due-soon"].dot },
         overdue: { backgroundColor: theme.colors.status.overdue.dot },
         partial: { backgroundColor: theme.colors.status.partial.dot },
         paid: { backgroundColor: theme.colors.status.paid.dot },
@@ -75,12 +76,12 @@ const styles = StyleSheet.create((theme) => ({
   },
   label: {
     fontSize: 11,
-    fontWeight: '600',
+    fontWeight: "600",
 
     variants: {
       status: {
         active: { color: theme.colors.status.active.text },
-        'due-soon': { color: theme.colors.status['due-soon'].text },
+        "due-soon": { color: theme.colors.status["due-soon"].text },
         overdue: { color: theme.colors.status.overdue.text },
         partial: { color: theme.colors.status.partial.text },
         paid: { color: theme.colors.status.paid.text },

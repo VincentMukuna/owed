@@ -1,9 +1,11 @@
-import type { ReactNode } from 'react';
-import { View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import type { ReactNode } from "react";
 
-import { Button } from './Button';
-import { Text } from './Text';
+import { View } from "react-native";
+
+import { StyleSheet } from "react-native-unistyles";
+
+import { Button } from "./button";
+import { Text } from "./text";
 
 type EmptyStateProps = {
   title: string;
@@ -13,13 +15,7 @@ type EmptyStateProps = {
   icon?: ReactNode;
 };
 
-export function EmptyState({
-  title,
-  description,
-  actionLabel,
-  onAction,
-  icon,
-}: EmptyStateProps) {
+export function EmptyState({ title, description, actionLabel, onAction, icon }: EmptyStateProps) {
   return (
     <View style={styles.container}>
       {icon ? <View style={styles.iconWrap}>{icon}</View> : null}
@@ -44,9 +40,9 @@ export function EmptyState({
 
 const styles = StyleSheet.create((theme) => ({
   container: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: theme.spacing['2xl'],
+    alignItems: "center",
+    justifyContent: "center",
+    paddingVertical: theme.spacing["2xl"],
     paddingHorizontal: theme.spacing.lg,
   },
   iconWrap: {
@@ -54,16 +50,16 @@ const styles = StyleSheet.create((theme) => ({
     height: 56,
     borderRadius: theme.radius.lg,
     backgroundColor: theme.colors.surface,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: theme.spacing.md,
   },
   title: {
-    textAlign: 'center',
+    textAlign: "center",
     fontSize: 16,
   },
   description: {
-    textAlign: 'center',
+    textAlign: "center",
     marginTop: theme.spacing.sm,
     maxWidth: 240,
     lineHeight: 20,

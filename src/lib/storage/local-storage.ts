@@ -1,6 +1,6 @@
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-const PREFIX = '@owed/';
+const PREFIX = "@owed/";
 
 export async function getItem<T>(key: string): Promise<T | null> {
   const raw = await AsyncStorage.getItem(`${PREFIX}${key}`);
@@ -17,9 +17,9 @@ export async function removeItem(key: string): Promise<void> {
 }
 
 export const storageKeys = {
-  debts: 'debts',
-  payments: 'payments',
-  people: 'people',
-  settings: 'settings',
-  onboardingComplete: 'onboarding-complete',
+  debts: "debts",
+  payments: "payments",
+  people: "people",
+  settings: "settings",
+  onboardingComplete: "onboarding-complete",
 } as const;

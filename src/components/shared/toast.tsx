@@ -1,9 +1,11 @@
-import { useEffect } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeIn, FadeOut } from 'react-native-reanimated';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useEffect } from "react";
 
-import { useAppStore } from '@/features/debts/store/appStore';
+import { StyleSheet, Text, View } from "react-native";
+
+import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { useAppStore } from "@/features/debts/store/app-store";
 
 type ToastProps = {
   bottomOffset?: number;
@@ -21,7 +23,11 @@ export function Toast({ bottomOffset = 90 }: ToastProps) {
 
   return (
     <View pointerEvents="none" style={[styles.host, { bottom: bottomOffset + insets.bottom }]}>
-      <Animated.View entering={FadeIn.duration(180)} exiting={FadeOut.duration(180)} style={styles.toast}>
+      <Animated.View
+        entering={FadeIn.duration(180)}
+        exiting={FadeOut.duration(180)}
+        style={styles.toast}
+      >
         <Text style={styles.text}>{toast}</Text>
       </Animated.View>
     </View>
@@ -30,22 +36,22 @@ export function Toast({ bottomOffset = 90 }: ToastProps) {
 
 const styles = StyleSheet.create({
   host: {
-    position: 'absolute',
+    position: "absolute",
     left: 0,
     right: 0,
-    alignItems: 'center',
+    alignItems: "center",
     zIndex: 100,
   },
   toast: {
-    backgroundColor: '#1A1A18',
+    backgroundColor: "#1A1A18",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 999,
-    maxWidth: '90%',
+    maxWidth: "90%",
   },
   text: {
-    color: '#FFFFFF',
+    color: "#FFFFFF",
     fontSize: 12,
-    fontWeight: '600',
+    fontWeight: "600",
   },
 });

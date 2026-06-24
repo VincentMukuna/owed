@@ -1,11 +1,11 @@
-import { StyleSheet } from 'react-native-unistyles';
+import { StyleSheet } from "react-native-unistyles";
 
-import { appThemes, type AppTheme } from './themes';
+import { type AppTheme, appThemes } from "./themes";
 
 StyleSheet.configure({
   themes: appThemes,
   settings: {
-    initialTheme: 'light',
+    initialTheme: "light",
   },
 });
 
@@ -13,6 +13,7 @@ type AppThemes = {
   light: AppTheme;
 };
 
-declare module 'react-native-unistyles' {
+declare module "react-native-unistyles" {
+  // eslint-disable-next-line @typescript-eslint/no-empty-object-type -- module augmentation requires an interface
   export interface UnistylesThemes extends AppThemes {}
 }

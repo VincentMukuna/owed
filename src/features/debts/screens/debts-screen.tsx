@@ -1,20 +1,23 @@
-import { List } from 'lucide-react-native';
-import { router } from 'expo-router';
-import { useMemo, useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { useMemo, useState } from "react";
 
-import { DebtCard } from '@/components/debts/DebtCard';
-import { FabButton } from '@/components/shared/FabButton';
-import { ScreenContainer } from '@/components/shared/ScreenContainer';
-import { useAppStore } from '@/features/debts/store/appStore';
-import type { Debt, DebtStatus } from '@/features/debts/types';
+import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
-type FilterKey = 'all' | 'active' | 'overdue' | 'paid';
+import { router } from "expo-router";
+
+import { List } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { DebtCard } from "@/components/debts/debt-card";
+import { FabButton } from "@/components/shared/fab-button";
+import { ScreenContainer } from "@/components/shared/screen-container";
+import { useAppStore } from "@/features/debts/store/app-store";
+import type { DebtStatus } from "@/features/debts/types";
+
+type FilterKey = "all" | "active" | "overdue" | "paid";
 
 const SORT_ORDER: Record<DebtStatus, number> = {
   overdue: 0,
-  'due-soon': 1,
+  "due-soon": 1,
   partial: 2,
   active: 3,
   paid: 4,
@@ -23,35 +26,35 @@ const SORT_ORDER: Record<DebtStatus, number> = {
 export function DebtsScreen() {
   const insets = useSafeAreaInsets();
   const debts = useAppStore((s) => s.debts);
-  const [filter, setFilter] = useState<FilterKey>('all');
+  const [filter, setFilter] = useState<FilterKey>("all");
 
   const tabs = useMemo(
     () => [
-      { key: 'all' as const, label: 'All', count: debts.length },
+      { key: "all" as const, label: "All", count: debts.length },
       {
-        key: 'active' as const,
-        label: 'Active',
-        count: debts.filter((d) => ['active', 'due-soon', 'partial'].includes(d.status)).length,
+        key: "active" as const,
+        label: "Active",
+        count: debts.filter((d) => ["active", "due-soon", "partial"].includes(d.status)).length,
       },
       {
-        key: 'overdue' as const,
-        label: 'Overdue',
-        count: debts.filter((d) => d.status === 'overdue').length,
+        key: "overdue" as const,
+        label: "Overdue",
+        count: debts.filter((d) => d.status === "overdue").length,
       },
       {
-        key: 'paid' as const,
-        label: 'Paid',
-        count: debts.filter((d) => d.status === 'paid').length,
+        key: "paid" as const,
+        label: "Paid",
+        count: debts.filter((d) => d.status === "paid").length,
       },
     ],
     [debts],
   );
 
   const filtered = debts.filter((debt) => {
-    if (filter === 'all') return true;
-    if (filter === 'active') return ['active', 'due-soon', 'partial'].includes(debt.status);
-    if (filter === 'overdue') return debt.status === 'overdue';
-    if (filter === 'paid') return debt.status === 'paid';
+    if (filter === "all") return true;
+    if (filter === "active") return ["active", "due-soon", "partial"].includes(debt.status);
+    if (filter === "overdue") return debt.status === "overdue";
+    if (filter === "paid") return debt.status === "paid";
     return true;
   });
 
@@ -68,7 +71,11 @@ export function DebtsScreen() {
           {tabs.map((tab) => {
             const active = filter === tab.key;
             return (
-              <Pressable key={tab.key} onPress={() => setFilter(tab.key)} style={[styles.tab, active && styles.tabActive]}>
+              <Pressable
+                key={tab.key}
+                onPress={() => setFilter(tab.key)}
+                style={[styles.tab, active && styles.tabActive]}
+              >
                 <Text style={[styles.tabText, active && styles.tabTextActive]}>
                   {tab.label}
                   {tab.count > 0 && !active ? (
@@ -83,7 +90,8 @@ export function DebtsScreen() {
 
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingBottom: 112 + insets.bottom }]}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         {sorted.length === 0 ? (
           <View style={styles.empty}>
             <View style={styles.emptyIcon}>
@@ -101,7 +109,7 @@ export function DebtsScreen() {
         )}
       </ScrollView>
 
-      <FabButton onPress={() => router.push('/add-debt')} />
+      <FabButton onPress={() => router.push("/add-debt")} />
     </ScreenContainer>
   );
 }
@@ -114,17 +122,17 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#1A1A18',
+    fontWeight: "700",
+    color: "#1A1A18",
   },
   tabsWrap: {
     paddingHorizontal: 20,
     paddingBottom: 12,
   },
   tabs: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 4,
-    backgroundColor: '#EFEFEC',
+    backgroundColor: "#EFEFEC",
     padding: 4,
     borderRadius: 12,
   },
@@ -132,11 +140,11 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 6,
     borderRadius: 9,
-    alignItems: 'center',
+    alignItems: "center",
   },
   tabActive: {
-    backgroundColor: '#FFFFFF',
-    shadowColor: '#000',
+    backgroundColor: "#FFFFFF",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 2,
@@ -144,11 +152,11 @@ const styles = StyleSheet.create({
   },
   tabText: {
     fontSize: 11,
-    fontWeight: '700',
-    color: '#8A8A82',
+    fontWeight: "700",
+    color: "#8A8A82",
   },
   tabTextActive: {
-    color: '#1A1A18',
+    color: "#1A1A18",
   },
   tabCount: {
     fontSize: 10,
@@ -162,26 +170,26 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   empty: {
-    alignItems: 'center',
+    alignItems: "center",
     paddingVertical: 64,
   },
   emptyIcon: {
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: '#EFEFEC',
-    alignItems: 'center',
-    justifyContent: 'center',
+    backgroundColor: "#EFEFEC",
+    alignItems: "center",
+    justifyContent: "center",
     marginBottom: 12,
   },
   emptyTitle: {
     fontSize: 14,
-    fontWeight: '600',
-    color: '#4A4A42',
+    fontWeight: "600",
+    color: "#4A4A42",
   },
   emptyCopy: {
     fontSize: 12,
-    color: '#B8B8B0',
+    color: "#B8B8B0",
     marginTop: 4,
   },
 });

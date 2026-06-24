@@ -1,7 +1,9 @@
-import type { ReactNode } from 'react';
-import { ScrollView, View, type ViewProps } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { StyleSheet } from 'react-native-unistyles';
+import type { ReactNode } from "react";
+
+import { ScrollView, View, type ViewProps } from "react-native";
+
+import { SafeAreaView } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native-unistyles";
 
 type ScreenProps = ViewProps & {
   children: ReactNode;
@@ -9,13 +11,7 @@ type ScreenProps = ViewProps & {
   padded?: boolean;
 };
 
-export function Screen({
-  children,
-  scroll = false,
-  padded = true,
-  style,
-  ...props
-}: ScreenProps) {
+export function Screen({ children, scroll = false, padded = true, style, ...props }: ScreenProps) {
   const content = (
     <View style={[styles.content, padded && styles.padded, style]} {...props}>
       {children}
@@ -23,12 +19,13 @@ export function Screen({
   );
 
   return (
-    <SafeAreaView style={styles.screen} edges={['top', 'left', 'right']}>
+    <SafeAreaView style={styles.screen} edges={["top", "left", "right"]}>
       {scroll ? (
         <ScrollView
           contentContainerStyle={styles.scrollContent}
           keyboardShouldPersistTaps="handled"
-          showsVerticalScrollIndicator={false}>
+          showsVerticalScrollIndicator={false}
+        >
           {content}
         </ScrollView>
       ) : (
@@ -51,6 +48,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   scrollContent: {
     flexGrow: 1,
-    paddingBottom: theme.spacing['2xl'],
+    paddingBottom: theme.spacing["2xl"],
   },
 }));

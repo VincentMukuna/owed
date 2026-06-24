@@ -1,17 +1,18 @@
-import { View } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import { View } from "react-native";
 
-import type { DebtStatus } from '@/features/debts/types';
+import { StyleSheet } from "react-native-unistyles";
 
-import { Text } from './Text';
+import type { DebtStatus } from "@/features/debts/types";
+
+import { Text } from "./text";
 
 type AvatarProps = {
   initials: string;
   status: DebtStatus;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
 };
 
-export function Avatar({ initials, status, size = 'md' }: AvatarProps) {
+export function Avatar({ initials, status, size = "md" }: AvatarProps) {
   styles.useVariants({ status, size });
 
   return (
@@ -23,8 +24,8 @@ export function Avatar({ initials, status, size = 'md' }: AvatarProps) {
 
 const styles = StyleSheet.create((theme) => ({
   avatar: {
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     borderRadius: theme.radius.full,
 
     variants: {
@@ -37,8 +38,8 @@ const styles = StyleSheet.create((theme) => ({
         active: {
           backgroundColor: theme.colors.status.active.avatarBg,
         },
-        'due-soon': {
-          backgroundColor: theme.colors.status['due-soon'].avatarBg,
+        "due-soon": {
+          backgroundColor: theme.colors.status["due-soon"].avatarBg,
         },
         overdue: {
           backgroundColor: theme.colors.status.overdue.avatarBg,
@@ -53,7 +54,7 @@ const styles = StyleSheet.create((theme) => ({
     },
   },
   initials: {
-    fontWeight: '700',
+    fontWeight: "700",
 
     variants: {
       size: {
@@ -63,7 +64,7 @@ const styles = StyleSheet.create((theme) => ({
       },
       status: {
         active: { color: theme.colors.status.active.avatarText },
-        'due-soon': { color: theme.colors.status['due-soon'].avatarText },
+        "due-soon": { color: theme.colors.status["due-soon"].avatarText },
         overdue: { color: theme.colors.status.overdue.avatarText },
         partial: { color: theme.colors.status.partial.avatarText },
         paid: { color: theme.colors.status.paid.avatarText },

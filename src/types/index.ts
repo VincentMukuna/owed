@@ -1,12 +1,6 @@
-export type DebtStatus =
-  | 'active'
-  | 'due-soon'
-  | 'overdue'
-  | 'partial'
-  | 'paid'
-  | 'archived';
+export type DebtStatus = "active" | "due-soon" | "overdue" | "partial" | "paid" | "archived";
 
-export type ReminderStatus = 'scheduled' | 'sent' | 'cancelled';
+export type ReminderStatus = "scheduled" | "sent" | "cancelled";
 
 export interface User {
   id: string;
@@ -67,7 +61,7 @@ export interface Reminder {
 
 export interface ActivityItem {
   id: string;
-  type: 'payment' | 'add' | 'overdue' | 'paid' | 'update';
+  type: "payment" | "add" | "overdue" | "paid" | "update";
   text: string;
   sub?: string;
   time: string;

@@ -1,6 +1,8 @@
-import type { ReactNode } from 'react';
-import { View, type ViewProps } from 'react-native';
-import { StyleSheet } from 'react-native-unistyles';
+import type { ReactNode } from "react";
+
+import { View, type ViewProps } from "react-native";
+
+import { StyleSheet } from "react-native-unistyles";
 
 type CardProps = ViewProps & {
   children: ReactNode;

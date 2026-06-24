@@ -1,14 +1,13 @@
-import type { ReactNode } from 'react';
-import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from 'react-native';
-import Animated, {
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+/* eslint-disable react-hooks/immutability -- Reanimated shared values are mutated by design */
+import type { ReactNode } from "react";
+
+import { Pressable, type PressableProps, type StyleProp, type ViewStyle } from "react-native";
+
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-type PressableScaleProps = Omit<PressableProps, 'style'> & {
+type PressableScaleProps = Omit<PressableProps, "style"> & {
   children: ReactNode;
   style?: StyleProp<ViewStyle>;
   scaleTo?: number;
@@ -42,7 +41,8 @@ export function PressableScale({
       onPressOut={(event) => {
         scale.value = withTiming(1, { duration: 100 });
         onPressOut?.(event);
-      }}>
+      }}
+    >
       {children}
     </AnimatedPressable>
   );

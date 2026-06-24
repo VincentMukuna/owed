@@ -1,7 +1,8 @@
-import type { ReactNode } from 'react';
-import { StyleSheet } from 'react-native';
+import type { ReactNode } from "react";
 
-import { PressableScale } from '@/components/shared/PressableScale';
+import { StyleSheet } from "react-native";
+
+import { PressableScale } from "@/components/shared/pressable-scale";
 
 type IconButtonProps = {
   onPress?: () => void;
@@ -21,12 +22,12 @@ const styles = StyleSheet.create({
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: '#FFFFFF',
+    backgroundColor: "#FFFFFF",
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.08)',
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
+    borderColor: "rgba(0, 0, 0, 0.08)",
+    alignItems: "center",
+    justifyContent: "center",
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,

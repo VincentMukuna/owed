@@ -1,3 +1,3 @@
-import { ActivityScreen } from '@/features/activity/screens/ActivityScreen';
+import { ActivityScreen } from "@/features/activity/screens/activity-screen";
 
 export default ActivityScreen;

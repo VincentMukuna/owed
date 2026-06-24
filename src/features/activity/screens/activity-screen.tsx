@@ -1,15 +1,16 @@
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { ScreenContainer } from '@/components/shared/ScreenContainer';
-import { useAppStore } from '@/features/debts/store/appStore';
-import type { ActivityType } from '@/features/debts/types';
+import { useSafeAreaInsets } from "react-native-safe-area-context";
+
+import { ScreenContainer } from "@/components/shared/screen-container";
+import { useAppStore } from "@/features/debts/store/app-store";
+import type { ActivityType } from "@/features/debts/types";
 
 const TYPE_CONFIG: Record<ActivityType, { bg: string; text: string; symbol: string }> = {
-  payment: { bg: '#ECFDF5', text: '#059669', symbol: '↓' },
-  add: { bg: '#F1F5F9', text: '#64748B', symbol: '+' },
-  overdue: { bg: '#FEF2F2', text: '#EF4444', symbol: '!' },
-  paid: { bg: '#ECFDF5', text: '#059669', symbol: '✓' },
+  payment: { bg: "#ECFDF5", text: "#059669", symbol: "↓" },
+  add: { bg: "#F1F5F9", text: "#64748B", symbol: "+" },
+  overdue: { bg: "#FEF2F2", text: "#EF4444", symbol: "!" },
+  paid: { bg: "#ECFDF5", text: "#059669", symbol: "✓" },
 };
 
 export function ActivityScreen() {
@@ -24,7 +25,8 @@ export function ActivityScreen() {
 
       <ScrollView
         contentContainerStyle={[styles.scroll, { paddingBottom: 112 + insets.bottom }]}
-        showsVerticalScrollIndicator={false}>
+        showsVerticalScrollIndicator={false}
+      >
         {activities.map((activity) => {
           const config = TYPE_CONFIG[activity.type];
           return (
@@ -53,30 +55,30 @@ const styles = StyleSheet.create({
   },
   title: {
     fontSize: 20,
-    fontWeight: '700',
-    color: '#1A1A18',
+    fontWeight: "700",
+    color: "#1A1A18",
   },
   scroll: {
     paddingHorizontal: 20,
   },
   row: {
-    flexDirection: 'row',
+    flexDirection: "row",
     gap: 14,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0,0,0,0.05)',
+    borderBottomColor: "rgba(0,0,0,0.05)",
   },
   icon: {
     width: 32,
     height: 32,
     borderRadius: 999,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
     marginTop: 2,
   },
   symbol: {
     fontSize: 14,
-    fontWeight: '700',
+    fontWeight: "700",
   },
   copy: {
     flex: 1,
@@ -84,17 +86,17 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
-    color: '#1A1A18',
+    color: "#1A1A18",
     lineHeight: 20,
   },
   sub: {
     fontSize: 12,
-    color: '#8A8A82',
+    color: "#8A8A82",
     marginTop: 2,
   },
   time: {
     fontSize: 11,
-    color: '#B8B8B0',
+    color: "#B8B8B0",
     marginTop: 2,
     flexShrink: 0,
   },

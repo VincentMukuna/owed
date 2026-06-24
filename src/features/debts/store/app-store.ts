@@ -1,7 +1,7 @@
-import { create } from 'zustand';
+import { create } from "zustand";
 
-import { INITIAL_ACTIVITIES, INITIAL_DEBTS } from '@/features/debts/data/sampleData';
-import type { Activity, Debt, DebtStatus, NewDebt } from '@/features/debts/types';
+import { INITIAL_ACTIVITIES, INITIAL_DEBTS } from "@/features/debts/data/sample-data";
+import type { Activity, Debt, DebtStatus, NewDebt } from "@/features/debts/types";
 
 type AppState = {
   debts: Debt[];
@@ -56,7 +56,7 @@ export const useAppStore = create<AppState>((set, get) => ({
       payments: [],
     };
     set((state) => ({ debts: [newDebt, ...state.debts] }));
-    get().showToast('Debt saved.');
+    get().showToast("Debt saved.");
   },
 
   addPayment: (debtId, amount, note) => {
@@ -68,11 +68,11 @@ export const useAppStore = create<AppState>((set, get) => ({
 
         isFullPayment = amount >= debt.remaining;
         const newRemaining = Math.max(0, debt.remaining - amount);
-        const newStatus: DebtStatus = newRemaining === 0 ? 'paid' : 'partial';
+        const newStatus: DebtStatus = newRemaining === 0 ? "paid" : "partial";
         const newPayment = {
           id: Date.now(),
           amount,
-          date: 'Just now',
+          date: "Just now",
           note,
         };
 
@@ -85,6 +85,6 @@ export const useAppStore = create<AppState>((set, get) => ({
       }),
     }));
 
-    get().showToast(isFullPayment ? 'Debt marked as paid.' : 'Payment recorded.');
+    get().showToast(isFullPayment ? "Debt marked as paid." : "Payment recorded.");
   },
 }));
