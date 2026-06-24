@@ -1,9 +1,9 @@
 # PRD: v0.2 Local Persistence (SQLite)
 
-**Status:** Ready for implementation  
+**Status:** In progress (PRs 1–2 merged; see [delivery plan](#12-delivery-plan))  
 **Milestone:** [v0.2 — Local persistence (SQLite)](https://github.com/VincentMukuna/owed/milestone/1)  
 **Baseline release:** [v0.1.0-mvp](https://github.com/VincentMukuna/owed/releases/tag/v0.1.0-mvp)  
-**Branch:** `feature/sqlite-setup` (first PR; see [delivery plan](#12-delivery-plan))
+**Next branch:** `feature/activity-repository` (PR 3 / issue [#3](https://github.com/VincentMukuna/owed/issues/3))
 
 This document captures product intent, architecture decisions, and implementation guidance for the persistence sprint. It is written for an implementing agent (or future contributor) who may not have prior chat context.
 
@@ -235,7 +235,7 @@ The v1 `src/features/debts/types.ts` shape was built for screens, not storage. *
 1. **Activities never update** — write `activity_events` rows when debts/payments are created.
 2. **`reset()` on launch** — remove; data loads from SQLite via React Query.
 3. **Two type files** — consolidate on `src/types/index.ts` for domain; add `src/features/debts/view-models.ts` (or `mappers/`) for UI assembly.
-4. **IDs** — use **TEXT UUID** (`crypto.randomUUID()`) to match `src/types/index.ts`, not `Date.now()` integers.
+4. **IDs** — use **TEXT UUID** via `createId()` in `src/lib/id.ts` (do not call `crypto.randomUUID()` directly — it is unreliable on React Native); not `Date.now()` integers.
 5. **Add-debt screen** — currently writes fake `addedDate: "Jun 24"` and `status: "active"`; form should submit `CreateDebtInput` only (person name, amount, due date, reason, reminder flags).
 
 ---
@@ -250,7 +250,7 @@ Aligned with [prd.md §9–10](./prd.md). **The database stores facts; the app d
 2. **Never store derived data** — no `initials`, `status`, `remaining_amount`, or pre-rendered activity copy.
 3. **ISO timestamps in, formatted strings out** — `TEXT` columns hold ISO 8601; human labels are computed in mappers.
 4. **INTEGER amounts** — store whole currency units (KES) as integers to avoid float drift.
-5. **UUID primary keys** — `TEXT` ids via `crypto.randomUUID()`; matches `src/types/index.ts`.
+5. **UUID primary keys** — `TEXT` ids via `createId()` (`src/lib/id.ts`); matches `src/types/index.ts`.
 6. **No `users` table** — single local user; settings live in AsyncStorage later. `people` are global on device.
 
 ### 7.2 Entity relationships
@@ -646,13 +646,13 @@ Continue [Conventional Commits](https://www.conventionalcommits.org/): `feat(db)
 
 Work is split into five PRs matching GitHub issues. Each PR should leave the app buildable.
 
-| PR | Branch | Issue | Scope | Done when |
-|----|--------|-------|-------|-----------|
-| 1 | `feature/sqlite-setup` | [#1](https://github.com/VincentMukuna/owed/issues/1) | `expo-sqlite`, **normalized schema** (§7), migration runner | DB file with empty `people`, `debts`, `payments`, `activity_events` tables |
-| 2 | `feature/debt-repository` | [#2](https://github.com/VincentMukuna/owed/issues/2) | Person + debt repos, mappers, view models, React Query hooks, wire screens | Add debt → kill app → relaunch → debt still there with correct derived fields |
-| 3 | `feature/activity-repository` | [#3](https://github.com/VincentMukuna/owed/issues/3) | Persist activities on create/payment; activity screen from DB | Activity feed updates and survives restart |
-| 4 | `feature/db-hydration` | [#4](https://github.com/VincentMukuna/owed/issues/4) | Remove `reset()`, loading states, query-driven startup | Cold start loads from DB; no sample seed |
-| 5 | `feature/remove-sample-data` | [#5](https://github.com/VincentMukuna/owed/issues/5) | Delete sample bootstrap, update README | Fresh install is empty; README says persistence shipped |
+| PR | Branch | Issue | Scope | Status |
+|----|--------|-------|-------|--------|
+| 1 | `feature/sqlite-setup` | [#1](https://github.com/VincentMukuna/owed/issues/1) | `expo-sqlite`, **normalized schema** (§7), migration runner | **Merged** ([#6](https://github.com/VincentMukuna/owed/pull/6)) |
+| 2 | `feature/debt-repository` | [#2](https://github.com/VincentMukuna/owed/issues/2) | Person + debt repos, mappers, view models, React Query hooks, wire screens | **Merged** ([#7](https://github.com/VincentMukuna/owed/pull/7)); also shipped onboarding AsyncStorage (see [§18](#18-agent-checklist-start-here)) |
+| 3 | `feature/activity-repository` | [#3](https://github.com/VincentMukuna/owed/issues/3) | Persist activities on create/payment; activity screen from DB | **Next** |
+| 4 | `feature/db-hydration` | [#4](https://github.com/VincentMukuna/owed/issues/4) | Remove `reset()`, loading states, query-driven startup | Pending |
+| 5 | `feature/remove-sample-data` | [#5](https://github.com/VincentMukuna/owed/issues/5) | Delete sample bootstrap, update README | Pending |
 
 **PR body template:** what changed, why this slice, manual test plan, `Closes #N`.
 
@@ -708,7 +708,7 @@ Run on a **physical device or simulator** with a dev build (SQLite needs native 
 
 - Consider **Drizzle** if migration count grows (see [§5.5](#55-data-access-raw-sql-not-drizzle))
 - `reminders` table + Expo Notifications
-- Persist settings / onboarding via `local-storage.ts`
+- Persist **settings** via `local-storage.ts` (onboarding completion is already persisted — see `src/features/onboarding/lib/onboarding-storage.ts`)
 - Edit / delete / archive UI wired to `archived_at`
 - `debt_overdue` activity generation (on-app-open or scheduled)
 - Export / backup
@@ -735,10 +735,24 @@ Status after payment comes from `computeDebtStatus`, not manual `partial` / `pai
 
 ## 18. Agent checklist (start here)
 
+**Current slice:** PR 3 — `feature/activity-repository` off `main`.
+
 1. Read this doc — especially [§7](#7-data-model-sqlite-v1--normalized) and [§6.3](#63-v1-ui-debt-to-shed-do-not-persist).
-2. Confirm branch: `feature/sqlite-setup` tracking `origin`.
+2. Branch from `main`. PRs 1–2 are merged; do not re-implement debt repos or screen wiring.
 3. Read Expo v56 `expo-sqlite` docs. Raw SQL only (§5.5). **Do not** mirror v1 denormalized columns.
-4. Use `src/types/index.ts` as domain source of truth; add view models for screens.
-5. Implement PR 1 only — normalized schema + migrations, no screen wiring yet.
-6. Remove `useAppStore.getState().reset()` in PR 4, not PR 1.
-7. Open PR against `main`; self-merge when issue acceptance criteria pass.
+4. Use `src/types/index.ts` for domain types; screens consume `src/features/debts/view-models.ts`.
+
+### Implementation notes (not obvious from code)
+
+| Topic | Detail |
+|-------|--------|
+| **UUIDs** | Always `createId()` from `src/lib/id.ts`. Bare `crypto.randomUUID()` throws on device. |
+| **Debt create** | `debtRepository.create` returns an assembled row after `INSERT` — do not re-fetch with `getById` (caused false save failures on device). |
+| **Activity feed** | `activity-screen.tsx` still imports `INITIAL_ACTIVITIES` from `sample-data.ts` until PR 3. |
+| **`reset()`** | `_layout.tsx` still calls `useUiStore.getState().reset()` on mount (toast-only). Remove in PR 4. |
+| **Onboarding** | Shipped early in PR 2 (`onboarding-storage.ts`, `storageKeys.onboardingComplete`). Do not redo. |
+| **Debt mutations** | `use-add-debt` / `use-record-payment` already invalidate `activityKeys.all` — wire repo writes in PR 3. |
+
+5. Implement PR 3 only — `activity-repository`, `use-activities`, activity screen from SQLite; insert events in debt create/payment paths.
+6. Remove `useUiStore.getState().reset()` in PR 4, not PR 3.
+7. Open PR against `main`; `Closes #3`.
