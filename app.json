@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "owed",
+    "name": "Owed",
     "slug": "owed",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -8,7 +8,8 @@
     "scheme": "owed",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.vincentmukuna.owed"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,11 +29,18 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#1A3A2A",
           "android": {
             "image": "./assets/images/splash-icon.png",
             "imageWidth": 76
           }
+        }
+      ],
+      [
+        "expo-notifications",
+        {
+          "icon": "./assets/images/icon.png",
+          "color": "#1A3A2A"
         }
       ]
     ],
