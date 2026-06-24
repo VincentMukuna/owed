@@ -2,13 +2,13 @@ import { View } from "react-native";
 
 import { StyleSheet } from "react-native-unistyles";
 
-import type { DebtStatus } from "@/features/debts/types";
+import type { CardDebtStatus } from "@/features/debts/view-models";
 
 import { Text } from "./text";
 
 type AvatarProps = {
   initials: string;
-  status: DebtStatus;
+  status: CardDebtStatus;
   size?: "sm" | "md" | "lg";
 };
 

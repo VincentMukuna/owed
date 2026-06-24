@@ -1,7 +1,7 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { TabScreen } from "@/components/navigation/tab-screen";
-import { useAppStore } from "@/features/debts/store/app-store";
+import { INITIAL_ACTIVITIES } from "@/features/debts/data/sample-data";
 import type { ActivityType } from "@/features/debts/types";
 
 const TYPE_CONFIG: Record<ActivityType, { bg: string; text: string; symbol: string }> = {
@@ -12,7 +12,7 @@ const TYPE_CONFIG: Record<ActivityType, { bg: string; text: string; symbol: stri
 };
 
 export function ActivityScreen() {
-  const activities = useAppStore((s) => s.activities);
+  const activities = INITIAL_ACTIVITIES;
 
   return (
     <TabScreen>

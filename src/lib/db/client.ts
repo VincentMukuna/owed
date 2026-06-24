@@ -15,7 +15,10 @@ async function initDb(): Promise<SQLiteDatabase> {
 
 export function getDb(): Promise<SQLiteDatabase> {
   if (!dbPromise) {
-    dbPromise = initDb();
+    dbPromise = initDb().catch((error) => {
+      dbPromise = null;
+      throw error;
+    });
   }
 
   return dbPromise;

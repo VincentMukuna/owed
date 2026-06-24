@@ -9,13 +9,13 @@ import { List } from "lucide-react-native";
 import { DebtCard } from "@/components/debts/debt-card";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
-import { useAppStore } from "@/features/debts/store/app-store";
-import type { DebtStatus } from "@/features/debts/types";
+import { useDebts } from "@/features/debts/hooks/use-debts";
+import type { CardDebtStatus } from "@/features/debts/view-models";
 import { selectionChange } from "@/lib/haptics";
 
 type FilterKey = "all" | "active" | "overdue" | "paid";
 
-const SORT_ORDER: Record<DebtStatus, number> = {
+const SORT_ORDER: Record<CardDebtStatus, number> = {
   overdue: 0,
   "due-soon": 1,
   partial: 2,
@@ -24,7 +24,7 @@ const SORT_ORDER: Record<DebtStatus, number> = {
 };
 
 export function DebtsScreen() {
-  const debts = useAppStore((s) => s.debts);
+  const { data: debts = [] } = useDebts();
   const [filter, setFilter] = useState<FilterKey>("all");
 
   const tabs = useMemo(

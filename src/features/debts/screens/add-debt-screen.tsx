@@ -1,18 +1,19 @@
-import { useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 
 import { ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 
-import { Stack, router, useLocalSearchParams } from "expo-router";
+import { router, useLocalSearchParams, useNavigation } from "expo-router";
 
 import { Bell } from "lucide-react-native";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { useAppStore } from "@/features/debts/store/app-store";
-import type { NewDebt } from "@/features/debts/types";
+import { useAddDebt } from "@/features/debts/hooks/use-add-debt";
+import { resolveQuickDate } from "@/features/debts/lib/format-dates";
+import type { CreateDebtInput } from "@/features/debts/view-models";
+import { completeOnboarding } from "@/features/onboarding/lib/onboarding-storage";
 import { selectionChange } from "@/lib/haptics";
 import { HOME_ROUTE } from "@/lib/navigation/routes";
-import { getInitials } from "@/lib/utils/formatters";
 
 const QUICK_DATES = ["Today", "Tomorrow", "Friday", "Next week"];
 
@@ -24,144 +25,161 @@ function exitAddDebt() {
   router.replace(HOME_ROUTE);
 }
 
+function resolveDueDate(quickDate: string | null, manualDate: string): string | null {
+  if (quickDate) {
+    return resolveQuickDate(quickDate);
+  }
+
+  const trimmed = manualDate.trim();
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+
+  return null;
+}
+
 export function AddDebtScreen() {
+  const navigation = useNavigation();
   const { from } = useLocalSearchParams<{ from?: string }>();
   const fromOnboarding = from === "onboarding";
-  const addDebt = useAppStore((s) => s.addDebt);
+  const addDebt = useAddDebt();
 
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
   const [dueDate, setDueDate] = useState("");
   const [reason, setReason] = useState("");
   const [reminder, setReminder] = useState(false);
-  const [quickDate, setQuickDate] = useState<string | null>(null);
+  const [quickDate, setQuickDate] = useState<string | null>("Today");
 
-  const canSave = name.trim().length > 0 && parseInt(amount, 10) > 0;
+  const parsedAmount = parseInt(amount, 10);
+  const resolvedDueDate = resolveDueDate(quickDate, dueDate);
+  const canSave = name.trim().length > 0 && parsedAmount > 0 && Boolean(resolvedDueDate);
 
-  const handleSave = () => {
-    if (!canSave) return;
+  const handleSave = useCallback(() => {
+    if (!canSave || !resolvedDueDate) return;
 
-    const payload: NewDebt = {
-      name: name.trim(),
-      initials: getInitials(name),
-      amount: parseInt(amount, 10),
-      remaining: parseInt(amount, 10),
-      dueDate: quickDate || dueDate || "—",
-      reason: reason.trim() || "—",
-      status: "active",
-      addedDate: "Jun 24",
-      reminder,
+    const payload: CreateDebtInput = {
+      personName: name.trim(),
+      originalAmount: parsedAmount,
+      dueDate: resolvedDueDate,
+      reason: reason.trim() || undefined,
+      reminderEnabled: reminder,
     };
 
-    addDebt(payload);
-    if (fromOnboarding) {
-      router.dismissTo(HOME_ROUTE);
-      return;
-    }
-    exitAddDebt();
-  };
+    addDebt.mutate(payload, {
+      onSuccess: async () => {
+        if (fromOnboarding) {
+          await completeOnboarding();
+          router.dismissTo(HOME_ROUTE);
+          return;
+        }
+        exitAddDebt();
+      },
+    });
+  }, [addDebt, canSave, fromOnboarding, name, parsedAmount, reason, reminder, resolvedDueDate]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <HeaderSaveButton
+          disabled={!canSave || addDebt.isPending}
+          label={addDebt.isPending ? "Saving…" : "Save"}
+          onPress={handleSave}
+        />
+      ),
+    });
+  }, [addDebt.isPending, canSave, handleSave, navigation]);
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          headerRight: () => (
-            <HeaderSaveButton disabled={!canSave} label="Save" onPress={handleSave} />
-          ),
-        }}
-      />
-      <ScrollView
-        contentContainerStyle={styles.form}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <Field label="Person">
+    <ScrollView
+      contentContainerStyle={styles.form}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <Field label="Person">
+        <TextInput
+          onChangeText={setName}
+          placeholder="Full name"
+          placeholderTextColor="#C8C8C0"
+          style={styles.input}
+          value={name}
+        />
+      </Field>
+
+      <Field label="Amount">
+        <View>
+          <Text style={styles.prefix}>KES</Text>
           <TextInput
-            onChangeText={setName}
-            placeholder="Full name"
-            placeholderTextColor="#C8C8C0"
-            style={styles.input}
-            value={name}
-          />
-        </Field>
-
-        <Field label="Amount">
-          <View>
-            <Text style={styles.prefix}>KES</Text>
-            <TextInput
-              keyboardType="number-pad"
-              onChangeText={setAmount}
-              placeholder="0"
-              placeholderTextColor="#DDDDD8"
-              style={[styles.input, styles.amountInput]}
-              value={amount}
-            />
-          </View>
-        </Field>
-
-        <Field label="Promised date">
-          <View style={styles.chips}>
-            {QUICK_DATES.map((label) => {
-              const selected = quickDate === label;
-              return (
-                <PressableScale
-                  key={label}
-                  onPress={() => {
-                    selectionChange();
-                    setQuickDate(label);
-                    setDueDate("");
-                  }}
-                  style={[styles.chip, selected && styles.chipSelected]}
-                >
-                  <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                    {label}
-                  </Text>
-                </PressableScale>
-              );
-            })}
-          </View>
-          <TextInput
-            onChangeText={(value) => {
-              setDueDate(value);
-              setQuickDate(null);
-            }}
-            placeholder="YYYY-MM-DD"
-            placeholderTextColor="#C8C8C0"
-            style={styles.input}
-            value={dueDate}
-          />
-        </Field>
-
-        <Field label="Reason">
-          <TextInput
-            onChangeText={setReason}
-            placeholder="e.g. Lunch, rent help, transport, emergency"
-            placeholderTextColor="#C8C8C0"
-            style={styles.input}
-            value={reason}
-          />
-        </Field>
-
-        <View style={styles.reminderRow}>
-          <View style={styles.reminderCopy}>
-            <Bell color="#8A8A82" size={16} strokeWidth={1.5} />
-            <View>
-              <Text style={styles.reminderTitle}>Remind me</Text>
-              <Text style={styles.reminderSub}>On the promised date</Text>
-            </View>
-          </View>
-          <Switch
-            onValueChange={(value) => {
-              selectionChange();
-              setReminder(value);
-            }}
-            thumbColor="#FFFFFF"
-            trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
-            value={reminder}
+            keyboardType="number-pad"
+            onChangeText={setAmount}
+            placeholder="0"
+            placeholderTextColor="#DDDDD8"
+            style={[styles.input, styles.amountInput]}
+            value={amount}
           />
         </View>
-      </ScrollView>
-    </>
+      </Field>
+
+      <Field label="Promised date">
+        <View style={styles.chips}>
+          {QUICK_DATES.map((label) => {
+            const selected = quickDate === label;
+            return (
+              <PressableScale
+                key={label}
+                onPress={() => {
+                  selectionChange();
+                  setQuickDate(label);
+                  setDueDate("");
+                }}
+                style={[styles.chip, selected && styles.chipSelected]}
+              >
+                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
+              </PressableScale>
+            );
+          })}
+        </View>
+        <TextInput
+          onChangeText={(value) => {
+            setDueDate(value);
+            setQuickDate(null);
+          }}
+          placeholder="YYYY-MM-DD"
+          placeholderTextColor="#C8C8C0"
+          style={styles.input}
+          value={dueDate}
+        />
+      </Field>
+
+      <Field label="Reason">
+        <TextInput
+          onChangeText={setReason}
+          placeholder="e.g. Lunch, rent help, transport, emergency"
+          placeholderTextColor="#C8C8C0"
+          style={styles.input}
+          value={reason}
+        />
+      </Field>
+
+      <View style={styles.reminderRow}>
+        <View style={styles.reminderCopy}>
+          <Bell color="#8A8A82" size={16} strokeWidth={1.5} />
+          <View>
+            <Text style={styles.reminderTitle}>Remind me</Text>
+            <Text style={styles.reminderSub}>On the promised date</Text>
+          </View>
+        </View>
+        <Switch
+          onValueChange={(value) => {
+            selectionChange();
+            setReminder(value);
+          }}
+          thumbColor="#FFFFFF"
+          trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
+          value={reminder}
+        />
+      </View>
+    </ScrollView>
   );
 }
 

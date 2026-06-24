@@ -9,8 +9,8 @@ import { SummaryStatCard } from "@/components/debts/summary-stat-card";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { IconButton } from "@/components/shared/icon-button";
-import { useAppStore } from "@/features/debts/store/app-store";
-import type { Debt } from "@/features/debts/types";
+import { useDebts } from "@/features/debts/hooks/use-debts";
+import type { DebtCardView } from "@/features/debts/view-models";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 function Section({
@@ -21,8 +21,8 @@ function Section({
 }: {
   title: string;
   titleColor?: string;
-  debts: Debt[];
-  onDebtPress: (debt: Debt) => void;
+  debts: DebtCardView[];
+  onDebtPress: (debt: DebtCardView) => void;
 }) {
   if (debts.length === 0) return null;
 
@@ -39,7 +39,7 @@ function Section({
 }
 
 export function HomeScreen() {
-  const debts = useAppStore((s) => s.debts);
+  const { data: debts = [] } = useDebts();
 
   const active = debts.filter((d) => d.status !== "paid");
   const totalOwed = active.reduce((sum, d) => sum + d.remaining, 0);
@@ -50,7 +50,7 @@ export function HomeScreen() {
     .reduce((sum, d) => sum + d.amount, 0);
   const activePartial = active.filter((d) => d.status === "active" || d.status === "partial");
 
-  const openDebt = (debt: Debt) => router.push(`/debt/${debt.id}`);
+  const openDebt = (debt: DebtCardView) => router.push(`/debt/${debt.id}`);
   const openAdd = () => router.push("/add-debt");
 
   return (
