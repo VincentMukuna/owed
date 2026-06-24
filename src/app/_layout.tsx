@@ -10,6 +10,7 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { Toast } from "@/components/shared/toast";
 import { useUiStore } from "@/features/debts/store/ui-store";
+import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
 import { queryClient } from "@/lib/api/query-client";
 import {
   APP_BACKGROUND,
@@ -20,6 +21,7 @@ import {
 export default function RootLayout() {
   useEffect(() => {
     useUiStore.getState().reset();
+    hydrateOnboardingState();
   }, []);
 
   return (
