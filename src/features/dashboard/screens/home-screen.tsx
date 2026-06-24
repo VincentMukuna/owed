@@ -1,18 +1,16 @@
-import { Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { Stack, router } from "expo-router";
+import { router } from "expo-router";
 
 import { Bell, Wallet } from "lucide-react-native";
 
 import { DebtCard } from "@/components/debts/debt-card";
 import { SummaryStatCard } from "@/components/debts/summary-stat-card";
-import { HomeHeaderRight } from "@/components/navigation/home-header-right";
-import { FabButton } from "@/components/shared/fab-button";
+import { TabScreen } from "@/components/navigation/tab-screen";
+import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { IconButton } from "@/components/shared/icon-button";
-import { PressableScale } from "@/components/shared/pressable-scale";
 import { useAppStore } from "@/features/debts/store/app-store";
 import type { Debt } from "@/features/debts/types";
-import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 function Section({
@@ -40,18 +38,6 @@ function Section({
   );
 }
 
-function HomeHeaderActions() {
-  if (Platform.OS === "ios") {
-    return <HomeHeaderRight />;
-  }
-
-  return (
-    <IconButton>
-      <Bell color="#4A4A42" size={16} strokeWidth={1.5} />
-    </IconButton>
-  );
-}
-
 export function HomeScreen() {
   const debts = useAppStore((s) => s.debts);
 
@@ -68,13 +54,14 @@ export function HomeScreen() {
   const openAdd = () => router.push("/add-debt");
 
   return (
-    <>
-      <Stack.Screen options={{ headerRight: () => <HomeHeaderActions /> }} />
-      <Stack.Title large>Home</Stack.Title>
-
-      <View collapsable={false} style={styles.screen}>
-        {debts.length === 0 ? (
-          <View style={styles.emptyBody}>
+    <TabScreen>
+      {debts.length === 0 ? (
+        <View style={styles.emptyBody}>
+          <View style={styles.emptyHeader}>
+            <Text style={styles.kicker}>Owed</Text>
+            <Text style={styles.pageTitle}>Home</Text>
+          </View>
+          <View style={styles.emptyContent}>
             <View style={styles.emptyIcon}>
               <Wallet color="#B8B8B0" size={24} strokeWidth={1.5} />
             </View>
@@ -82,21 +69,25 @@ export function HomeScreen() {
             <Text style={styles.emptyCopy}>
               {"Add the first amount someone owes you and we'll help you remember the details."}
             </Text>
-            <PressableScale onPress={openAdd} style={styles.emptyBtn}>
-              <Text style={styles.emptyBtnText}>Add debt</Text>
-            </PressableScale>
           </View>
-        ) : (
+          <FabButton onPress={openAdd} />
+        </View>
+      ) : (
+        <>
+          <View style={styles.header}>
+            <View>
+              <Text style={styles.kicker}>Good morning</Text>
+              <Text style={styles.pageTitleLg}>{"Here's what you're owed"}</Text>
+            </View>
+            <IconButton>
+              <Bell color="#4A4A42" size={16} strokeWidth={1.5} />
+            </IconButton>
+          </View>
+
           <ScrollView
-            contentContainerStyle={[
-              styles.scroll,
-              Platform.OS === "android" && styles.scrollWithFab,
-            ]}
+            contentContainerStyle={[styles.scroll, styles.scrollWithFab]}
             showsVerticalScrollIndicator={false}
           >
-            <Text style={styles.kicker}>Good morning</Text>
-            <Text style={styles.pageTitleLg}>{"Here's what you're owed"}</Text>
-
             <View style={styles.heroCard}>
               <View style={[styles.heroOrb, styles.heroOrbTop]} />
               <View style={[styles.heroOrb, styles.heroOrbBottom]} />
@@ -130,18 +121,22 @@ export function HomeScreen() {
             <Section title="Overdue" titleColor="#F87171" debts={overdue} onDebtPress={openDebt} />
             <Section title="Active" debts={activePartial} onDebtPress={openDebt} />
           </ScrollView>
-        )}
 
-        {Platform.OS === "android" && debts.length > 0 ? <FabButton onPress={openAdd} /> : null}
-      </View>
-    </>
+          <FabButton onPress={openAdd} />
+        </>
+      )}
+    </TabScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: APP_BACKGROUND,
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   kicker: {
     fontSize: 11,
@@ -150,12 +145,17 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
+  pageTitle: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#1A1A18",
+    marginTop: 4,
+  },
   pageTitleLg: {
     fontSize: 20,
     fontWeight: "700",
     color: "#1A1A18",
     marginTop: 2,
-    marginBottom: 20,
   },
   scroll: {
     paddingHorizontal: 20,
@@ -163,7 +163,7 @@ const styles = StyleSheet.create({
     gap: 20,
   },
   scrollWithFab: {
-    paddingBottom: 88,
+    paddingBottom: FAB_SCROLL_PADDING,
   },
   heroCard: {
     backgroundColor: "#1A3A2A",
@@ -233,10 +233,18 @@ const styles = StyleSheet.create({
   },
   emptyBody: {
     flex: 1,
+  },
+  emptyHeader: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 20,
+  },
+  emptyContent: {
+    flex: 1,
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 24,
-    paddingBottom: 40,
+    paddingBottom: FAB_SCROLL_PADDING,
   },
   emptyIcon: {
     width: 56,
@@ -259,17 +267,5 @@ const styles = StyleSheet.create({
     lineHeight: 22,
     marginTop: 6,
     maxWidth: 220,
-  },
-  emptyBtn: {
-    marginTop: 20,
-    backgroundColor: "#1A3A2A",
-    paddingHorizontal: 24,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  emptyBtnText: {
-    color: "#FFFFFF",
-    fontSize: 14,
-    fontWeight: "600",
   },
 });

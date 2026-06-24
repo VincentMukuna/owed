@@ -12,11 +12,6 @@ export const STACK_SCREEN_OPTIONS: NativeStackNavigationOptions = {
   headerBackButtonDisplayMode: "minimal",
 };
 
-export const TAB_STACK_SCREEN_OPTIONS: NativeStackNavigationOptions = {
-  ...STACK_SCREEN_OPTIONS,
-  headerLargeTitleEnabled: true,
-};
-
 export const MODAL_SCREEN_OPTIONS: NativeStackNavigationOptions = {
   ...STACK_SCREEN_OPTIONS,
   headerLargeTitleEnabled: false,

@@ -1,10 +1,8 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { Stack } from "expo-router";
-
+import { TabScreen } from "@/components/navigation/tab-screen";
 import { useAppStore } from "@/features/debts/store/app-store";
 import type { ActivityType } from "@/features/debts/types";
-import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
 
 const TYPE_CONFIG: Record<ActivityType, { bg: string; text: string; symbol: string }> = {
   payment: { bg: "#ECFDF5", text: "#059669", symbol: "↓" },
@@ -17,35 +15,42 @@ export function ActivityScreen() {
   const activities = useAppStore((s) => s.activities);
 
   return (
-    <>
-      <Stack.Title large>Activity</Stack.Title>
-      <View collapsable={false} style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {activities.map((activity) => {
-            const config = TYPE_CONFIG[activity.type];
-            return (
-              <View key={activity.id} style={styles.row}>
-                <View style={[styles.icon, { backgroundColor: config.bg }]}>
-                  <Text style={[styles.symbol, { color: config.text }]}>{config.symbol}</Text>
-                </View>
-                <View style={styles.copy}>
-                  <Text style={styles.text}>{activity.text}</Text>
-                  <Text style={styles.sub}>{activity.sub}</Text>
-                </View>
-                <Text style={styles.time}>{activity.time}</Text>
-              </View>
-            );
-          })}
-        </ScrollView>
+    <TabScreen>
+      <View style={styles.header}>
+        <Text style={styles.title}>Activity</Text>
       </View>
-    </>
+
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {activities.map((activity) => {
+          const config = TYPE_CONFIG[activity.type];
+          return (
+            <View key={activity.id} style={styles.row}>
+              <View style={[styles.icon, { backgroundColor: config.bg }]}>
+                <Text style={[styles.symbol, { color: config.text }]}>{config.symbol}</Text>
+              </View>
+              <View style={styles.copy}>
+                <Text style={styles.text}>{activity.text}</Text>
+                <Text style={styles.sub}>{activity.sub}</Text>
+              </View>
+              <Text style={styles.time}>{activity.time}</Text>
+            </View>
+          );
+        })}
+      </ScrollView>
+    </TabScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: APP_BACKGROUND,
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#1A1A18",
   },
   scroll: {
     paddingHorizontal: 20,

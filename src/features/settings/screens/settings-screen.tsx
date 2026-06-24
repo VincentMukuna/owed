@@ -1,10 +1,8 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
-import { Stack } from "expo-router";
-
 import { ChevronRight } from "lucide-react-native";
 
-import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
+import { TabScreen } from "@/components/navigation/tab-screen";
 
 const SECTIONS = [
   {
@@ -33,37 +31,44 @@ const SECTIONS = [
 
 export function SettingsScreen() {
   return (
-    <>
-      <Stack.Title large>Settings</Stack.Title>
-      <View collapsable={false} style={styles.screen}>
-        <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
-          {SECTIONS.map((section) => (
-            <View key={section.title} style={styles.section}>
-              <Text style={styles.sectionTitle}>{section.title}</Text>
-              <View style={styles.card}>
-                {section.items.map((item, index) => (
-                  <View key={item.label} style={[styles.row, index > 0 && styles.rowBorder]}>
-                    <Text style={styles.icon}>{item.icon}</Text>
-                    <Text style={styles.label}>{item.label}</Text>
-                    <View style={styles.valueWrap}>
-                      {item.value ? <Text style={styles.value}>{item.value}</Text> : null}
-                      <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
-                    </View>
-                  </View>
-                ))}
-              </View>
-            </View>
-          ))}
-        </ScrollView>
+    <TabScreen>
+      <View style={styles.header}>
+        <Text style={styles.title}>Settings</Text>
       </View>
-    </>
+
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        {SECTIONS.map((section) => (
+          <View key={section.title} style={styles.section}>
+            <Text style={styles.sectionTitle}>{section.title}</Text>
+            <View style={styles.card}>
+              {section.items.map((item, index) => (
+                <View key={item.label} style={[styles.row, index > 0 && styles.rowBorder]}>
+                  <Text style={styles.icon}>{item.icon}</Text>
+                  <Text style={styles.label}>{item.label}</Text>
+                  <View style={styles.valueWrap}>
+                    {item.value ? <Text style={styles.value}>{item.value}</Text> : null}
+                    <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                  </View>
+                </View>
+              ))}
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    </TabScreen>
   );
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    flex: 1,
-    backgroundColor: APP_BACKGROUND,
+  header: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+  },
+  title: {
+    fontSize: 28,
+    fontWeight: "700",
+    color: "#1A1A18",
   },
   scroll: {
     paddingHorizontal: 20,

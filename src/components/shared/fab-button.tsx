@@ -1,17 +1,32 @@
-import { StyleSheet } from "react-native";
+import { Platform, StyleSheet } from "react-native";
+
+import { router } from "expo-router";
 
 import { Plus } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 
+const TAB_BAR_HEIGHT = Platform.OS === "ios" ? 49 : 56;
+const FAB_GAP = 10;
+
 type FabButtonProps = {
-  onPress: () => void;
+  onPress?: () => void;
 };
 
-export function FabButton({ onPress }: FabButtonProps) {
+export function FabButton({ onPress = () => router.push("/add-debt") }: FabButtonProps) {
+  const insets = useSafeAreaInsets();
+  const bottom = TAB_BAR_HEIGHT + Math.max(insets.bottom, FAB_GAP) + FAB_GAP;
+
   return (
-    <PressableScale accessibilityRole="button" onPress={onPress} scaleTo={0.91} style={styles.fab}>
-      <Plus color="#FFFFFF" size={24} strokeWidth={2.5} />
+    <PressableScale
+      accessibilityLabel="Add debt"
+      accessibilityRole="button"
+      onPress={onPress}
+      scaleTo={0.91}
+      style={[styles.fab, Platform.OS === "ios" ? styles.fabIos : styles.fabAndroid, { bottom }]}
+    >
+      <Plus color="#FFFFFF" size={Platform.OS === "ios" ? 22 : 24} strokeWidth={2.5} />
     </PressableScale>
   );
 }
@@ -20,13 +35,9 @@ const styles = StyleSheet.create({
   fab: {
     position: "absolute",
     right: 20,
-    bottom: 88,
-    width: 56,
-    height: 56,
-    borderRadius: 16,
-    backgroundColor: "#1A3A2A",
     alignItems: "center",
     justifyContent: "center",
+    backgroundColor: "#1A3A2A",
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -34,4 +45,17 @@ const styles = StyleSheet.create({
     elevation: 6,
     zIndex: 10,
   },
+  fabIos: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+  },
+  fabAndroid: {
+    width: 56,
+    height: 56,
+    borderRadius: 16,
+  },
 });
+
+/** Extra scroll padding so list content clears the FAB. */
+export const FAB_SCROLL_PADDING = 88;
