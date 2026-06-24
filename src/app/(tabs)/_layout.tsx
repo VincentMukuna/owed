@@ -15,7 +15,7 @@ export default function TabLayout() {
       tabBarRespectsIMEInsets
       tintColor="#1A3A2A"
     >
-      <NativeTabs.Trigger contentStyle={{ backgroundColor: TAB_BACKGROUND }} name="index">
+      <NativeTabs.Trigger contentStyle={{ backgroundColor: TAB_BACKGROUND }} name="home">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "home", selected: "home_filled" }}

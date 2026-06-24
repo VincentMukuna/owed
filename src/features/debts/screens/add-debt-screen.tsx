@@ -11,6 +11,7 @@ import { PressableScale } from "@/components/shared/pressable-scale";
 import { useAppStore } from "@/features/debts/store/app-store";
 import type { NewDebt } from "@/features/debts/types";
 import { selectionChange } from "@/lib/haptics";
+import { HOME_ROUTE } from "@/lib/navigation/routes";
 import { getInitials } from "@/lib/utils/formatters";
 
 const QUICK_DATES = ["Today", "Tomorrow", "Friday", "Next week"];
@@ -20,7 +21,7 @@ function exitAddDebt() {
     router.back();
     return;
   }
-  router.replace("/(tabs)/index");
+  router.replace(HOME_ROUTE);
 }
 
 export function AddDebtScreen() {
@@ -54,7 +55,7 @@ export function AddDebtScreen() {
 
     addDebt(payload);
     if (fromOnboarding) {
-      router.replace("/(tabs)/index");
+      router.dismissTo(HOME_ROUTE);
       return;
     }
     exitAddDebt();

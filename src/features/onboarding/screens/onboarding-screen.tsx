@@ -17,6 +17,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { HOME_ROUTE } from "@/lib/navigation/routes";
 
 function PreviewDebtCard() {
   return (
@@ -92,7 +93,7 @@ export function OnboardingScreen() {
         >
           <Text style={styles.primaryBtnText}>Add first debt</Text>
         </PressableScale>
-        <PressableScale onPress={() => router.replace("/(tabs)/index")} style={styles.ghostBtn}>
+        <PressableScale onPress={() => router.replace(HOME_ROUTE)} style={styles.ghostBtn}>
           <Text style={styles.ghostBtnText}>Explore app</Text>
         </PressableScale>
       </LinearGradient>
