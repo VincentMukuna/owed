@@ -1,0 +1,139 @@
+import { View } from 'react-native';
+import { StyleSheet } from 'react-native-unistyles';
+
+import { Avatar } from '@/components/ui/Avatar';
+import { Badge } from '@/components/ui/Badge';
+import { Text } from '@/components/ui/Text';
+import { PressableScale } from '@/components/shared/PressableScale';
+import type { Debt } from '@/features/debts/types';
+import { formatCurrency } from '@/lib/utils/formatters';
+
+type DebtCardProps = {
+  debt: Debt;
+  onPress: () => void;
+};
+
+export function DebtCard({ debt, onPress }: DebtCardProps) {
+  const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
+
+  return (
+    <PressableScale onPress={onPress} style={styles.card}>
+      <View style={styles.row}>
+        <Avatar initials={debt.initials} status={debt.status} />
+        <View style={styles.body}>
+          <View style={styles.topRow}>
+            <View style={styles.meta}>
+              <Text style={styles.name}>{debt.name}</Text>
+              <Text style={styles.reason} numberOfLines={1}>
+                {debt.reason}
+              </Text>
+            </View>
+            <View style={styles.amountCol}>
+              <Text style={styles.amount}>{formatCurrency(debt.remaining)}</Text>
+              <Text style={styles.dueDate}>{debt.dueDate}</Text>
+            </View>
+          </View>
+
+          <View style={styles.footer}>
+            <Badge status={debt.status} />
+            {debt.status === 'partial' ? (
+              <View style={styles.progressRow}>
+                <View style={styles.progressTrack}>
+                  <View style={[styles.progressFill, { width: `${pct}%` }]} />
+                </View>
+                <Text style={styles.progressLabel}>{Math.round(pct)}%</Text>
+              </View>
+            ) : null}
+          </View>
+        </View>
+      </View>
+    </PressableScale>
+  );
+}
+
+const styles = StyleSheet.create((theme) => ({
+  card: {
+    backgroundColor: theme.colors.card,
+    borderRadius: theme.radius.lg,
+    padding: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    gap: 12,
+  },
+  body: {
+    flex: 1,
+    minWidth: 0,
+  },
+  topRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    gap: 8,
+  },
+  meta: {
+    flex: 1,
+    minWidth: 0,
+  },
+  name: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: theme.colors.text,
+    lineHeight: 18,
+  },
+  reason: {
+    fontSize: 12,
+    color: theme.colors.muted,
+    marginTop: 2,
+  },
+  amountCol: {
+    alignItems: 'flex-end',
+    flexShrink: 0,
+  },
+  amount: {
+    fontSize: 14,
+    fontWeight: '700',
+    color: theme.colors.text,
+    fontVariant: ['tabular-nums'],
+  },
+  dueDate: {
+    fontSize: 12,
+    color: theme.colors.muted,
+    marginTop: 2,
+  },
+  footer: {
+    marginTop: 12,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  progressRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+  },
+  progressTrack: {
+    width: 64,
+    height: 4,
+    backgroundColor: '#F1F5F9',
+    borderRadius: 999,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#818CF8',
+    borderRadius: 999,
+  },
+  progressLabel: {
+    fontSize: 10,
+    fontWeight: '500',
+    color: theme.colors.muted,
+  },
+}));
