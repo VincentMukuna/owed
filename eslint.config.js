@@ -38,6 +38,12 @@ module.exports = defineConfig([
     },
   },
   {
+    files: ["src/lib/db/migrations/[0-9]*.ts"],
+    rules: {
+      "check-file/filename-naming-convention": "off",
+    },
+  },
+  {
     ignores: ["dist/*", ".expo/*", "node_modules/*", "ios/*", "android/*"],
   },
 ]);
