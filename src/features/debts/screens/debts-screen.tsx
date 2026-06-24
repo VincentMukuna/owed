@@ -89,7 +89,7 @@ export function DebtsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: 112 + insets.bottom }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: 88 }]}
         showsVerticalScrollIndicator={false}
       >
         {sorted.length === 0 ? (

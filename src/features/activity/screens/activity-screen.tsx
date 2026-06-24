@@ -24,7 +24,7 @@ export function ActivityScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: 112 + insets.bottom }]}
+        contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
         {activities.map((activity) => {
@@ -60,6 +60,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingHorizontal: 20,
+    paddingBottom: 24,
   },
   row: {
     flexDirection: "row",

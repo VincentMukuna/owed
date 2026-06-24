@@ -40,7 +40,7 @@ export function SettingsScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: 112 + insets.bottom }]}
+        contentContainerStyle={styles.scroll}
         showsVerticalScrollIndicator={false}
       >
         {SECTIONS.map((section) => (
@@ -78,6 +78,7 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingHorizontal: 20,
+    paddingBottom: 24,
     gap: 20,
   },
   section: {

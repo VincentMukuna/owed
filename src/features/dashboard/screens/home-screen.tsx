@@ -92,7 +92,7 @@ export function HomeScreen() {
       </View>
 
       <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: 112 + insets.bottom }]}
+        contentContainerStyle={[styles.scroll, { paddingBottom: 88 }]}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.heroCard}>

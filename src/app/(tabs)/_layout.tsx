@@ -1,25 +1,62 @@
-import { Tabs } from "expo-router";
+import { NativeTabs } from "expo-router/unstable-native-tabs";
 
-import { OwedTabBar, type TabBarProps } from "@/components/navigation/owed-tab-bar";
+const TAB_BACKGROUND = "#F7F5F1";
 
 export default function TabLayout() {
   return (
-    <Tabs
-      screenOptions={{
-        headerShown: false,
-        sceneStyle: { backgroundColor: "#F7F5F1" },
+    <NativeTabs
+      backgroundColor={TAB_BACKGROUND}
+      iconColor={{ default: "#C0C0B8", selected: "#1A3A2A" }}
+      labelStyle={{
+        default: { color: "#C0C0B8", fontSize: 10, fontWeight: "700" },
+        selected: { color: "#1A3A2A", fontSize: 10, fontWeight: "700" },
       }}
-      tabBar={(props) => (
-        <OwedTabBar
-          navigation={props.navigation as TabBarProps["navigation"]}
-          state={props.state}
-        />
-      )}
+      tintColor="#1A3A2A"
     >
-      <Tabs.Screen name="index" options={{ title: "Home" }} />
-      <Tabs.Screen name="debts" options={{ title: "Debts" }} />
-      <Tabs.Screen name="activity" options={{ title: "Activity" }} />
-      <Tabs.Screen name="settings" options={{ title: "Settings" }} />
-    </Tabs>
+      <NativeTabs.Trigger
+        contentStyle={{ backgroundColor: TAB_BACKGROUND }}
+        disableTransparentOnScrollEdge
+        name="index"
+      >
+        <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          md={{ default: "home", selected: "home_filled" }}
+          sf={{ default: "house", selected: "house.fill" }}
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger
+        contentStyle={{ backgroundColor: TAB_BACKGROUND }}
+        disableTransparentOnScrollEdge
+        name="debts"
+      >
+        <NativeTabs.Trigger.Label>Debts</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          md={{ default: "list", selected: "list" }}
+          sf={{ default: "list.bullet", selected: "list.bullet" }}
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger
+        contentStyle={{ backgroundColor: TAB_BACKGROUND }}
+        disableTransparentOnScrollEdge
+        name="activity"
+      >
+        <NativeTabs.Trigger.Label>Activity</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          md={{ default: "history", selected: "history" }}
+          sf={{ default: "clock", selected: "clock.fill" }}
+        />
+      </NativeTabs.Trigger>
+      <NativeTabs.Trigger
+        contentStyle={{ backgroundColor: TAB_BACKGROUND }}
+        disableTransparentOnScrollEdge
+        name="settings"
+      >
+        <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
+        <NativeTabs.Trigger.Icon
+          md={{ default: "settings", selected: "settings" }}
+          sf={{ default: "gearshape", selected: "gearshape.fill" }}
+        />
+      </NativeTabs.Trigger>
+    </NativeTabs>
   );
 }
