@@ -1,18 +1,17 @@
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { TabScreen } from "@/components/navigation/tab-screen";
-import { INITIAL_ACTIVITIES } from "@/features/debts/data/sample-data";
-import type { ActivityType } from "@/features/debts/types";
+import { useActivities } from "@/features/debts/hooks/use-activities";
+import type { ActivityView } from "@/features/debts/view-models";
 
-const TYPE_CONFIG: Record<ActivityType, { bg: string; text: string; symbol: string }> = {
+const TYPE_CONFIG: Record<ActivityView["type"], { bg: string; text: string; symbol: string }> = {
   payment: { bg: "#ECFDF5", text: "#059669", symbol: "↓" },
   add: { bg: "#F1F5F9", text: "#64748B", symbol: "+" },
-  overdue: { bg: "#FEF2F2", text: "#EF4444", symbol: "!" },
   paid: { bg: "#ECFDF5", text: "#059669", symbol: "✓" },
 };
 
 export function ActivityScreen() {
-  const activities = INITIAL_ACTIVITIES;
+  const { data: activities = [] } = useActivities();
 
   return (
     <TabScreen>

@@ -59,6 +59,19 @@ export interface Reminder {
   updatedAt: string;
 }
 
+export type ActivityEventType = "debt_created" | "payment_recorded" | "debt_paid";
+
+export interface ActivityEvent {
+  id: string;
+  type: ActivityEventType;
+  debtId: string;
+  paymentId?: string;
+  personId: string;
+  amount?: number;
+  occurredAt: string;
+  createdAt: string;
+}
+
 export interface ActivityItem {
   id: string;
   type: "payment" | "add" | "overdue" | "paid" | "update";
