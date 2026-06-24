@@ -1,56 +1,71 @@
-# Welcome to your Expo app 👋
+# Owed
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+A mobile-first personal credit tracker for informal debts — who owes you, how much, when they promised to pay, and what it was for.
 
-## Get started
+Owed is a private memory and follow-up tool, not a lending platform. It helps you stay clear on money owed without digging through chats or relying on memory.
 
-1. Install dependencies
+## Stack
 
-   ```bash
-   npm install
-   ```
+- [Expo SDK 56](https://docs.expo.dev/) + [Expo Router](https://docs.expo.dev/router/introduction/) (file-based routing)
+- React Native 0.85, React 19, TypeScript
+- [Unistyles](https://www.unistyl.es/) for theming
+- [Zustand](https://github.com/pmndrs/zustand) for client state (in-memory MVP)
+- [TanStack Query](https://tanstack.com/query), React Hook Form, Zod
 
-2. Start the app
+## Getting started
 
-   ```bash
-   npx expo start
-   ```
-
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
-
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
-
-## Get a fresh project
-
-When you're ready, run:
+**Requirements:** Node.js, npm, and Xcode (iOS) or Android Studio (Android) for native builds.
 
 ```bash
-npm run reset-project
+npm install
+npm start
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+From the Expo dev server you can open a development build, iOS simulator, Android emulator, or web.
 
-### Other setup steps
+Native runs:
 
-- To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
-- If you'd like to set up unit testing, follow our guide on ["Unit Testing with Jest"](https://docs.expo.dev/develop/unit-testing/)
-- Learn more about the TypeScript setup in this template in our guide on ["Using TypeScript"](https://docs.expo.dev/guides/typescript/)
+```bash
+npm run ios
+npm run android
+```
 
-## Learn more
+## Scripts
 
-To learn more about developing your project with Expo, look at the following resources:
+| Command | Description |
+| --- | --- |
+| `npm start` | Start the Expo dev server |
+| `npm run ios` | Run on iOS device or simulator |
+| `npm run android` | Run on Android device or emulator |
+| `npm run web` | Start for web |
+| `npm run lint` | ESLint (includes Prettier rules) |
+| `npm run lint:fix` | ESLint with auto-fix |
+| `npm run format` | Format `src/` with Prettier |
+| `npm run format:check` | Check formatting in `src/` |
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## Project structure
 
-## Join the community
+```
+src/
+  app/              # Expo Router routes (tabs, modals, dynamic debt/[id])
+  components/       # Shared UI (ui/, shared/, debts/, navigation/)
+  features/         # Screen logic by domain (dashboard, debts, activity, …)
+  lib/              # API client, storage helpers, utilities
+  styles/           # Unistyles themes and design tokens
+  hooks/            # Shared hooks
+  constants/        # App config
+docs/               # PRD and design brief
+```
 
-Join our community of developers creating universal apps.
+Source files use **kebab-case** naming. Expo Router specials (`_layout.tsx`, `[id].tsx`) are excluded from filename lint rules.
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Documentation
+
+Product and design specs live in [`docs/`](./docs/):
+
+- [PRD](./docs/prd.md) — requirements, data model, MVP scope
+- [Design brief](./docs/design-brief.md) — visual direction and screen specs
+
+## MVP status
+
+The current build is an MVP with sample data and in-memory state that resets on launch. Core flows include onboarding, home summary, debt list and detail, add debt, activity feed, and settings.
