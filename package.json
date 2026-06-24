@@ -44,10 +44,12 @@
     "zustand": "^5.0.14"
   },
   "devDependencies": {
+    "@trivago/prettier-plugin-sort-imports": "^6.0.2",
     "@types/react": "~19.2.2",
     "eslint": "^9.39.4",
     "eslint-config-expo": "~56.0.4",
     "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-check-file": "^3.3.1",
     "eslint-plugin-prettier": "^5.5.6",
     "prettier": "^3.8.4",
     "typescript": "~6.0.3"
@@ -60,8 +62,8 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "lint:fix": "expo lint --fix",
-    "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format": "prettier src/ --write",
+    "format:check": "prettier src/ --check"
   },
   "private": true
 }
