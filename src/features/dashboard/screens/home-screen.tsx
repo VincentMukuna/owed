@@ -39,7 +39,11 @@ function Section({
 }
 
 export function HomeScreen() {
-  const { data: debts = [] } = useDebts();
+  const { data: debts = [], isPending } = useDebts();
+
+  if (isPending) {
+    return null;
+  }
 
   const active = debts.filter((d) => d.status !== "paid");
   const totalOwed = active.reduce((sum, d) => sum + d.remaining, 0);
