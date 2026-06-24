@@ -1,17 +1,19 @@
-import { useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 
 import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
-import { Stack, router, useLocalSearchParams } from "expo-router";
+import { Stack, router, useLocalSearchParams, useNavigation } from "expo-router";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
-import { useAppStore } from "@/features/debts/store/app-store";
+import { useDebt } from "@/features/debts/hooks/use-debt";
+import { useRecordPayment } from "@/features/debts/hooks/use-record-payment";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 export function RecordPaymentScreen() {
+  const navigation = useNavigation();
   const { debtId } = useLocalSearchParams<{ debtId: string }>();
-  const debt = useAppStore((s) => s.getDebt(Number(debtId)));
-  const addPayment = useAppStore((s) => s.addPayment);
+  const { data: debt, isPending } = useDebt(debtId);
+  const recordPayment = useRecordPayment();
 
   const [payAmount, setPayAmount] = useState("");
   const [payNote, setPayNote] = useState("");
@@ -19,11 +21,41 @@ export function RecordPaymentScreen() {
   const parsedAmount = parseInt(payAmount, 10);
   const canSave = Boolean(debt) && parsedAmount > 0;
 
-  const handleSave = () => {
-    if (!debt || !canSave) return;
-    addPayment(debt.id, parsedAmount, payNote);
-    router.back();
-  };
+  const handleSave = useCallback(() => {
+    if (!debt || !canSave || !debtId) return;
+
+    recordPayment.mutate(
+      {
+        debtId,
+        input: {
+          amount: parsedAmount,
+          note: payNote.trim() || undefined,
+        },
+        remainingBeforePayment: debt.remaining,
+      },
+      {
+        onSuccess: () => {
+          router.back();
+        },
+      },
+    );
+  }, [canSave, debt, debtId, parsedAmount, payNote, recordPayment]);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <HeaderSaveButton
+          disabled={!canSave || recordPayment.isPending}
+          label={recordPayment.isPending ? "Saving…" : "Save"}
+          onPress={handleSave}
+        />
+      ),
+    });
+  }, [canSave, handleSave, navigation, recordPayment.isPending]);
+
+  if (isPending) {
+    return null;
+  }
 
   if (!debt) {
     return (
@@ -37,52 +69,43 @@ export function RecordPaymentScreen() {
   }
 
   return (
-    <>
-      <Stack.Screen
-        options={{
-          headerRight: () => (
-            <HeaderSaveButton disabled={!canSave} label="Save" onPress={handleSave} />
-          ),
-        }}
-      />
-      <ScrollView
-        contentContainerStyle={styles.form}
-        keyboardShouldPersistTaps="handled"
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.field}>
-          <Text style={styles.label}>Amount paid</Text>
-          <View>
-            <Text style={styles.prefix}>KES</Text>
-            <TextInput
-              autoFocus
-              keyboardType="number-pad"
-              onChangeText={setPayAmount}
-              placeholder="0"
-              placeholderTextColor="#DDDDD8"
-              style={[styles.input, styles.amountInput]}
-              value={payAmount}
-            />
-          </View>
-          <Pressable onPress={() => setPayAmount(String(debt.remaining))}>
-            <Text style={styles.fullAmountLink}>
-              Mark full remaining ({formatCurrency(debt.remaining)})
-            </Text>
-          </Pressable>
-        </View>
-
-        <View style={styles.field}>
-          <Text style={styles.label}>Note (optional)</Text>
+    <ScrollView
+      contentContainerStyle={styles.form}
+      keyboardShouldPersistTaps="handled"
+      showsVerticalScrollIndicator={false}
+    >
+      <View style={styles.field}>
+        <Text style={styles.label}>Amount paid</Text>
+        <View>
+          <Text style={styles.prefix}>KES</Text>
           <TextInput
-            onChangeText={setPayNote}
-            placeholder="e.g. M-Pesa, cash, bank transfer"
-            placeholderTextColor="#C8C8C0"
-            style={styles.input}
-            value={payNote}
+            autoFocus
+            keyboardType="number-pad"
+            onChangeText={setPayAmount}
+            placeholder="0"
+            placeholderTextColor="#DDDDD8"
+            style={[styles.input, styles.amountInput]}
+            value={payAmount}
           />
         </View>
-      </ScrollView>
-    </>
+        <Pressable onPress={() => setPayAmount(String(debt.remaining))}>
+          <Text style={styles.fullAmountLink}>
+            Mark full remaining ({formatCurrency(debt.remaining)})
+          </Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.field}>
+        <Text style={styles.label}>Note (optional)</Text>
+        <TextInput
+          onChangeText={setPayNote}
+          placeholder="e.g. M-Pesa, cash, bank transfer"
+          placeholderTextColor="#C8C8C0"
+          style={styles.input}
+          value={payNote}
+        />
+      </View>
+    </ScrollView>
   );
 }
 

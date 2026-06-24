@@ -2,11 +2,11 @@ import { View } from "react-native";
 
 import { StyleSheet } from "react-native-unistyles";
 
-import type { DebtStatus } from "@/features/debts/types";
+import type { CardDebtStatus } from "@/features/debts/view-models";
 
 import { Text } from "./text";
 
-const STATUS_LABELS: Record<DebtStatus, string> = {
+const STATUS_LABELS: Record<CardDebtStatus, string> = {
   active: "Active",
   "due-soon": "Due soon",
   overdue: "Overdue",
@@ -15,7 +15,7 @@ const STATUS_LABELS: Record<DebtStatus, string> = {
 };
 
 type BadgeProps = {
-  status: DebtStatus;
+  status: CardDebtStatus;
 };
 
 export function Badge({ status }: BadgeProps) {

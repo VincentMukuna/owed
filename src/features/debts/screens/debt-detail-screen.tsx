@@ -11,19 +11,23 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Badge } from "@/components/ui/badge";
-import { useAppStore } from "@/features/debts/store/app-store";
-import type { Debt } from "@/features/debts/types";
+import { useDebt } from "@/features/debts/hooks/use-debt";
+import type { DebtDetailView } from "@/features/debts/view-models";
 import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
 type DebtDetailScreenProps = {
-  debtId: number;
+  debtId: string;
 };
 
 export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   const insets = useSafeAreaInsets();
-  const debt = useAppStore((s) => s.getDebt(debtId));
+  const { data: debt, isPending } = useDebt(debtId);
   const [copied, setCopied] = useState(false);
+
+  if (isPending) {
+    return null;
+  }
 
   if (!debt) {
     return (
@@ -133,7 +137,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   );
 }
 
-function ActiveSummary({ debt, pct }: { debt: Debt; pct: number }) {
+function ActiveSummary({ debt, pct }: { debt: DebtDetailView; pct: number }) {
   return (
     <View style={styles.summaryCard}>
       <Text style={styles.summaryHint}>Amount remaining</Text>
@@ -163,7 +167,7 @@ function ActiveSummary({ debt, pct }: { debt: Debt; pct: number }) {
   );
 }
 
-function PaidSummary({ debt, firstName }: { debt: Debt; firstName: string }) {
+function PaidSummary({ debt, firstName }: { debt: DebtDetailView; firstName: string }) {
   const lastPayment = debt.payments[debt.payments.length - 1];
 
   return (

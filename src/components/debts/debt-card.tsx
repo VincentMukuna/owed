@@ -6,11 +6,11 @@ import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Text } from "@/components/ui/text";
-import type { Debt } from "@/features/debts/types";
+import type { DebtCardView } from "@/features/debts/view-models";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 type DebtCardProps = {
-  debt: Debt;
+  debt: DebtCardView;
   onPress: () => void;
 };
 

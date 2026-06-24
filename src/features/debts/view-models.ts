@@ -1,0 +1,44 @@
+import type { DebtStatus } from "@/types";
+
+export type { DebtStatus };
+
+export type CardDebtStatus = Exclude<DebtStatus, "archived">;
+
+export type PaymentView = {
+  id: string;
+  amount: number;
+  date: string;
+  note: string;
+};
+
+export type DebtCardView = {
+  id: string;
+  name: string;
+  initials: string;
+  amount: number;
+  remaining: number;
+  dueDate: string;
+  reason: string;
+  status: CardDebtStatus;
+  addedDate: string;
+  payments: PaymentView[];
+  reminder: boolean;
+};
+
+export type DebtDetailView = DebtCardView;
+
+export type CreateDebtInput = {
+  personName: string;
+  originalAmount: number;
+  dueDate: string;
+  reason?: string;
+  reminderEnabled: boolean;
+  reminderTime?: string;
+  currency?: string;
+};
+
+export type RecordPaymentInput = {
+  amount: number;
+  paidAt?: string;
+  note?: string;
+};

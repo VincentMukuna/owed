@@ -5,7 +5,7 @@ import { StyleSheet, Text, View } from "react-native";
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
-import { useAppStore } from "@/features/debts/store/app-store";
+import { useUiStore } from "@/features/debts/store/ui-store";
 
 type ToastProps = {
   bottomOffset?: number;
@@ -13,10 +13,10 @@ type ToastProps = {
 
 export function Toast({ bottomOffset = 90 }: ToastProps) {
   const insets = useSafeAreaInsets();
-  const toast = useAppStore((s) => s.toast);
+  const toast = useUiStore((s) => s.toast);
 
   useEffect(() => {
-    return () => useAppStore.getState().clearToast();
+    return () => useUiStore.getState().clearToast();
   }, []);
 
   if (!toast) return null;

@@ -1,6 +1,36 @@
-import type { Activity, Debt } from "@/features/debts/types";
+import type { ActivityType } from "@/features/debts/types";
+import type { CardDebtStatus } from "@/features/debts/view-models";
 
-export const INITIAL_DEBTS: Debt[] = [
+type SampleDebtPayment = {
+  id: number;
+  amount: number;
+  date: string;
+  note: string;
+};
+
+type SampleDebt = {
+  id: number;
+  name: string;
+  initials: string;
+  amount: number;
+  remaining: number;
+  dueDate: string;
+  reason: string;
+  status: CardDebtStatus;
+  addedDate: string;
+  payments: SampleDebtPayment[];
+  reminder: boolean;
+};
+
+type Activity = {
+  id: number;
+  text: string;
+  sub: string;
+  time: string;
+  type: ActivityType;
+};
+
+export const INITIAL_DEBTS: SampleDebt[] = [
   {
     id: 1,
     name: "Brian Mwangi",
