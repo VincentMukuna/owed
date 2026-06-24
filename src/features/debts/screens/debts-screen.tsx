@@ -24,7 +24,7 @@ const SORT_ORDER: Record<CardDebtStatus, number> = {
 };
 
 export function DebtsScreen() {
-  const { data: debts = [] } = useDebts();
+  const { data: debts = [], isPending } = useDebts();
   const [filter, setFilter] = useState<FilterKey>("all");
 
   const tabs = useMemo(
@@ -48,6 +48,10 @@ export function DebtsScreen() {
     ],
     [debts],
   );
+
+  if (isPending) {
+    return null;
+  }
 
   const filtered = debts.filter((debt) => {
     if (filter === "all") return true;
