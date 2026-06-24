@@ -1,7 +1,7 @@
 # PRD: v0.2 Local Persistence (SQLite)
 
-**Status:** In progress (PRs 1–2 merged; see [delivery plan](#12-delivery-plan))  
-**Milestone:** [v0.2 — Local persistence (SQLite)](https://github.com/VincentMukuna/owed/milestone/1)  
+**Status:** Shipped (v0.2 on `main`)  
+**Milestone:** [v0.2 — Local persistence (SQLite)](https://github.com/VincentMukuna/owed/milestone/1) — complete  
 **Baseline release:** [v0.1.0-mvp](https://github.com/VincentMukuna/owed/releases/tag/v0.1.0-mvp)  
 **Next branch:** `feature/activity-repository` (PR 3 / issue [#3](https://github.com/VincentMukuna/owed/issues/3))
 
@@ -649,10 +649,12 @@ Work is split into five PRs matching GitHub issues. Each PR should leave the app
 | PR | Branch | Issue | Scope | Status |
 |----|--------|-------|-------|--------|
 | 1 | `feature/sqlite-setup` | [#1](https://github.com/VincentMukuna/owed/issues/1) | `expo-sqlite`, **normalized schema** (§7), migration runner | **Merged** ([#6](https://github.com/VincentMukuna/owed/pull/6)) |
-| 2 | `feature/debt-repository` | [#2](https://github.com/VincentMukuna/owed/issues/2) | Person + debt repos, mappers, view models, React Query hooks, wire screens | **Merged** ([#7](https://github.com/VincentMukuna/owed/pull/7)); also shipped onboarding AsyncStorage (see [§18](#18-agent-checklist-start-here)) |
-| 3 | `feature/activity-repository` | [#3](https://github.com/VincentMukuna/owed/issues/3) | Persist activities on create/payment; activity screen from DB | **Next** |
-| 4 | `feature/db-hydration` | [#4](https://github.com/VincentMukuna/owed/issues/4) | Remove `reset()`, loading states, query-driven startup | Pending |
-| 5 | `feature/remove-sample-data` | [#5](https://github.com/VincentMukuna/owed/issues/5) | Delete sample bootstrap, update README | Pending |
+| 2 | `feature/debt-repository` | [#2](https://github.com/VincentMukuna/owed/issues/2) | Person + debt repos, mappers, view models, React Query hooks, wire screens | **Merged** ([#7](https://github.com/VincentMukuna/owed/pull/7)) |
+| 3 | `feature/activity-repository` | [#3](https://github.com/VincentMukuna/owed/issues/3) | Persist activities on create/payment; activity screen from DB | **Merged** ([#8](https://github.com/VincentMukuna/owed/pull/8)) |
+| 4 | `feature/db-hydration` | [#4](https://github.com/VincentMukuna/owed/issues/4) | Remove `reset()`, loading states, query-driven startup | **Merged** ([#9](https://github.com/VincentMukuna/owed/pull/9)) |
+| 5 | `feature/remove-sample-data` | [#5](https://github.com/VincentMukuna/owed/issues/5) | Delete sample bootstrap, update README | **Merged** ([#10](https://github.com/VincentMukuna/owed/pull/10)) |
+
+**Milestone v0.2 complete.** Feature branches deleted; tag `v0.2.0` when ready to release.
 
 **PR body template:** what changed, why this slice, manual test plan, `Closes #N`.
 
@@ -660,19 +662,19 @@ Work is split into five PRs matching GitHub issues. Each PR should leave the app
 
 ## 13. Acceptance criteria (milestone complete)
 
-- [ ] Fresh install: no debts, no activities, real empty states
-- [ ] Same person name on second debt reuses `people` row (find-or-create)
-- [ ] `initials` and `status` correct on list without being stored in DB
-- [ ] `remaining` updates after payment via sum of `payments`, not a stored column
-- [ ] Add debt with all required fields → appears on home, debts list, and detail
-- [ ] Record partial payment → remaining and status update everywhere
-- [ ] Record full payment → status `paid`, correct toast
-- [ ] Activity feed shows add/payment events in sensible order
-- [ ] Force-quit app (swipe away) → relaunch → all data intact
-- [ ] No imports of `INITIAL_DEBTS` / `INITIAL_ACTIVITIES` in runtime code
-- [ ] No `useAppStore` debt/activity usage in screens
-- [ ] `npm run lint` passes
-- [ ] iOS dev build runs (`npx expo run:ios`)
+- [x] Fresh install: no debts, no activities, real empty states
+- [x] Same person name on second debt reuses `people` row (find-or-create)
+- [x] `initials` and `status` correct on list without being stored in DB
+- [x] `remaining` updates after payment via sum of `payments`, not a stored column
+- [x] Add debt with all required fields → appears on home, debts list, and detail
+- [x] Record partial payment → remaining and status update everywhere
+- [x] Record full payment → status `paid`, correct toast
+- [x] Activity feed shows add/payment events in sensible order
+- [x] Force-quit app (swipe away) → relaunch → all data intact
+- [x] No imports of `INITIAL_DEBTS` / `INITIAL_ACTIVITIES` in runtime code
+- [x] No `useAppStore` debt/activity usage in screens
+- [x] `npm run lint` passes
+- [x] iOS dev build runs (`npx expo run:ios`)
 
 ---
 
@@ -733,26 +735,20 @@ Status after payment comes from `computeDebtStatus`, not manual `partial` / `pai
 
 ---
 
-## 18. Agent checklist (start here)
+## 18. Agent checklist (historical — v0.2 shipped)
 
-**Current slice:** PR 3 — `feature/activity-repository` off `main`.
+All five PRs merged to `main` (issues #1–#5 closed). This section is kept for context.
 
-1. Read this doc — especially [§7](#7-data-model-sqlite-v1--normalized) and [§6.3](#63-v1-ui-debt-to-shed-do-not-persist).
-2. Branch from `main`. PRs 1–2 are merged; do not re-implement debt repos or screen wiring.
-3. Read Expo v56 `expo-sqlite` docs. Raw SQL only (§5.5). **Do not** mirror v1 denormalized columns.
-4. Use `src/types/index.ts` for domain types; screens consume `src/features/debts/view-models.ts`.
-
-### Implementation notes (not obvious from code)
+### Shipped implementation notes
 
 | Topic | Detail |
 |-------|--------|
 | **UUIDs** | Always `createId()` from `src/lib/id.ts`. Bare `crypto.randomUUID()` throws on device. |
-| **Debt create** | `debtRepository.create` returns an assembled row after `INSERT` — do not re-fetch with `getById` (caused false save failures on device). |
-| **Activity feed** | `activity-screen.tsx` still imports `INITIAL_ACTIVITIES` from `sample-data.ts` until PR 3. |
-| **`reset()`** | `_layout.tsx` still calls `useUiStore.getState().reset()` on mount (toast-only). Remove in PR 4. |
-| **Onboarding** | Shipped early in PR 2 (`onboarding-storage.ts`, `storageKeys.onboardingComplete`). Do not redo. |
-| **Debt mutations** | `use-add-debt` / `use-record-payment` already invalidate `activityKeys.all` — wire repo writes in PR 3. |
+| **Debt create** | `debtRepository.create` returns an assembled row after `INSERT` — do not re-fetch with `getById`. |
+| **Onboarding** | `onboarding-storage.ts` + `storageKeys.onboardingComplete` (shipped in PR 2). |
+| **Toast state** | `src/features/debts/store/ui-store.ts` — no debt/activity state. |
+| **Removed** | `sample-data.ts`, `app-store.ts`, `src/features/debts/types.ts` (v1 UI types). |
 
-5. Implement PR 3 only — `activity-repository`, `use-activities`, activity screen from SQLite; insert events in debt create/payment paths.
-6. Remove `useUiStore.getState().reset()` in PR 4, not PR 3.
-7. Open PR against `main`; `Closes #3`.
+### Next work (post–v0.2)
+
+See [§16](#16-after-v02-not-this-sprint). Tag `v0.2.0` when ready.
