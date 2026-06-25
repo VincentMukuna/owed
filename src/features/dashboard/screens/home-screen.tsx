@@ -2,19 +2,19 @@ import { useCallback, useMemo } from "react";
 
 import { StyleSheet, Text, View } from "react-native";
 
-import { router } from "expo-router";
+import { type Href, router } from "expo-router";
 
 import { FlashList } from "@shopify/flash-list";
-import { Bell, Wallet } from "lucide-react-native";
+import { Wallet } from "lucide-react-native";
 
 import { DebtCard } from "@/components/debts/debt-card";
 import { SummaryStatCard } from "@/components/debts/summary-stat-card";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
-import { IconButton } from "@/components/shared/icon-button";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import { bucketHomeDebts } from "@/features/debts/lib/debt-list-utils";
 import type { DebtCardView } from "@/features/debts/view-models";
+import { BellBadgeButton } from "@/features/reminders/components/bell-badge-button";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 type HomeListRow =
@@ -66,6 +66,10 @@ export function HomeScreen() {
 
   const openAdd = useCallback(() => {
     router.push("/add-debt");
+  }, []);
+
+  const openNotifications = useCallback(() => {
+    router.push("/notifications" as Href);
   }, []);
 
   const renderItem = useCallback(
@@ -138,8 +142,13 @@ export function HomeScreen() {
       <TabScreen>
         <View style={styles.emptyBody}>
           <View style={styles.emptyHeader}>
-            <Text style={styles.kicker}>Owed</Text>
-            <Text style={styles.pageTitle}>Home</Text>
+            <View style={styles.emptyHeaderRow}>
+              <View>
+                <Text style={styles.kicker}>Owed</Text>
+                <Text style={styles.pageTitle}>Home</Text>
+              </View>
+              <BellBadgeButton onPress={openNotifications} />
+            </View>
           </View>
           <View style={styles.emptyContent}>
             <View style={styles.emptyIcon}>
@@ -163,9 +172,7 @@ export function HomeScreen() {
           <Text style={styles.kicker}>Good morning</Text>
           <Text style={styles.pageTitleLg}>{"Here's what you're owed"}</Text>
         </View>
-        <IconButton>
-          <Bell color="#4A4A42" size={16} strokeWidth={1.5} />
-        </IconButton>
+        <BellBadgeButton onPress={openNotifications} />
       </View>
 
       <FlashList
@@ -294,6 +301,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 20,
+  },
+  emptyHeaderRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
   },
   emptyContent: {
     flex: 1,

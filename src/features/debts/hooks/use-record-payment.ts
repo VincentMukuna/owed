@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
 import type { RecordPaymentInput } from "@/features/debts/view-models";
+import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { cancelRemindersForDebt } from "@/features/reminders/lib/reminder-sync";
 
 import { activityKeys, debtKeys } from "./query-keys";
@@ -23,6 +24,7 @@ export function useRecordPayment() {
     onSuccess: async (debt, variables) => {
       if (debt.remainingAmount <= 0) {
         await cancelRemindersForDebt(variables.debtId);
+        await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
       }
 
       await queryClient.invalidateQueries({ queryKey: debtKeys.all });

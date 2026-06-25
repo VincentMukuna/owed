@@ -1,4 +1,5 @@
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
+import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { canScheduleOsNotifications } from "@/features/reminders/lib/notification-permissions";
 import { listScheduledOsNotificationIds } from "@/features/reminders/lib/notification-service";
 import {
@@ -10,6 +11,7 @@ import {
 } from "@/features/reminders/lib/reminder-sync";
 import { reminderRepository } from "@/features/reminders/repositories/reminder-repository";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
+import { queryClient } from "@/lib/api/query-client";
 import type { DebtSummary } from "@/lib/db/mappers";
 
 export async function reconcileReminders(): Promise<void> {
@@ -51,19 +53,19 @@ export async function reconcileReminders(): Promise<void> {
     }
   }
 
-  if (!(await canScheduleOsNotifications())) {
-    return;
-  }
+  if (await canScheduleOsNotifications()) {
+    const osNotificationIds = await listScheduledOsNotificationIds();
+    const scheduled = await reminderRepository.listScheduled();
 
-  const osNotificationIds = await listScheduledOsNotificationIds();
-  const scheduled = await reminderRepository.listScheduled();
+    for (const reminder of scheduled) {
+      const debt = summaryById.get(reminder.debtId);
+      if (!debt || !isDebtReminderEligible(debt)) {
+        continue;
+      }
 
-  for (const reminder of scheduled) {
-    const debt = summaryById.get(reminder.debtId);
-    if (!debt || !isDebtReminderEligible(debt)) {
-      continue;
+      await syncOsForScheduledReminder(reminder, debt, osNotificationIds);
     }
-
-    await syncOsForScheduledReminder(reminder, debt, osNotificationIds);
   }
+
+  await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
 }

@@ -13,6 +13,8 @@ import { activityKeys, debtKeys } from "@/features/debts/hooks/query-keys";
 import { fetchActivityViews } from "@/features/debts/lib/fetch-activities";
 import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
+import { reminderKeys } from "@/features/reminders/hooks/query-keys";
+import { fetchUnreadReminderCount } from "@/features/reminders/lib/fetch-reminders";
 import { reconcileReminders } from "@/features/reminders/lib/reconcile-reminders";
 import { registerNotificationHandlers } from "@/features/reminders/lib/register-notification-handlers";
 import { hydrateReminderSettings } from "@/features/reminders/lib/reminder-storage";
@@ -40,6 +42,11 @@ export default function RootLayout() {
       queryClient.prefetchQuery({
         queryKey: activityKeys.all,
         queryFn: fetchActivityViews,
+        staleTime: Number.POSITIVE_INFINITY,
+      }),
+      queryClient.prefetchQuery({
+        queryKey: reminderKeys.unreadCount(),
+        queryFn: fetchUnreadReminderCount,
         staleTime: Number.POSITIVE_INFINITY,
       }),
     ]).then(() => {
@@ -114,6 +121,16 @@ export default function RootLayout() {
                 title: "Add payment",
                 sheetGrabberVisible: true,
                 sheetAllowedDetents: [0.55, 1],
+              }}
+            />
+            <Stack.Screen
+              name="notifications"
+              options={{
+                ...MODAL_SCREEN_OPTIONS,
+                presentation: "modal",
+                animation: "slide_from_bottom",
+                headerShown: true,
+                title: "Notifications",
               }}
             />
           </Stack>
