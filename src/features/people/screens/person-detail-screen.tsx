@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { type ReactNode, useState } from "react";
 
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { type Href, Stack, router } from "expo-router";
 
-import { ChevronDown, ChevronUp } from "lucide-react-native";
+import { CheckCircle2, ChevronDown, ChevronUp, Receipt, Wallet } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { ActivityRow } from "@/components/activity/activity-list";
@@ -24,7 +24,9 @@ type PersonDetailScreenProps = {
 export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const { data: person, isPending } = usePersonDetail(personId);
+  const [activeExpanded, setActiveExpanded] = useState(true);
   const [settledExpanded, setSettledExpanded] = useState(false);
+  const [paymentsExpanded, setPaymentsExpanded] = useState(true);
 
   if (isPending) {
     return null;
@@ -97,8 +99,12 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
             </View>
           ) : null}
 
-          <View style={styles.section}>
-            <Text style={styles.sectionLabel}>Active</Text>
+          <CollapsibleSection
+            count={person.activeDebts.length}
+            expanded={activeExpanded}
+            onToggle={() => setActiveExpanded((value) => !value)}
+            title="Active"
+          >
             {person.activeDebts.length > 0 ? (
               <View style={styles.cards}>
                 {person.activeDebts.map((debt) => (
@@ -106,58 +112,59 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
                 ))}
               </View>
             ) : (
-              <View style={styles.sectionEmpty}>
-                <Text style={styles.sectionEmptyTitle}>
-                  {hasNoDebts ? "No debts yet." : "Nothing pending."}
-                </Text>
-                <Text style={styles.sectionEmptyCopy}>
-                  {hasNoDebts
+              <SectionEmpty
+                copy={
+                  hasNoDebts
                     ? `Add the first amount ${firstName} owes you.`
-                    : `All amounts from ${firstName} are settled.`}
-                </Text>
-              </View>
+                    : `All amounts from ${firstName} are settled.`
+                }
+                icon={<Wallet color="#B8B8B0" size={20} strokeWidth={1.5} />}
+                title={hasNoDebts ? "No debts yet" : "Nothing pending"}
+              />
             )}
-          </View>
+          </CollapsibleSection>
 
-          <View style={styles.section}>
-            <PressableScale
-              hitSlop={8}
-              onPress={() => setSettledExpanded((value) => !value)}
-              style={styles.sectionHeaderRow}
-            >
-              <Text style={styles.sectionLabel}>Settled ({person.settledDebts.length})</Text>
-              {person.settledDebts.length > 0 ? (
-                settledExpanded ? (
-                  <ChevronUp color="#8A8A82" size={16} strokeWidth={2} />
-                ) : (
-                  <ChevronDown color="#8A8A82" size={16} strokeWidth={2} />
-                )
-              ) : null}
-            </PressableScale>
-            {person.settledDebts.length === 0 ? (
-              <View style={styles.sectionEmpty}>
-                <Text style={styles.sectionEmptyTitle}>No settled amounts yet.</Text>
-                <Text style={styles.sectionEmptyCopy}>
-                  Paid debts from this person will appear here.
-                </Text>
-              </View>
-            ) : settledExpanded ? (
+          <CollapsibleSection
+            count={person.settledDebts.length}
+            expanded={settledExpanded}
+            onToggle={() => setSettledExpanded((value) => !value)}
+            title="Settled"
+          >
+            {person.settledDebts.length > 0 ? (
               <View style={styles.cards}>
                 {person.settledDebts.map((debt) => (
                   <DebtCard key={debt.id} debt={debt} onPress={() => openDebt(debt.id)} />
                 ))}
               </View>
-            ) : null}
-          </View>
+            ) : (
+              <SectionEmpty
+                copy="Paid debts from this person will appear here."
+                icon={<CheckCircle2 color="#B8B8B0" size={20} strokeWidth={1.5} />}
+                title="No settled amounts yet"
+              />
+            )}
+          </CollapsibleSection>
 
-          {person.payments.length > 0 ? (
-            <View style={styles.card}>
-              <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Payment history</Text>
-              {person.payments.map((payment) => (
-                <ActivityRow key={payment.id} activity={payment} />
-              ))}
-            </View>
-          ) : null}
+          <CollapsibleSection
+            count={person.payments.length}
+            expanded={paymentsExpanded}
+            onToggle={() => setPaymentsExpanded((value) => !value)}
+            title="Payment history"
+          >
+            {person.payments.length > 0 ? (
+              <View>
+                {person.payments.map((payment) => (
+                  <ActivityRow key={payment.id} activity={payment} />
+                ))}
+              </View>
+            ) : (
+              <SectionEmpty
+                copy={`Payments from ${firstName} will show up here.`}
+                icon={<Receipt color="#B8B8B0" size={20} strokeWidth={1.5} />}
+                title="No payments yet"
+              />
+            )}
+          </CollapsibleSection>
         </ScrollView>
 
         <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
@@ -202,6 +209,46 @@ function PersonSummary({ person }: { person: PersonDetailView }) {
           </Text>
         </View>
       </View>
+    </View>
+  );
+}
+
+function CollapsibleSection({
+  title,
+  count,
+  expanded,
+  onToggle,
+  children,
+}: {
+  title: string;
+  count: number;
+  expanded: boolean;
+  onToggle: () => void;
+  children: ReactNode;
+}) {
+  return (
+    <View style={styles.section}>
+      <PressableScale hitSlop={8} onPress={onToggle} style={styles.sectionHeaderRow}>
+        <Text style={styles.sectionLabel}>
+          {title} ({count})
+        </Text>
+        {expanded ? (
+          <ChevronUp color="#8A8A82" size={16} strokeWidth={2} />
+        ) : (
+          <ChevronDown color="#8A8A82" size={16} strokeWidth={2} />
+        )}
+      </PressableScale>
+      {expanded ? children : null}
+    </View>
+  );
+}
+
+function SectionEmpty({ icon, title, copy }: { icon: ReactNode; title: string; copy: string }) {
+  return (
+    <View style={styles.sectionEmpty}>
+      <View style={styles.sectionEmptyIcon}>{icon}</View>
+      <Text style={styles.sectionEmptyTitle}>{title}</Text>
+      <Text style={styles.sectionEmptyCopy}>{copy}</Text>
     </View>
   );
 }
@@ -312,9 +359,6 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
-  cardLabelSpaced: {
-    marginBottom: 8,
-  },
   detailRow: {
     marginTop: 12,
   },
@@ -352,11 +396,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   sectionEmpty: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
+    alignItems: "center",
+    paddingVertical: 28,
+    paddingHorizontal: 24,
+  },
+  sectionEmptyIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: "#EFEFEC",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 12,
   },
   sectionEmptyTitle: {
     fontSize: 14,
@@ -365,8 +416,9 @@ const styles = StyleSheet.create({
   },
   sectionEmptyCopy: {
     fontSize: 12,
-    color: "#8A8A82",
+    color: "#B8B8B0",
     marginTop: 4,
+    textAlign: "center",
   },
   footer: {
     position: "absolute",
