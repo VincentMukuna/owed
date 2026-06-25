@@ -13,6 +13,7 @@ import { activityKeys, debtKeys } from "@/features/debts/hooks/query-keys";
 import { fetchActivityViews } from "@/features/debts/lib/fetch-activities";
 import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
+import { registerNotificationHandlers } from "@/features/reminders/lib/register-notification-handlers";
 import { hydrateReminderSettings } from "@/features/reminders/lib/reminder-storage";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
@@ -44,6 +45,22 @@ export default function RootLayout() {
       setDbReady(true);
     });
   }, []);
+
+  useEffect(() => {
+    if (!dbReady) {
+      return;
+    }
+
+    let cleanup: (() => void) | undefined;
+
+    void registerNotificationHandlers().then((unregister) => {
+      cleanup = unregister;
+    });
+
+    return () => {
+      cleanup?.();
+    };
+  }, [dbReady]);
 
   return (
     <GestureHandlerRootView style={styles.root}>

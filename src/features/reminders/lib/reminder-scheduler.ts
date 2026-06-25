@@ -17,15 +17,7 @@ export function parseReminderTime(time: string): { hours: number; minutes: numbe
 export function combineDateAndTime(isoDate: string, reminderTime: string): Date {
   const base = parseISODate(isoDate);
   const { hours, minutes } = parseReminderTime(reminderTime);
-  return new Date(
-    base.getFullYear(),
-    base.getMonth(),
-    base.getDate(),
-    hours,
-    minutes,
-    0,
-    0,
-  );
+  return new Date(base.getFullYear(), base.getMonth(), base.getDate(), hours, minutes, 0, 0);
 }
 
 export function computeDueRemindAt(dueDate: string, reminderTime: string): Date {

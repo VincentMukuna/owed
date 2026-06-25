@@ -90,10 +90,7 @@ export const reminderRepository = {
     return row ? rowToReminder(row) : null;
   },
 
-  async getScheduledByDebtAndType(
-    debtId: string,
-    type: ReminderType,
-  ): Promise<Reminder | null> {
+  async getScheduledByDebtAndType(debtId: string, type: ReminderType): Promise<Reminder | null> {
     const db = await getDb();
     const row = await db.getFirstAsync<RemindersRow>(
       `SELECT * FROM reminders
@@ -182,7 +179,10 @@ export const reminderRepository = {
   ): Promise<void> {
     const db = await getDb();
     const now = new Date().toISOString();
-    const current = await db.getFirstAsync<RemindersRow>("SELECT * FROM reminders WHERE id = ?", id);
+    const current = await db.getFirstAsync<RemindersRow>(
+      "SELECT * FROM reminders WHERE id = ?",
+      id,
+    );
 
     if (!current) {
       return;
