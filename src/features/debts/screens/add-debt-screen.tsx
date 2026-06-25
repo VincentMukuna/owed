@@ -4,8 +4,9 @@ import { ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-nat
 
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 
+import Ionicons from "@expo/vector-icons/Ionicons";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { Bell, Calendar, ChevronRight, X } from "lucide-react-native";
+import { Calendar, ChevronRight, X } from "lucide-react-native";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
@@ -242,14 +243,12 @@ export function AddDebtScreen() {
           />
         </Field>
 
-        <View>
-          <View style={styles.reminderRow}>
-            <View style={styles.reminderCopy}>
-              <Bell color="#8A8A82" size={16} strokeWidth={1.5} />
-              <View>
-                <Text style={styles.reminderTitle}>Remind me</Text>
-                <Text style={styles.reminderSub}>On the promised date</Text>
-              </View>
+        <Section title="Preferences">
+          <View style={styles.prefRow}>
+            <Ionicons color="#8A8A82" name="notifications" size={16} />
+            <View style={styles.prefCopy}>
+              <Text style={styles.prefTitle}>Notify me</Text>
+              <Text style={styles.prefSub}>On the promised date, not sent to them</Text>
             </View>
             <Switch
               onValueChange={(value) => {
@@ -269,12 +268,12 @@ export function AddDebtScreen() {
               style={styles.permHint}
             >
               <Text style={styles.permHintText}>
-                Notifications are off. You&apos;ll still see reminders in the app. Turn on in
-                Settings.
+                Push notifications are off. You&apos;ll still see notifications in the app. Turn on
+                in Settings.
               </Text>
             </PressableScale>
           ) : null}
-        </View>
+        </Section>
       </ScrollView>
 
       <PersonPickerSheet ref={pickerRef} onSelect={handlePersonSelect} people={people} />
@@ -285,7 +284,16 @@ export function AddDebtScreen() {
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <View style={styles.field}>
-      <Text style={styles.label}>{label}</Text>
+      <Text style={styles.sectionTitle}>{label}</Text>
+      {children}
+    </View>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <View style={styles.section}>
+      <Text style={styles.sectionTitle}>{title}</Text>
       {children}
     </View>
   );
@@ -301,7 +309,11 @@ const styles = StyleSheet.create({
   field: {
     gap: 8,
   },
-  label: {
+  section: {
+    gap: 10,
+    marginTop: 4,
+  },
+  sectionTitle: {
     fontSize: 11,
     fontWeight: "700",
     color: "#8A8A82",
@@ -435,34 +447,28 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     color: "#1A1A18",
   },
-  reminderRow: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  reminderCopy: {
+  prefRow: {
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
   },
-  reminderTitle: {
+  prefCopy: {
+    flex: 1,
+    minWidth: 0,
+    gap: 2,
+  },
+  prefTitle: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "500",
     color: "#1A1A18",
   },
-  reminderSub: {
+  prefSub: {
     fontSize: 12,
+    lineHeight: 16,
     color: "#8A8A82",
   },
   permHint: {
     marginTop: 8,
-    paddingHorizontal: 4,
   },
   permHintText: {
     fontSize: 12,
