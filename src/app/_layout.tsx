@@ -15,6 +15,7 @@ import { fetchActivityViews } from "@/features/debts/lib/fetch-activities";
 import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
 import { fetchPeoplePickerViews } from "@/features/debts/lib/fetch-people";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
+import { fetchPeopleListViews } from "@/features/people/lib/fetch-people-list";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { fetchUnreadReminderCount } from "@/features/reminders/lib/fetch-reminders";
 import { registerNotificationHandlers } from "@/features/reminders/lib/register-notification-handlers";
@@ -49,6 +50,11 @@ export default function RootLayout() {
       queryClient.prefetchQuery({
         queryKey: peopleKeys.all,
         queryFn: fetchPeoplePickerViews,
+        staleTime: Number.POSITIVE_INFINITY,
+      }),
+      queryClient.prefetchQuery({
+        queryKey: peopleKeys.list,
+        queryFn: fetchPeopleListViews,
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({
@@ -128,6 +134,45 @@ export default function RootLayout() {
                 headerShown: true,
                 headerLargeTitleEnabled: false,
                 animation: "slide_from_right",
+              }}
+            />
+            <Stack.Screen
+              name="person/[id]"
+              options={{
+                ...STACK_SCREEN_OPTIONS,
+                headerShown: true,
+                headerLargeTitleEnabled: false,
+                animation: "slide_from_right",
+              }}
+            />
+            <Stack.Screen
+              name="activity"
+              options={{
+                ...STACK_SCREEN_OPTIONS,
+                headerShown: true,
+                headerLargeTitleEnabled: false,
+                animation: "slide_from_right",
+                title: "Activity",
+              }}
+            />
+            <Stack.Screen
+              name="add-person"
+              options={{
+                ...MODAL_SCREEN_OPTIONS,
+                presentation: "modal",
+                animation: "slide_from_bottom",
+                headerShown: true,
+                title: "Add person",
+              }}
+            />
+            <Stack.Screen
+              name="edit-person"
+              options={{
+                ...MODAL_SCREEN_OPTIONS,
+                presentation: "modal",
+                animation: "slide_from_bottom",
+                headerShown: true,
+                title: "Edit person",
               }}
             />
             <Stack.Screen

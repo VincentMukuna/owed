@@ -12,15 +12,19 @@ const FAB_GAP = 10;
 
 type FabButtonProps = {
   onPress?: () => void;
+  accessibilityLabel?: string;
 };
 
-export function FabButton({ onPress = () => router.push("/add-debt") }: FabButtonProps) {
+export function FabButton({
+  onPress = () => router.push("/add-debt"),
+  accessibilityLabel = "Add debt",
+}: FabButtonProps) {
   const insets = useSafeAreaInsets();
   const bottom = TAB_BAR_HEIGHT + Math.max(insets.bottom, FAB_GAP) + FAB_GAP;
 
   return (
     <PressableScale
-      accessibilityLabel="Add debt"
+      accessibilityLabel={accessibilityLabel}
       accessibilityRole="button"
       onPress={onPress}
       scaleTo={0.91}
