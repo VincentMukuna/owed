@@ -4,12 +4,13 @@ import { ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-nat
 
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 
-import { Bell } from "lucide-react-native";
+import { Bell, Calendar } from "lucide-react-native";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import { DueDatePickerModal } from "@/features/debts/components/due-date-picker-modal";
 import { useAddDebt } from "@/features/debts/hooks/use-add-debt";
-import { resolveQuickDate } from "@/features/debts/lib/format-dates";
+import { formatDueDate, resolveQuickDate } from "@/features/debts/lib/format-dates";
 import type { CreateDebtInput } from "@/features/debts/view-models";
 import { completeOnboarding } from "@/features/onboarding/lib/onboarding-storage";
 import {
@@ -30,19 +31,6 @@ function exitAddDebt() {
   router.replace(HOME_ROUTE);
 }
 
-function resolveDueDate(quickDate: string | null, manualDate: string): string | null {
-  if (quickDate) {
-    return resolveQuickDate(quickDate);
-  }
-
-  const trimmed = manualDate.trim();
-  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-    return trimmed;
-  }
-
-  return null;
-}
-
 export function AddDebtScreen() {
   const navigation = useNavigation();
   const { from } = useLocalSearchParams<{ from?: string }>();
@@ -51,15 +39,15 @@ export function AddDebtScreen() {
 
   const [name, setName] = useState("");
   const [amount, setAmount] = useState("");
-  const [dueDate, setDueDate] = useState("");
+  const [dueDateIso, setDueDateIso] = useState(() => resolveQuickDate("Today"));
   const [reason, setReason] = useState("");
   const [reminder, setReminder] = useState(false);
   const [notifPermission, setNotifPermission] = useState<NotificationPermissionState>("not-asked");
   const [quickDate, setQuickDate] = useState<string | null>("Today");
+  const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   const parsedAmount = parseInt(amount, 10);
-  const resolvedDueDate = resolveDueDate(quickDate, dueDate);
-  const canSave = name.trim().length > 0 && parsedAmount > 0 && Boolean(resolvedDueDate);
+  const canSave = name.trim().length > 0 && parsedAmount > 0;
 
   const handleReminderToggle = useCallback(async (value: boolean) => {
     selectionChange();
@@ -75,12 +63,12 @@ export function AddDebtScreen() {
   }, []);
 
   const handleSave = useCallback(() => {
-    if (!canSave || !resolvedDueDate) return;
+    if (!canSave) return;
 
     const payload: CreateDebtInput = {
       personName: name.trim(),
       originalAmount: parsedAmount,
-      dueDate: resolvedDueDate,
+      dueDate: dueDateIso,
       reason: reason.trim() || undefined,
       reminderEnabled: reminder,
     };
@@ -95,7 +83,7 @@ export function AddDebtScreen() {
         exitAddDebt();
       },
     });
-  }, [addDebt, canSave, fromOnboarding, name, parsedAmount, reason, reminder, resolvedDueDate]);
+  }, [addDebt, canSave, dueDateIso, fromOnboarding, name, parsedAmount, reason, reminder]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -149,7 +137,7 @@ export function AddDebtScreen() {
                 onPress={() => {
                   selectionChange();
                   setQuickDate(label);
-                  setDueDate("");
+                  setDueDateIso(resolveQuickDate(label));
                 }}
                 style={[styles.chip, selected && styles.chipSelected]}
               >
@@ -158,15 +146,24 @@ export function AddDebtScreen() {
             );
           })}
         </View>
-        <TextInput
-          onChangeText={(value) => {
-            setDueDate(value);
+        <PressableScale
+          onPress={() => {
+            selectionChange();
+            setDatePickerOpen(true);
+          }}
+          style={styles.dateField}
+        >
+          <Calendar color="#8A8A82" size={16} strokeWidth={1.5} />
+          <Text style={styles.dateFieldText}>{formatDueDate(dueDateIso)}</Text>
+        </PressableScale>
+        <DueDatePickerModal
+          onClose={() => setDatePickerOpen(false)}
+          onSave={(isoDate) => {
+            setDueDateIso(isoDate);
             setQuickDate(null);
           }}
-          placeholder="YYYY-MM-DD"
-          placeholderTextColor="#C8C8C0"
-          style={styles.input}
-          value={dueDate}
+          value={dueDateIso}
+          visible={datePickerOpen}
         />
       </Field>
 
@@ -294,6 +291,22 @@ const styles = StyleSheet.create({
   },
   chipTextSelected: {
     color: "#FFFFFF",
+  },
+  dateField: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.08)",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 10,
+  },
+  dateFieldText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#1A1A18",
   },
   reminderRow: {
     backgroundColor: "#FFFFFF",

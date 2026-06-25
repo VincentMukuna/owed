@@ -101,6 +101,10 @@ export function toISODate(date: Date): string {
   return `${year}-${month}-${day}`;
 }
 
+export function isoDateToDate(isoDate: string): Date {
+  return parseISODate(isoDate);
+}
+
 export function resolveQuickDate(label: string, now: Date = new Date()): string {
   const date = new Date(now.getFullYear(), now.getMonth(), now.getDate());
 
