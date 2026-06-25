@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
 
@@ -16,12 +16,17 @@ type DueDatePickerModalProps = {
 
 export function DueDatePickerModal({ visible, value, onClose, onSave }: DueDatePickerModalProps) {
   const [draft, setDraft] = useState(() => isoDateToDate(value));
+  const [wasVisible, setWasVisible] = useState(visible);
 
-  useEffect(() => {
+  // Reset the draft to the incoming value each time the picker opens. Handled
+  // during render (not in an effect) per the React "adjust state on prop change"
+  // pattern, which avoids a cascading re-render.
+  if (visible !== wasVisible) {
+    setWasVisible(visible);
     if (visible) {
       setDraft(isoDateToDate(value));
     }
-  }, [value, visible]);
+  }
 
   const handleChange = useCallback(
     (_event: unknown, date?: Date) => {
@@ -49,14 +54,7 @@ export function DueDatePickerModal({ visible, value, onClose, onSave }: DueDateP
   }
 
   if (Platform.OS === "android") {
-    return (
-      <DateTimePicker
-        display="default"
-        mode="date"
-        onChange={handleChange}
-        value={draft}
-      />
-    );
+    return <DateTimePicker display="default" mode="date" onChange={handleChange} value={draft} />;
   }
 
   return (

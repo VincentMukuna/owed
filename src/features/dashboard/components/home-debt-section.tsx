@@ -29,7 +29,9 @@ export function HomeDebtSection({
   return (
     <View style={styles.section}>
       <PressableScale hitSlop={8} onPress={() => onTitlePress(filter)}>
-        <Text style={[styles.sectionTitle, titleColor ? { color: titleColor } : null]}>{title}</Text>
+        <Text style={[styles.sectionTitle, titleColor ? { color: titleColor } : null]}>
+          {title}
+        </Text>
       </PressableScale>
       <View style={styles.cards}>
         {preview.map((debt) => (
