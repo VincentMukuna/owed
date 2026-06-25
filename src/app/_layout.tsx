@@ -10,9 +10,10 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { Toast } from "@/components/shared/toast";
-import { activityKeys, debtKeys } from "@/features/debts/hooks/query-keys";
+import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
 import { fetchActivityViews } from "@/features/debts/lib/fetch-activities";
 import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
+import { fetchPeoplePickerViews } from "@/features/debts/lib/fetch-people";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { fetchUnreadReminderCount } from "@/features/reminders/lib/fetch-reminders";
@@ -43,6 +44,11 @@ export default function RootLayout() {
       queryClient.prefetchQuery({
         queryKey: activityKeys.all,
         queryFn: fetchActivityViews,
+        staleTime: Number.POSITIVE_INFINITY,
+      }),
+      queryClient.prefetchQuery({
+        queryKey: peopleKeys.all,
+        queryFn: fetchPeoplePickerViews,
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({

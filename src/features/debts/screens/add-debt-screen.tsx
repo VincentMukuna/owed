@@ -1,17 +1,23 @@
-import { useCallback, useLayoutEffect, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 import { ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 
-import { Bell, Calendar } from "lucide-react-native";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { Bell, Calendar, ChevronRight, X } from "lucide-react-native";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { DueDatePickerModal } from "@/features/debts/components/due-date-picker-modal";
+import {
+  PersonPickerSheet,
+  type PersonPickerSheetRef,
+} from "@/features/debts/components/person-picker-sheet";
 import { useAddDebt } from "@/features/debts/hooks/use-add-debt";
+import { usePeople } from "@/features/debts/hooks/use-people";
 import { formatDueDate, resolveQuickDate } from "@/features/debts/lib/format-dates";
-import type { CreateDebtInput } from "@/features/debts/view-models";
+import type { CreateDebtInput, PersonRef } from "@/features/debts/view-models";
 import { completeOnboarding } from "@/features/onboarding/lib/onboarding-storage";
 import {
   type NotificationPermissionState,
@@ -20,6 +26,7 @@ import {
 import { requestReminderPermissionOnToggle } from "@/features/reminders/lib/request-reminder-permissions";
 import { selectionChange } from "@/lib/haptics";
 import { HOME_ROUTE } from "@/lib/navigation/routes";
+import { getInitials } from "@/lib/utils/formatters";
 
 const QUICK_DATES = ["Today", "Tomorrow", "Friday", "Next week"];
 
@@ -36,8 +43,13 @@ export function AddDebtScreen() {
   const { from } = useLocalSearchParams<{ from?: string }>();
   const fromOnboarding = from === "onboarding";
   const addDebt = useAddDebt();
+  const { data: people = [] } = usePeople();
 
-  const [name, setName] = useState("");
+  const pickerRef = useRef<PersonPickerSheetRef>(null);
+  const amountRef = useRef<TextInput>(null);
+
+  const [person, setPerson] = useState<PersonRef | null>(null);
+  const [personName, setPersonName] = useState("");
   const [amount, setAmount] = useState("");
   const [dueDateIso, setDueDateIso] = useState(() => resolveQuickDate("Today"));
   const [reason, setReason] = useState("");
@@ -47,7 +59,26 @@ export function AddDebtScreen() {
   const [datePickerOpen, setDatePickerOpen] = useState(false);
 
   const parsedAmount = parseInt(amount, 10);
-  const canSave = name.trim().length > 0 && parsedAmount > 0;
+  const canSave = person !== null && parsedAmount > 0;
+
+  const openPicker = useCallback(() => {
+    selectionChange();
+    pickerRef.current?.present();
+  }, []);
+
+  const clearPerson = useCallback(() => {
+    selectionChange();
+    setPerson(null);
+    setPersonName("");
+  }, []);
+
+  const handlePersonSelect = useCallback((ref: PersonRef, displayName: string) => {
+    setPerson(ref);
+    setPersonName(displayName);
+    // Person → amount is the universal path; advance focus once the sheet has
+    // animated away so the number pad takes over cleanly.
+    setTimeout(() => amountRef.current?.focus(), 350);
+  }, []);
 
   const handleReminderToggle = useCallback(async (value: boolean) => {
     selectionChange();
@@ -63,10 +94,10 @@ export function AddDebtScreen() {
   }, []);
 
   const handleSave = useCallback(() => {
-    if (!canSave) return;
+    if (!canSave || !person) return;
 
     const payload: CreateDebtInput = {
-      personName: name.trim(),
+      person,
       originalAmount: parsedAmount,
       dueDate: dueDateIso,
       reason: reason.trim() || undefined,
@@ -83,7 +114,7 @@ export function AddDebtScreen() {
         exitAddDebt();
       },
     });
-  }, [addDebt, canSave, dueDateIso, fromOnboarding, name, parsedAmount, reason, reminder]);
+  }, [addDebt, canSave, dueDateIso, fromOnboarding, person, parsedAmount, reason, reminder]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -98,119 +129,144 @@ export function AddDebtScreen() {
   }, [addDebt.isPending, canSave, handleSave, navigation]);
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.form}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
-      <Field label="Person">
-        <TextInput
-          onChangeText={setName}
-          placeholder="Full name"
-          placeholderTextColor="#C8C8C0"
-          style={styles.input}
-          value={name}
-        />
-      </Field>
-
-      <Field label="Amount">
-        <View>
-          <Text style={styles.prefix}>KES</Text>
-          <TextInput
-            keyboardType="number-pad"
-            onChangeText={setAmount}
-            placeholder="0"
-            placeholderTextColor="#DDDDD8"
-            style={[styles.input, styles.amountInput]}
-            value={amount}
-          />
-        </View>
-      </Field>
-
-      <Field label="Promised date">
-        <View style={styles.chips}>
-          {QUICK_DATES.map((label) => {
-            const selected = quickDate === label;
-            return (
-              <PressableScale
-                key={label}
-                onPress={() => {
-                  selectionChange();
-                  setQuickDate(label);
-                  setDueDateIso(resolveQuickDate(label));
-                }}
-                style={[styles.chip, selected && styles.chipSelected]}
-              >
-                <Text style={[styles.chipText, selected && styles.chipTextSelected]}>{label}</Text>
+    <BottomSheetModalProvider>
+      <ScrollView
+        contentContainerStyle={styles.form}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Field label="Person">
+          {person ? (
+            <View style={styles.personChip}>
+              <PressableScale onPress={openPicker} style={styles.personChipMain}>
+                <View style={styles.personAvatar}>
+                  <Text style={styles.personAvatarText}>{getInitials(personName)}</Text>
+                </View>
+                <Text numberOfLines={1} style={styles.personChipName}>
+                  {personName}
+                </Text>
               </PressableScale>
-            );
-          })}
-        </View>
-        <PressableScale
-          onPress={() => {
-            selectionChange();
-            setDatePickerOpen(true);
-          }}
-          style={styles.dateField}
-        >
-          <Calendar color="#8A8A82" size={16} strokeWidth={1.5} />
-          <Text style={styles.dateFieldText}>{formatDueDate(dueDateIso)}</Text>
-        </PressableScale>
-        <DueDatePickerModal
-          onClose={() => setDatePickerOpen(false)}
-          onSave={(isoDate) => {
-            setDueDateIso(isoDate);
-            setQuickDate(null);
-          }}
-          value={dueDateIso}
-          visible={datePickerOpen}
-        />
-      </Field>
-
-      <Field label="Reason">
-        <TextInput
-          onChangeText={setReason}
-          placeholder="e.g. Lunch, rent help, transport, emergency"
-          placeholderTextColor="#C8C8C0"
-          style={styles.input}
-          value={reason}
-        />
-      </Field>
-
-      <View>
-        <View style={styles.reminderRow}>
-          <View style={styles.reminderCopy}>
-            <Bell color="#8A8A82" size={16} strokeWidth={1.5} />
-            <View>
-              <Text style={styles.reminderTitle}>Remind me</Text>
-              <Text style={styles.reminderSub}>On the promised date</Text>
+              <PressableScale
+                hitSlop={8}
+                onPress={clearPerson}
+                style={styles.personClear}
+                scaleTo={0.9}
+              >
+                <X color="#8A8A82" size={18} strokeWidth={2} />
+              </PressableScale>
             </View>
-          </View>
-          <Switch
-            onValueChange={(value) => {
-              void handleReminderToggle(value);
-            }}
-            thumbColor="#FFFFFF"
-            trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
-            value={reminder}
-          />
-        </View>
+          ) : (
+            <PressableScale onPress={openPicker} style={styles.personField}>
+              <Text style={styles.personPlaceholder}>Who owes you?</Text>
+              <ChevronRight color="#C8C8C0" size={18} strokeWidth={2} />
+            </PressableScale>
+          )}
+        </Field>
 
-        {reminder && notifPermission === "off" ? (
+        <Field label="Amount">
+          <View>
+            <Text style={styles.prefix}>KES</Text>
+            <TextInput
+              ref={amountRef}
+              keyboardType="number-pad"
+              onChangeText={setAmount}
+              placeholder="0"
+              placeholderTextColor="#DDDDD8"
+              style={[styles.input, styles.amountInput]}
+              value={amount}
+            />
+          </View>
+        </Field>
+
+        <Field label="Promised date">
+          <View style={styles.chips}>
+            {QUICK_DATES.map((label) => {
+              const selected = quickDate === label;
+              return (
+                <PressableScale
+                  key={label}
+                  onPress={() => {
+                    selectionChange();
+                    setQuickDate(label);
+                    setDueDateIso(resolveQuickDate(label));
+                  }}
+                  style={[styles.chip, selected && styles.chipSelected]}
+                >
+                  <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+                    {label}
+                  </Text>
+                </PressableScale>
+              );
+            })}
+          </View>
           <PressableScale
             onPress={() => {
-              void openOsNotificationSettings();
+              selectionChange();
+              setDatePickerOpen(true);
             }}
-            style={styles.permHint}
+            style={styles.dateField}
           >
-            <Text style={styles.permHintText}>
-              Notifications are off. You&apos;ll still see reminders in the app. Turn on in
-              Settings.
-            </Text>
+            <Calendar color="#8A8A82" size={16} strokeWidth={1.5} />
+            <Text style={styles.dateFieldText}>{formatDueDate(dueDateIso)}</Text>
           </PressableScale>
-        ) : null}
-      </View>
-    </ScrollView>
+          <DueDatePickerModal
+            onClose={() => setDatePickerOpen(false)}
+            onSave={(isoDate) => {
+              setDueDateIso(isoDate);
+              setQuickDate(null);
+            }}
+            value={dueDateIso}
+            visible={datePickerOpen}
+          />
+        </Field>
+
+        <Field label="Reason">
+          <TextInput
+            onChangeText={setReason}
+            placeholder="e.g. Lunch, rent help, transport, emergency"
+            placeholderTextColor="#C8C8C0"
+            style={styles.input}
+            value={reason}
+          />
+        </Field>
+
+        <View>
+          <View style={styles.reminderRow}>
+            <View style={styles.reminderCopy}>
+              <Bell color="#8A8A82" size={16} strokeWidth={1.5} />
+              <View>
+                <Text style={styles.reminderTitle}>Remind me</Text>
+                <Text style={styles.reminderSub}>On the promised date</Text>
+              </View>
+            </View>
+            <Switch
+              onValueChange={(value) => {
+                void handleReminderToggle(value);
+              }}
+              thumbColor="#FFFFFF"
+              trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
+              value={reminder}
+            />
+          </View>
+
+          {reminder && notifPermission === "off" ? (
+            <PressableScale
+              onPress={() => {
+                void openOsNotificationSettings();
+              }}
+              style={styles.permHint}
+            >
+              <Text style={styles.permHintText}>
+                Notifications are off. You&apos;ll still see reminders in the app. Turn on in
+                Settings.
+              </Text>
+            </PressableScale>
+          ) : null}
+        </View>
+      </ScrollView>
+
+      <PersonPickerSheet ref={pickerRef} onSelect={handlePersonSelect} people={people} />
+    </BottomSheetModalProvider>
   );
 }
 
@@ -249,6 +305,65 @@ const styles = StyleSheet.create({
     paddingVertical: 14,
     fontSize: 14,
     color: "#1A1A18",
+  },
+  personField: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.08)",
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  personPlaceholder: {
+    fontSize: 14,
+    color: "#C8C8C0",
+  },
+  personChip: {
+    backgroundColor: "#FFFFFF",
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.08)",
+    borderRadius: 12,
+    paddingLeft: 10,
+    paddingRight: 8,
+    paddingVertical: 8,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+  },
+  personChipMain: {
+    flex: 1,
+    minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+  },
+  personAvatar: {
+    width: 36,
+    height: 36,
+    borderRadius: 999,
+    alignItems: "center",
+    justifyContent: "center",
+    backgroundColor: "#ECEBE4",
+  },
+  personAvatarText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: "#4A4A42",
+  },
+  personChipName: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#1A1A18",
+  },
+  personClear: {
+    width: 32,
+    height: 32,
+    alignItems: "center",
+    justifyContent: "center",
   },
   prefix: {
     position: "absolute",

@@ -29,14 +29,29 @@ export type DebtCardView = {
 
 export type DebtDetailView = DebtCardView;
 
+/**
+ * How a debt's person is resolved at write time. `existing` uses a chosen
+ * person id directly; `new` always inserts a fresh person. De-duplication is
+ * decided in the picker UI, never re-derived from the name at write time.
+ */
+export type PersonRef = { kind: "existing"; id: string } | { kind: "new"; name: string };
+
 export type CreateDebtInput = {
-  personName: string;
+  person: PersonRef;
   originalAmount: number;
   dueDate: string;
   reason?: string;
   reminderEnabled: boolean;
   reminderTime?: string;
   currency?: string;
+};
+
+export type PersonPickerView = {
+  id: string;
+  name: string;
+  initials: string;
+  outstanding: number;
+  openDebtCount: number;
 };
 
 export type RecordPaymentInput = {

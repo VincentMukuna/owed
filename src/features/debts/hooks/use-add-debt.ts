@@ -6,7 +6,7 @@ import type { CreateDebtInput } from "@/features/debts/view-models";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 
-import { activityKeys, debtKeys } from "./query-keys";
+import { activityKeys, debtKeys, peopleKeys } from "./query-keys";
 
 export function useAddDebt() {
   const queryClient = useQueryClient();
@@ -19,6 +19,7 @@ export function useAddDebt() {
       await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
       await queryClient.invalidateQueries({ queryKey: debtKeys.all });
       await queryClient.invalidateQueries({ queryKey: activityKeys.all });
+      await queryClient.invalidateQueries({ queryKey: peopleKeys.all });
       showToast("Debt saved.");
     },
     onError: (error) => {

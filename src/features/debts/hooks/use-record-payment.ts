@@ -6,7 +6,7 @@ import type { RecordPaymentInput } from "@/features/debts/view-models";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 
-import { activityKeys, debtKeys } from "./query-keys";
+import { activityKeys, debtKeys, peopleKeys } from "./query-keys";
 
 type RecordPaymentVariables = {
   debtId: string;
@@ -30,6 +30,7 @@ export function useRecordPayment() {
       await queryClient.invalidateQueries({ queryKey: debtKeys.all });
       await queryClient.invalidateQueries({ queryKey: debtKeys.detail(variables.debtId) });
       await queryClient.invalidateQueries({ queryKey: activityKeys.all });
+      await queryClient.invalidateQueries({ queryKey: peopleKeys.all });
 
       const isFullPayment = variables.input.amount >= variables.remainingBeforePayment;
       showToast(isFullPayment ? "Debt marked as paid." : "Payment recorded.");

@@ -6,3 +6,7 @@ export const debtKeys = {
 export const activityKeys = {
   all: ["activities"] as const,
 };
+
+export const peopleKeys = {
+  all: ["people"] as const,
+};

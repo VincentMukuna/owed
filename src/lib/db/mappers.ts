@@ -46,6 +46,17 @@ export type DebtWithRelations = {
 
 export type DebtSummary = Omit<DebtWithRelations, "payments">;
 
+export type PersonSummary = {
+  id: string;
+  name: string;
+  /** Remaining balance summed across the person's active (non-archived) debts. */
+  outstanding: number;
+  /** Number of active debts that still have a remaining balance. */
+  openDebtCount: number;
+  /** Most recent debt creation time, falling back to the person's creation time. */
+  lastActivityAt: string;
+};
+
 function mapDebtFields(debt: DebtsRow, person: PeopleRow, remainingAmount: number): DebtSummary {
   return {
     id: debt.id,

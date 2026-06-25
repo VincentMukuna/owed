@@ -8,10 +8,23 @@ import {
 } from "@/lib/db/mappers";
 import type { DebtsRow, PaymentsRow, PeopleRow } from "@/lib/db/row-types";
 import { createId } from "@/lib/id";
+import type { Person } from "@/types";
 
-import type { CreateDebtInput, RecordPaymentInput } from "../view-models";
+import type { CreateDebtInput, PersonRef, RecordPaymentInput } from "../view-models";
 import { activityRepository } from "./activity-repository";
 import { personRepository } from "./person-repository";
+
+async function resolvePerson(ref: PersonRef): Promise<Person> {
+  if (ref.kind === "existing") {
+    const person = await personRepository.getById(ref.id);
+    if (!person) {
+      throw new Error(`Person not found: ${ref.id}`);
+    }
+    return person;
+  }
+
+  return personRepository.create(ref.name);
+}
 
 type DebtPersonRow = DebtsRow & {
   person_name: string;
@@ -141,7 +154,7 @@ export const debtRepository = {
   },
 
   async create(input: CreateDebtInput): Promise<DebtWithRelations> {
-    const person = await personRepository.findOrCreateByName(input.personName);
+    const person = await resolvePerson(input.person);
     const db = await getDb();
     const now = new Date().toISOString();
     const id = createId();
