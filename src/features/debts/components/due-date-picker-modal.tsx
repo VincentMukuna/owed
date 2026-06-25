@@ -1,8 +1,9 @@
 import { useCallback, useState } from "react";
 
-import { Modal, Platform, Pressable, StyleSheet, Text, View } from "react-native";
+import { Modal, Platform, Pressable, Text, View } from "react-native";
 
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { isoDateToDate, toISODate } from "@/features/debts/lib/format-dates";
@@ -15,6 +16,7 @@ type DueDatePickerModalProps = {
 };
 
 export function DueDatePickerModal({ visible, value, onClose, onSave }: DueDatePickerModalProps) {
+  const { theme } = useUnistyles();
   const [draft, setDraft] = useState(() => isoDateToDate(value));
   const [wasVisible, setWasVisible] = useState(visible);
 
@@ -54,7 +56,15 @@ export function DueDatePickerModal({ visible, value, onClose, onSave }: DueDateP
   }
 
   if (Platform.OS === "android") {
-    return <DateTimePicker display="default" mode="date" onChange={handleChange} value={draft} />;
+    return (
+      <DateTimePicker
+        display="default"
+        mode="date"
+        onChange={handleChange}
+        themeVariant={theme.name}
+        value={draft}
+      />
+    );
   }
 
   return (
@@ -72,6 +82,7 @@ export function DueDatePickerModal({ visible, value, onClose, onSave }: DueDateP
             mode="date"
             onChange={handleChange}
             style={styles.picker}
+            themeVariant={theme.name}
             value={draft}
           />
         </Pressable>
@@ -80,14 +91,14 @@ export function DueDatePickerModal({ visible, value, onClose, onSave }: DueDateP
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   backdrop: {
     flex: 1,
     justifyContent: "flex-end",
-    backgroundColor: "rgba(0,0,0,0.35)",
+    backgroundColor: theme.colors.overlay,
   },
   sheet: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     paddingBottom: 24,
@@ -103,7 +114,7 @@ const styles = StyleSheet.create({
   sheetTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   doneButton: {
     paddingHorizontal: 12,
@@ -112,9 +123,9 @@ const styles = StyleSheet.create({
   doneText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#1A3A2A",
+    color: theme.colors.primary,
   },
   picker: {
     height: 220,
   },
-});
+}));

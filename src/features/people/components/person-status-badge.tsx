@@ -1,14 +1,10 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
+
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PERSON_STATUS_LABELS, type PersonStatus } from "../lib/person-status";
 
 type PilledStatus = "overdue" | "due-soon" | "settled";
-
-const CONFIG: Record<PilledStatus, { bg: string; dot: string; text: string }> = {
-  overdue: { bg: "#FEF2F2", dot: "#F87171", text: "#DC2626" },
-  "due-soon": { bg: "#FFFBEB", dot: "#F59E0B", text: "#B45309" },
-  settled: { bg: "#F0FDF4", dot: "#34D399", text: "#15803D" },
-};
 
 function hasPill(status: PersonStatus): status is PilledStatus {
   return status === "overdue" || status === "due-soon" || status === "settled";
@@ -16,11 +12,13 @@ function hasPill(status: PersonStatus): status is PilledStatus {
 
 /** Calm, relationship-first pill. Active and debt-less people show no pill. */
 export function PersonStatusBadge({ status }: { status: PersonStatus }) {
+  const { theme } = useUnistyles();
+
   if (!hasPill(status)) {
     return null;
   }
 
-  const config = CONFIG[status];
+  const config = theme.colors.personStatus[status];
 
   return (
     <View style={[styles.badge, { backgroundColor: config.bg }]}>

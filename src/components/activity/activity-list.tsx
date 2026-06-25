@@ -1,15 +1,16 @@
 import { memo, useCallback } from "react";
 
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { FlashList } from "@shopify/flash-list";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import type { ActivityView } from "@/features/debts/view-models";
 
-const TYPE_CONFIG: Record<ActivityView["type"], { bg: string; text: string; symbol: string }> = {
-  payment: { bg: "#ECFDF5", text: "#059669", symbol: "↓" },
-  add: { bg: "#F1F5F9", text: "#64748B", symbol: "+" },
-  paid: { bg: "#ECFDF5", text: "#059669", symbol: "✓" },
+const TYPE_SYMBOL: Record<ActivityView["type"], string> = {
+  payment: "↓",
+  add: "+",
+  paid: "✓",
 };
 
 type ActivityListProps = {
@@ -18,12 +19,13 @@ type ActivityListProps = {
 };
 
 export const ActivityRow = memo(({ activity }: { activity: ActivityView }) => {
-  const config = TYPE_CONFIG[activity.type];
+  const { theme } = useUnistyles();
+  const config = theme.colors.activity[activity.type];
 
   return (
     <View style={styles.row}>
       <View style={[styles.icon, { backgroundColor: config.bg }]}>
-        <Text style={[styles.symbol, { color: config.text }]}>{config.symbol}</Text>
+        <Text style={[styles.symbol, { color: config.text }]}>{TYPE_SYMBOL[activity.type]}</Text>
       </View>
       <View style={styles.copy}>
         <Text style={styles.text}>{activity.text}</Text>
@@ -57,13 +59,13 @@ export const ActivityList = memo(({ activities, contentContainerStyle }: Activit
 
 ActivityList.displayName = "ActivityList";
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   row: {
     flexDirection: "row",
     gap: 14,
     paddingVertical: 16,
     borderBottomWidth: 1,
-    borderBottomColor: "rgba(0,0,0,0.05)",
+    borderBottomColor: theme.colors.border,
   },
   icon: {
     width: 32,
@@ -83,18 +85,18 @@ const styles = StyleSheet.create({
   },
   text: {
     fontSize: 14,
-    color: "#1A1A18",
+    color: theme.colors.text,
     lineHeight: 20,
   },
   sub: {
     fontSize: 12,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     marginTop: 2,
   },
   time: {
     fontSize: 11,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     marginTop: 2,
     flexShrink: 0,
   },
-});
+}));

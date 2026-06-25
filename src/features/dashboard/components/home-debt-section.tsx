@@ -1,4 +1,6 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
+
+import { StyleSheet } from "react-native-unistyles";
 
 import { DebtCard } from "@/components/debts/debt-card";
 import { PressableScale } from "@/components/shared/pressable-scale";
@@ -42,14 +44,14 @@ export function HomeDebtSection({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   section: {
     gap: 10,
   },
   sectionTitle: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
     marginTop: 4,
@@ -57,4 +59,4 @@ const styles = StyleSheet.create({
   cards: {
     gap: 10,
   },
-});
+}));

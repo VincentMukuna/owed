@@ -1,14 +1,17 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 
 import { type Href, router, useNavigation } from "expo-router";
+
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 
 import { useAddPerson } from "../hooks/use-add-person";
 
 export function AddPersonScreen() {
+  const { theme } = useUnistyles();
   const navigation = useNavigation();
   const addPerson = useAddPerson();
   const nameRef = useRef<TextInput>(null);
@@ -60,7 +63,7 @@ export function AddPersonScreen() {
           autoFocus
           onChangeText={setName}
           placeholder="Full name"
-          placeholderTextColor="#C8C8C0"
+          placeholderTextColor={theme.colors.placeholder}
           style={styles.input}
           value={name}
         />
@@ -72,7 +75,7 @@ export function AddPersonScreen() {
           keyboardType="phone-pad"
           onChangeText={setPhone}
           placeholder="Optional"
-          placeholderTextColor="#C8C8C0"
+          placeholderTextColor={theme.colors.placeholder}
           style={styles.input}
           value={phone}
         />
@@ -83,7 +86,7 @@ export function AddPersonScreen() {
           multiline
           onChangeText={setNotes}
           placeholder="Optional. What this is about, context, etc."
-          placeholderTextColor="#C8C8C0"
+          placeholderTextColor={theme.colors.placeholder}
           style={[styles.input, styles.notesInput]}
           value={notes}
         />
@@ -101,7 +104,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   form: {
     paddingHorizontal: 20,
     paddingTop: 8,
@@ -114,22 +117,22 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   input: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
+    borderColor: theme.colors.borderStrong,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 14,
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   notesInput: {
     minHeight: 96,
     textAlignVertical: "top",
   },
-});
+}));

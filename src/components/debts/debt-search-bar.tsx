@@ -1,14 +1,9 @@
 import { forwardRef, memo, useCallback, useImperativeHandle, useRef } from "react";
 
-import {
-  Pressable,
-  StyleSheet,
-  TextInput,
-  type TextInput as TextInputType,
-  View,
-} from "react-native";
+import { Pressable, TextInput, type TextInput as TextInputType, View } from "react-native";
 
 import { Search, X } from "lucide-react-native";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 type DebtSearchBarProps = {
   value: string;
@@ -23,6 +18,7 @@ export type DebtSearchBarRef = {
 const DebtSearchBarInner = forwardRef<DebtSearchBarRef, DebtSearchBarProps>(
   ({ value, onChangeText, variant = "default" }, ref) => {
     const inputRef = useRef<TextInputType>(null);
+    const { theme } = useUnistyles();
 
     useImperativeHandle(ref, () => ({
       focus: () => {
@@ -36,7 +32,7 @@ const DebtSearchBarInner = forwardRef<DebtSearchBarRef, DebtSearchBarProps>(
 
     return (
       <View style={[styles.wrap, variant === "header" && styles.wrapHeader]}>
-        <Search color="#8A8A82" size={16} strokeWidth={2} />
+        <Search color={theme.colors.muted} size={16} strokeWidth={2} />
         <TextInput
           ref={inputRef}
           autoCapitalize="none"
@@ -44,7 +40,7 @@ const DebtSearchBarInner = forwardRef<DebtSearchBarRef, DebtSearchBarProps>(
           clearButtonMode="never"
           onChangeText={onChangeText}
           placeholder="Search by name or reason"
-          placeholderTextColor="#B8B8B0"
+          placeholderTextColor={theme.colors.mutedLight}
           returnKeyType="search"
           style={styles.input}
           value={value}
@@ -56,7 +52,7 @@ const DebtSearchBarInner = forwardRef<DebtSearchBarRef, DebtSearchBarProps>(
             onPress={clear}
             style={styles.clear}
           >
-            <X color="#8A8A82" size={14} strokeWidth={2.5} />
+            <X color={theme.colors.muted} size={14} strokeWidth={2.5} />
           </Pressable>
         ) : null}
       </View>
@@ -70,12 +66,12 @@ export const DebtSearchBar = memo(DebtSearchBarInner);
 
 DebtSearchBar.displayName = "DebtSearchBar";
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   wrap: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#EFEFEC",
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
     paddingHorizontal: 12,
     paddingVertical: 10,
@@ -87,15 +83,15 @@ const styles = StyleSheet.create({
   input: {
     flex: 1,
     fontSize: 14,
-    color: "#1A1A18",
+    color: theme.colors.text,
     padding: 0,
   },
   clear: {
     width: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: "#E0E0DA",
+    backgroundColor: theme.colors.surfaceMuted,
     alignItems: "center",
     justifyContent: "center",
   },
-});
+}));

@@ -1,8 +1,10 @@
 import { useCallback, useLayoutEffect, useState } from "react";
 
-import { ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 
 import { router, useNavigation } from "expo-router";
+
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 
@@ -14,6 +16,7 @@ type EditPersonScreenProps = {
 };
 
 export function EditPersonScreen({ personId }: EditPersonScreenProps) {
+  const { theme } = useUnistyles();
   const navigation = useNavigation();
   const { data: person, isPending } = usePersonDetail(personId);
   const updatePerson = useUpdatePerson();
@@ -86,7 +89,7 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
           autoCapitalize="words"
           onChangeText={setName}
           placeholder="Full name"
-          placeholderTextColor="#C8C8C0"
+          placeholderTextColor={theme.colors.placeholder}
           style={styles.input}
           value={nameValue}
         />
@@ -98,7 +101,7 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
           keyboardType="phone-pad"
           onChangeText={setPhone}
           placeholder="Optional"
-          placeholderTextColor="#C8C8C0"
+          placeholderTextColor={theme.colors.placeholder}
           style={styles.input}
           value={phoneValue}
         />
@@ -109,7 +112,7 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
           multiline
           onChangeText={setNotes}
           placeholder="Optional. What this is about, context, etc."
-          placeholderTextColor="#C8C8C0"
+          placeholderTextColor={theme.colors.placeholder}
           style={[styles.input, styles.notesInput]}
           value={notesValue}
         />
@@ -127,7 +130,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   form: {
     paddingHorizontal: 20,
     paddingTop: 8,
@@ -140,19 +143,19 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   input: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
+    borderColor: theme.colors.borderStrong,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 14,
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   notesInput: {
     minHeight: 96,
@@ -166,6 +169,6 @@ const styles = StyleSheet.create({
   },
   missingText: {
     fontSize: 16,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
-});
+}));

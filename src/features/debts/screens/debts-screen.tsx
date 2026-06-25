@@ -1,11 +1,12 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { router, useLocalSearchParams } from "expo-router";
 
 import type { FlashListRef } from "@shopify/flash-list";
 import { List, Search, X } from "lucide-react-native";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { DebtList } from "@/components/debts/debt-list";
 import { DebtSearchBar, type DebtSearchBarRef } from "@/components/debts/debt-search-bar";
@@ -46,6 +47,7 @@ function parseFilterParam(value: string | string[] | undefined): DebtFilterKey |
 }
 
 export function DebtsScreen() {
+  const { theme } = useUnistyles();
   const { data: debts = [], isPending } = useDebts();
   const params = useLocalSearchParams<{
     focusDate?: string;
@@ -147,9 +149,9 @@ export function DebtsScreen() {
       <View style={styles.empty}>
         <View style={styles.emptyIcon}>
           {isSearching ? (
-            <Search color="#B8B8B0" size={20} strokeWidth={1.5} />
+            <Search color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />
           ) : (
-            <List color="#B8B8B0" size={20} strokeWidth={1.5} />
+            <List color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />
           )}
         </View>
         <Text style={styles.emptyTitle}>{isSearching ? "No matches" : "Nothing here"}</Text>
@@ -158,7 +160,7 @@ export function DebtsScreen() {
         </Text>
       </View>
     ),
-    [isSearching],
+    [isSearching, theme.colors.mutedLight],
   );
 
   if (isPending) {
@@ -184,7 +186,7 @@ export function DebtsScreen() {
           <>
             <Text style={styles.title}>Debts</Text>
             <IconButton onPress={openSearch}>
-              <Search color="#4A4A42" size={16} strokeWidth={1.5} />
+              <Search color={theme.colors.icon} size={16} strokeWidth={1.5} />
             </IconButton>
           </>
         )}
@@ -221,7 +223,7 @@ export function DebtsScreen() {
           </Text>
           <PressableScale hitSlop={8} onPress={clearFocus} style={styles.focusClear}>
             <Text style={styles.focusClearText}>Clear</Text>
-            <X color="#4A4A42" size={14} strokeWidth={2} />
+            <X color={theme.colors.icon} size={14} strokeWidth={2} />
           </PressableScale>
         </View>
       ) : null}
@@ -239,7 +241,7 @@ export function DebtsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   header: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -252,7 +254,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   cancel: {
     flexShrink: 0,
@@ -260,7 +262,7 @@ const styles = StyleSheet.create({
   cancelText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#4A4A42",
+    color: theme.colors.icon,
   },
   tabsWrap: {
     paddingHorizontal: 20,
@@ -272,7 +274,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 10,
     borderRadius: 12,
-    backgroundColor: "#EFEFEC",
+    backgroundColor: theme.colors.surface,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -282,7 +284,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 12,
     fontWeight: "600",
-    color: "#4A4A42",
+    color: theme.colors.icon,
   },
   focusClear: {
     flexDirection: "row",
@@ -292,12 +294,12 @@ const styles = StyleSheet.create({
   focusClearText: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#4A4A42",
+    color: theme.colors.icon,
   },
   tabs: {
     flexDirection: "row",
     gap: 4,
-    backgroundColor: "#EFEFEC",
+    backgroundColor: theme.colors.surface,
     padding: 4,
     borderRadius: 12,
   },
@@ -308,8 +310,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   tabActive: {
-    backgroundColor: "#FFFFFF",
-    shadowColor: "#000",
+    backgroundColor: theme.colors.card,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.06,
     shadowRadius: 2,
@@ -318,10 +320,10 @@ const styles = StyleSheet.create({
   tabText: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   tabTextActive: {
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   tabCount: {
     fontSize: 10,
@@ -340,7 +342,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: "#EFEFEC",
+    backgroundColor: theme.colors.surface,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
@@ -348,11 +350,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#4A4A42",
+    color: theme.colors.icon,
   },
   emptyCopy: {
     fontSize: 12,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     marginTop: 4,
   },
-});
+}));

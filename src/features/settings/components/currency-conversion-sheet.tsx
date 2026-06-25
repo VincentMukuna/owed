@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 
-import { ActivityIndicator, Platform, StyleSheet, Text, type TextInput, View } from "react-native";
+import { ActivityIndicator, Platform, Text, type TextInput, View } from "react-native";
 
 import {
   BottomSheetBackdrop,
@@ -19,6 +19,7 @@ import {
   BottomSheetTextInput,
 } from "@gorhom/bottom-sheet";
 import { FullWindowOverlay } from "react-native-screens";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { useSuggestedExchangeRate } from "@/features/settings/hooks/use-suggested-exchange-rate";
@@ -51,6 +52,7 @@ export const CurrencyConversionSheet = forwardRef<
   CurrencyConversionSheetRef,
   CurrencyConversionSheetProps
 >(({ fromCurrency, toCurrency, totalRemaining, isSubmitting, onClose, onConfirm }, ref) => {
+  const { theme } = useUnistyles();
   const sheetRef = useRef<BottomSheetModal>(null);
   const inputRef = useRef<TextInput>(null);
   const [isOpen, setIsOpen] = useState(false);
@@ -169,7 +171,7 @@ export const CurrencyConversionSheet = forwardRef<
             keyboardType="decimal-pad"
             onChangeText={handleRateChange}
             placeholder="0.00"
-            placeholderTextColor="#B0B0A8"
+            placeholderTextColor={theme.colors.placeholder}
             style={styles.rateInput}
             value={rateText}
           />
@@ -206,7 +208,7 @@ export const CurrencyConversionSheet = forwardRef<
           style={[styles.confirmButton, (rate === undefined || isSubmitting) && styles.disabled]}
         >
           {isSubmitting ? (
-            <ActivityIndicator color="#FFFFFF" />
+            <ActivityIndicator color={theme.colors.primaryForeground} />
           ) : (
             <Text style={styles.confirmText}>Convert & switch</Text>
           )}
@@ -222,12 +224,12 @@ export const CurrencyConversionSheet = forwardRef<
 
 CurrencyConversionSheet.displayName = "CurrencyConversionSheet";
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   sheetBackground: {
-    backgroundColor: "#FBFBF8",
+    backgroundColor: theme.colors.sheet,
   },
   handle: {
-    backgroundColor: "#DDDDD8",
+    backgroundColor: theme.colors.sheetHandle,
     width: 36,
   },
   content: {
@@ -238,12 +240,12 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   subtitle: {
     fontSize: 14,
     lineHeight: 20,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   rateRow: {
     flexDirection: "row",
@@ -253,34 +255,34 @@ const styles = StyleSheet.create({
   rateLabel: {
     fontSize: 15,
     fontWeight: "500",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   rateInput: {
     flex: 1,
     minWidth: 80,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
+    borderColor: theme.colors.borderStrong,
     borderRadius: 12,
     paddingHorizontal: 14,
     paddingVertical: 12,
     fontSize: 16,
-    color: "#1A1A18",
-    backgroundColor: "#FFFFFF",
+    color: theme.colors.text,
+    backgroundColor: theme.colors.card,
   },
   rateSuffix: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   rateHint: {
     fontSize: 12,
     lineHeight: 17,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     marginTop: -8,
   },
   previewCard: {
     borderRadius: 14,
-    backgroundColor: "#F5F5F0",
+    backgroundColor: theme.colors.surface,
     paddingHorizontal: 16,
     paddingVertical: 14,
     gap: 6,
@@ -288,32 +290,32 @@ const styles = StyleSheet.create({
   previewLabel: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
   previewValue: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   previewArrow: {
-    color: "#1A3A2A",
+    color: theme.colors.primary,
   },
   previewMuted: {
-    color: "#B0B0A8",
+    color: theme.colors.placeholder,
   },
   confirmButton: {
     alignItems: "center",
     justifyContent: "center",
     minHeight: 48,
     borderRadius: 14,
-    backgroundColor: "#1A3A2A",
+    backgroundColor: theme.colors.primary,
   },
   confirmText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#FFFFFF",
+    color: theme.colors.primaryForeground,
   },
   cancelButton: {
     alignItems: "center",
@@ -322,9 +324,9 @@ const styles = StyleSheet.create({
   cancelText: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   disabled: {
     opacity: 0.5,
   },
-});
+}));

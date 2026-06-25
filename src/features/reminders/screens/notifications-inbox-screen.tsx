@@ -1,11 +1,12 @@
 import { useCallback } from "react";
 
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { router, useFocusEffect } from "expo-router";
 
 import { FlashList } from "@shopify/flash-list";
 import { Bell } from "lucide-react-native";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { NotificationRow } from "@/features/reminders/components/notification-row";
 import { useMarkInboxRead } from "@/features/reminders/hooks/use-mark-inbox-read";
@@ -13,6 +14,7 @@ import { useRemindersInbox } from "@/features/reminders/hooks/use-reminders-inbo
 import type { ReminderInboxView } from "@/features/reminders/lib/fetch-reminders";
 
 export function NotificationsInboxScreen() {
+  const { theme } = useUnistyles();
   const { data: items = [], isPending } = useRemindersInbox();
   const markInboxRead = useMarkInboxRead();
 
@@ -41,7 +43,7 @@ export function NotificationsInboxScreen() {
     return (
       <View style={styles.empty}>
         <View style={styles.emptyIcon}>
-          <Bell color="#B8B8B0" size={20} strokeWidth={1.5} />
+          <Bell color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />
         </View>
         <Text style={styles.emptyTitle}>No notifications yet</Text>
         <Text style={styles.emptyCopy}>
@@ -62,7 +64,7 @@ export function NotificationsInboxScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   list: {
     paddingHorizontal: 20,
     paddingBottom: 24,
@@ -78,7 +80,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: "#EFEFEC",
+    backgroundColor: theme.colors.surface,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
@@ -86,14 +88,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#4A4A42",
+    color: theme.colors.icon,
   },
   emptyCopy: {
     fontSize: 12,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     marginTop: 4,
     textAlign: "center",
     lineHeight: 18,
     maxWidth: 240,
   },
-});
+}));

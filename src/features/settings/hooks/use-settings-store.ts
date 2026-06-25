@@ -1,14 +1,17 @@
 import { create } from "zustand";
 
 import { APP_CONFIG } from "@/constants/config";
+import type { AppThemeName } from "@/styles/themes";
 
 type SettingsState = {
   defaultCurrency: string;
+  themePreference: AppThemeName;
   defaultReminderTime: string;
   overdueReminderEnabled: boolean;
   notificationsPermissionAsked: boolean;
   onboardingComplete: boolean;
   setDefaultCurrency: (currency: string) => void;
+  setThemePreference: (themePreference: AppThemeName) => void;
   setDefaultReminderTime: (time: string) => void;
   setOverdueReminderEnabled: (enabled: boolean) => void;
   setNotificationsPermissionAsked: (asked: boolean) => void;
@@ -17,11 +20,13 @@ type SettingsState = {
 
 export const useSettingsStore = create<SettingsState>((set) => ({
   defaultCurrency: APP_CONFIG.defaultCurrency,
+  themePreference: "light",
   defaultReminderTime: APP_CONFIG.defaultReminderTime,
   overdueReminderEnabled: false,
   notificationsPermissionAsked: false,
   onboardingComplete: false,
   setDefaultCurrency: (defaultCurrency) => set({ defaultCurrency }),
+  setThemePreference: (themePreference) => set({ themePreference }),
   setDefaultReminderTime: (defaultReminderTime) => set({ defaultReminderTime }),
   setOverdueReminderEnabled: (overdueReminderEnabled) => set({ overdueReminderEnabled }),
   setNotificationsPermissionAsked: (notificationsPermissionAsked) =>

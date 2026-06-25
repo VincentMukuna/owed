@@ -1,9 +1,10 @@
 import { useEffect } from "react";
 
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import Animated, { FadeIn, FadeOut } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native-unistyles";
 
 import { useUiStore } from "@/features/debts/store/ui-store";
 
@@ -34,7 +35,7 @@ export function Toast({ bottomOffset = 90 }: ToastProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   host: {
     position: "absolute",
     left: 0,
@@ -43,15 +44,15 @@ const styles = StyleSheet.create({
     zIndex: 100,
   },
   toast: {
-    backgroundColor: "#1A1A18",
+    backgroundColor: theme.colors.text,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 999,
     maxWidth: "90%",
   },
   text: {
-    color: "#FFFFFF",
+    color: theme.colors.background,
     fontSize: 12,
     fontWeight: "600",
   },
-});
+}));

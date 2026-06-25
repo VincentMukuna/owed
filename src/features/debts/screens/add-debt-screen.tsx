@@ -1,12 +1,13 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
-import { ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { ScrollView, Switch, Text, TextInput, View } from "react-native";
 
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 
 import Ionicons from "@expo/vector-icons/Ionicons";
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Calendar, ChevronRight, X } from "lucide-react-native";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
@@ -41,6 +42,7 @@ function exitAddDebt() {
 }
 
 export function AddDebtScreen() {
+  const { theme } = useUnistyles();
   const navigation = useNavigation();
   const {
     from,
@@ -165,13 +167,13 @@ export function AddDebtScreen() {
                 style={styles.personClear}
                 scaleTo={0.9}
               >
-                <X color="#8A8A82" size={18} strokeWidth={2} />
+                <X color={theme.colors.muted} size={18} strokeWidth={2} />
               </PressableScale>
             </View>
           ) : (
             <PressableScale onPress={openPicker} style={styles.personField}>
               <Text style={styles.personPlaceholder}>Who owes you?</Text>
-              <ChevronRight color="#C8C8C0" size={18} strokeWidth={2} />
+              <ChevronRight color={theme.colors.placeholder} size={18} strokeWidth={2} />
             </PressableScale>
           )}
         </Field>
@@ -184,7 +186,7 @@ export function AddDebtScreen() {
               keyboardType="number-pad"
               onChangeText={setAmount}
               placeholder="0"
-              placeholderTextColor="#DDDDD8"
+              placeholderTextColor={theme.colors.sheetHandle}
               style={[styles.input, styles.amountInput]}
               value={amount}
             />
@@ -219,7 +221,7 @@ export function AddDebtScreen() {
             }}
             style={styles.dateField}
           >
-            <Calendar color="#8A8A82" size={16} strokeWidth={1.5} />
+            <Calendar color={theme.colors.muted} size={16} strokeWidth={1.5} />
             <Text style={styles.dateFieldText}>{formatDueDate(dueDateIso)}</Text>
           </PressableScale>
           <DueDatePickerModal
@@ -237,7 +239,7 @@ export function AddDebtScreen() {
           <TextInput
             onChangeText={setReason}
             placeholder="e.g. Lunch, rent help, transport, emergency"
-            placeholderTextColor="#C8C8C0"
+            placeholderTextColor={theme.colors.placeholder}
             style={styles.input}
             value={reason}
           />
@@ -245,7 +247,7 @@ export function AddDebtScreen() {
 
         <Section title="Preferences">
           <View style={styles.prefRow}>
-            <Ionicons color="#8A8A82" name="notifications" size={16} />
+            <Ionicons color={theme.colors.muted} name="notifications" size={16} />
             <View style={styles.prefCopy}>
               <Text style={styles.prefTitle}>Notify me</Text>
               <Text style={styles.prefSub}>On the promised date, not sent to them</Text>
@@ -254,8 +256,8 @@ export function AddDebtScreen() {
               onValueChange={(value) => {
                 void handleReminderToggle(value);
               }}
-              thumbColor="#FFFFFF"
-              trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
+              thumbColor={theme.colors.primaryForeground}
+              trackColor={{ false: theme.colors.switchTrackOff, true: theme.colors.primary }}
               value={reminder}
             />
           </View>
@@ -299,7 +301,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   form: {
     paddingHorizontal: 20,
     paddingTop: 8,
@@ -316,24 +318,24 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   input: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
+    borderColor: theme.colors.borderStrong,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
     fontSize: 14,
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   personField: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
+    borderColor: theme.colors.borderStrong,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
@@ -343,12 +345,12 @@ const styles = StyleSheet.create({
   },
   personPlaceholder: {
     fontSize: 14,
-    color: "#C8C8C0",
+    color: theme.colors.placeholder,
   },
   personChip: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
+    borderColor: theme.colors.borderStrong,
     borderRadius: 12,
     paddingLeft: 10,
     paddingRight: 8,
@@ -370,18 +372,18 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ECEBE4",
+    backgroundColor: theme.colors.personNeutralBg,
   },
   personAvatarText: {
     fontSize: 13,
     fontWeight: "700",
-    color: "#4A4A42",
+    color: theme.colors.personNeutralText,
   },
   personChipName: {
     flex: 1,
     fontSize: 15,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   personClear: {
     width: 32,
@@ -395,7 +397,7 @@ const styles = StyleSheet.create({
     top: 18,
     fontSize: 14,
     fontWeight: "700",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     zIndex: 1,
   },
   amountInput: {
@@ -416,25 +418,25 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 999,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
-    backgroundColor: "#FFFFFF",
+    borderColor: theme.colors.borderStrong,
+    backgroundColor: theme.colors.card,
   },
   chipSelected: {
-    backgroundColor: "#1A3A2A",
+    backgroundColor: theme.colors.primary,
     borderColor: "transparent",
   },
   chipText: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#4A4A42",
+    color: theme.colors.icon,
   },
   chipTextSelected: {
-    color: "#FFFFFF",
+    color: theme.colors.primaryForeground,
   },
   dateField: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
+    borderColor: theme.colors.borderStrong,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 14,
@@ -445,7 +447,7 @@ const styles = StyleSheet.create({
   dateFieldText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   prefRow: {
     flexDirection: "row",
@@ -460,19 +462,19 @@ const styles = StyleSheet.create({
   prefTitle: {
     fontSize: 14,
     fontWeight: "500",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   prefSub: {
     fontSize: 12,
     lineHeight: 16,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   permHint: {
     marginTop: 8,
   },
   permHintText: {
     fontSize: 12,
-    color: "#D97706",
+    color: theme.colors.warning,
     lineHeight: 18,
   },
-});
+}));

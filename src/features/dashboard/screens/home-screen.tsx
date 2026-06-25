@@ -1,11 +1,12 @@
 import { useCallback, useMemo } from "react";
 
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
 import { FlashList } from "@shopify/flash-list";
 import { Wallet } from "lucide-react-native";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { ActivityRow } from "@/components/activity/activity-list";
 import { SummaryStatCard } from "@/components/debts/summary-stat-card";
@@ -30,14 +31,17 @@ type HomeSectionRow = {
   filter: DebtFilterKey;
 };
 
-function buildHomeSections(buckets: ReturnType<typeof bucketHomeDebts>): HomeSectionRow[] {
+function buildHomeSections(
+  buckets: ReturnType<typeof bucketHomeDebts>,
+  dangerColor: string,
+): HomeSectionRow[] {
   const sections: HomeSectionRow[] = [
     { key: "due-soon", title: "Due soon", debts: buckets.dueSoon, filter: "due-soon" },
     {
       key: "overdue",
       title: "Overdue",
       debts: buckets.overdue,
-      titleColor: "#F87171",
+      titleColor: dangerColor,
       filter: "overdue",
     },
     { key: "active", title: "Active", debts: buckets.activePartial, filter: "active" },
@@ -47,11 +51,12 @@ function buildHomeSections(buckets: ReturnType<typeof bucketHomeDebts>): HomeSec
 }
 
 export function HomeScreen() {
+  const { theme } = useUnistyles();
   const { data: debts = [], isPending } = useDebts();
   const { data: activities = [] } = useActivities();
 
   const buckets = useMemo(() => bucketHomeDebts(debts), [debts]);
-  const sections = useMemo(() => buildHomeSections(buckets), [buckets]);
+  const sections = useMemo(() => buildHomeSections(buckets, theme.colors.danger), [buckets, theme]);
   const recentActivity = useMemo(() => activities.slice(0, RECENT_ACTIVITY_LIMIT), [activities]);
 
   const openDebt = useCallback((debtId: string) => {
@@ -108,33 +113,37 @@ export function HomeScreen() {
 
         <View style={styles.statsGrid}>
           <View style={styles.statCell}>
-            <SummaryStatCard label="Active" value={String(buckets.activeCount)} color="#94A3B8" />
+            <SummaryStatCard
+              label="Active"
+              value={String(buckets.activeCount)}
+              color={theme.colors.status.active.dot}
+            />
           </View>
           <View style={styles.statCell}>
             <SummaryStatCard
               label="Overdue"
               value={String(buckets.overdue.length)}
-              color="#F87171"
+              color={theme.colors.danger}
             />
           </View>
           <View style={styles.statCell}>
             <SummaryStatCard
               label="Due soon"
               value={String(buckets.dueSoon.length)}
-              color="#F59E0B"
+              color={theme.colors.warning}
             />
           </View>
           <View style={styles.statCell}>
             <SummaryStatCard
               label="Paid this month"
               value={formatCurrency(buckets.paidThisMonth)}
-              color="#10B981"
+              color={theme.colors.success}
             />
           </View>
         </View>
       </View>
     ),
-    [buckets],
+    [buckets, theme],
   );
 
   const listFooter = useMemo(() => {
@@ -175,7 +184,7 @@ export function HomeScreen() {
           </View>
           <View style={styles.emptyContent}>
             <View style={styles.emptyIcon}>
-              <Wallet color="#B8B8B0" size={24} strokeWidth={1.5} />
+              <Wallet color={theme.colors.mutedLight} size={24} strokeWidth={1.5} />
             </View>
             <Text style={styles.emptyTitle}>No money tracked yet.</Text>
             <Text style={styles.emptyCopy}>
@@ -218,7 +227,7 @@ function HomeSectionSeparator() {
   return <View style={styles.sectionSeparator} />;
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   header: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -230,20 +239,20 @@ const styles = StyleSheet.create({
   kicker: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   pageTitle: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
     marginTop: 4,
   },
   pageTitleLg: {
     fontSize: 20,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
     marginTop: 2,
   },
   scroll: {
@@ -255,7 +264,7 @@ const styles = StyleSheet.create({
     paddingBottom: 20,
   },
   heroCard: {
-    backgroundColor: "#1A3A2A",
+    backgroundColor: theme.colors.hero,
     borderRadius: 16,
     padding: 20,
     overflow: "hidden",
@@ -264,7 +273,7 @@ const styles = StyleSheet.create({
   heroOrb: {
     position: "absolute",
     borderRadius: 999,
-    backgroundColor: "rgba(255,255,255,0.04)",
+    backgroundColor: theme.colors.onPrimarySurface,
   },
   heroOrbTop: {
     width: 144,
@@ -281,21 +290,21 @@ const styles = StyleSheet.create({
   heroLabel: {
     fontSize: 11,
     fontWeight: "600",
-    color: "rgba(255,255,255,0.5)",
+    color: theme.colors.onPrimarySurfaceMuted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   heroAmount: {
     fontSize: 38,
     fontWeight: "700",
-    color: "#FFFFFF",
+    color: theme.colors.primaryForeground,
     lineHeight: 40,
     marginTop: 4,
     fontVariant: ["tabular-nums"],
   },
   heroMeta: {
     fontSize: 12,
-    color: "rgba(255,255,255,0.4)",
+    color: theme.colors.onPrimarySurfaceSubtle,
     marginTop: 8,
   },
   statsGrid: {
@@ -323,14 +332,14 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   seeAll: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#1A3A2A",
+    color: theme.colors.primary,
   },
   emptyBody: {
     flex: 1,
@@ -356,7 +365,7 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 16,
-    backgroundColor: "#EFEFEC",
+    backgroundColor: theme.colors.surface,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 16,
@@ -364,14 +373,14 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 16,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   emptyCopy: {
     fontSize: 14,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textAlign: "center",
     lineHeight: 22,
     marginTop: 6,
     maxWidth: 220,
   },
-});
+}));

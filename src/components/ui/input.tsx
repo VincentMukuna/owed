@@ -1,6 +1,6 @@
 import { TextInput, type TextInputProps, View } from "react-native";
 
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { Text } from "./text";
 
@@ -11,6 +11,8 @@ type InputProps = TextInputProps & {
 };
 
 export function Input({ label, prefix, large, style, ...props }: InputProps) {
+  const { theme } = useUnistyles();
+
   styles.useVariants({ large: large ?? false });
 
   return (
@@ -22,7 +24,11 @@ export function Input({ label, prefix, large, style, ...props }: InputProps) {
       ) : null}
       <View style={styles.inputWrap}>
         {prefix ? <Text style={styles.prefix}>{prefix}</Text> : null}
-        <TextInput placeholderTextColor="#C8C8C0" style={[styles.input, style]} {...props} />
+        <TextInput
+          placeholderTextColor={theme.colors.placeholder}
+          style={[styles.input, style]}
+          {...props}
+        />
       </View>
     </View>
   );

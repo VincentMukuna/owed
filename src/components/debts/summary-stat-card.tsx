@@ -27,7 +27,7 @@ const styles = StyleSheet.create((theme) => ({
     padding: 14,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    shadowColor: "#000",
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,

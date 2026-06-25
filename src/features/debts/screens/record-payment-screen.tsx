@@ -1,8 +1,10 @@
 import { useCallback, useLayoutEffect, useState } from "react";
 
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 import { Stack, router, useLocalSearchParams, useNavigation } from "expo-router";
+
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 import { useDebt } from "@/features/debts/hooks/use-debt";
@@ -10,6 +12,7 @@ import { useRecordPayment } from "@/features/debts/hooks/use-record-payment";
 import { formatCurrency, formatCurrencyPrefix } from "@/lib/utils/formatters";
 
 export function RecordPaymentScreen() {
+  const { theme } = useUnistyles();
   const navigation = useNavigation();
   const { debtId } = useLocalSearchParams<{ debtId: string }>();
   const { data: debt, isPending } = useDebt(debtId);
@@ -83,7 +86,7 @@ export function RecordPaymentScreen() {
             keyboardType="number-pad"
             onChangeText={setPayAmount}
             placeholder="0"
-            placeholderTextColor="#DDDDD8"
+            placeholderTextColor={theme.colors.sheetHandle}
             style={[styles.input, styles.amountInput]}
             value={payAmount}
           />
@@ -100,7 +103,7 @@ export function RecordPaymentScreen() {
         <TextInput
           onChangeText={setPayNote}
           placeholder="e.g. M-Pesa, cash, bank transfer"
-          placeholderTextColor="#C8C8C0"
+          placeholderTextColor={theme.colors.placeholder}
           style={styles.input}
           value={payNote}
         />
@@ -109,7 +112,7 @@ export function RecordPaymentScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   missing: {
     flex: 1,
     alignItems: "center",
@@ -118,7 +121,7 @@ const styles = StyleSheet.create({
   },
   missingText: {
     fontSize: 16,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   form: {
     paddingHorizontal: 20,
@@ -132,7 +135,7 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
@@ -142,16 +145,18 @@ const styles = StyleSheet.create({
     top: 18,
     fontSize: 14,
     fontWeight: "700",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     zIndex: 1,
   },
   input: {
-    backgroundColor: "#F7F5F1",
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.borderStrong,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
     fontSize: 14,
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   amountInput: {
     paddingLeft: 60,
@@ -163,6 +168,6 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 12,
     fontWeight: "700",
-    color: "#1A3A2A",
+    color: theme.colors.primary,
   },
-});
+}));

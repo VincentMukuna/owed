@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 
-import { StyleSheet } from "react-native";
+import { StyleSheet } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 
@@ -17,20 +17,20 @@ export function IconButton({ onPress, children }: IconButtonProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   button: {
     width: 36,
     height: 36,
     borderRadius: 12,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderWidth: 1,
-    borderColor: "rgba(0, 0, 0, 0.08)",
+    borderColor: theme.colors.borderStrong,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: "#000",
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
     elevation: 1,
   },
-});
+}));
