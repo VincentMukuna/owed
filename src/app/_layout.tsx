@@ -15,9 +15,9 @@ import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { fetchUnreadReminderCount } from "@/features/reminders/lib/fetch-reminders";
-import { reconcileReminders } from "@/features/reminders/lib/reconcile-reminders";
 import { registerNotificationHandlers } from "@/features/reminders/lib/register-notification-handlers";
 import { hydrateReminderSettings } from "@/features/reminders/lib/reminder-storage";
+import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
 import {
@@ -63,12 +63,12 @@ export default function RootLayout() {
 
     void (async () => {
       cleanup = await registerNotificationHandlers();
-      await reconcileReminders();
+      await runReminderSync();
     })();
 
     const appStateSubscription = AppState.addEventListener("change", (state) => {
       if (state === "active") {
-        void reconcileReminders();
+        void runReminderSync();
       }
     });
 

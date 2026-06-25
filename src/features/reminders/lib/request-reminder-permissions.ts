@@ -1,57 +1,51 @@
 import { Alert, Platform } from "react-native";
 
 import {
+  type NotificationPermissionState,
   getNotificationPermissionState,
   requestOsNotificationPermissions,
 } from "@/features/reminders/lib/notification-permissions";
 import { saveNotificationsPermissionAsked } from "@/features/reminders/lib/reminder-storage";
-import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 
 const EXPLAINER_TITLE = "Get a nudge on promised dates";
 const EXPLAINER_MESSAGE =
   "Owed can remind you on the day someone promised to pay. You will still see reminders in the app if notifications are off.";
 
-export async function promptForReminderPermissionsIfNeeded(): Promise<void> {
+/**
+ * Called when the user turns a reminder on. Primes + requests OS permission
+ * when it has never been asked; otherwise returns the current state so the
+ * caller can surface an inline hint. Never blocks enabling the reminder.
+ */
+export async function requestReminderPermissionOnToggle(): Promise<NotificationPermissionState> {
   if (Platform.OS === "web") {
-    return;
+    return "off";
   }
 
-  const permissionState = await getNotificationPermissionState();
-  if (permissionState === "allowed") {
-    return;
+  const state = await getNotificationPermissionState();
+  if (state === "allowed" || state === "off") {
+    return state;
   }
 
-  const { notificationsPermissionAsked } = useSettingsStore.getState();
-  if (notificationsPermissionAsked) {
-    return;
-  }
-
-  await new Promise<void>((resolve) => {
+  return new Promise<NotificationPermissionState>((resolve) => {
     Alert.alert(EXPLAINER_TITLE, EXPLAINER_MESSAGE, [
       {
         text: "Not now",
         style: "cancel",
-        onPress: () => resolve(),
+        onPress: () => {
+          void saveNotificationsPermissionAsked(true);
+          resolve("not-asked");
+        },
       },
       {
         text: "Allow",
         onPress: () => {
           void (async () => {
             await saveNotificationsPermissionAsked(true);
-            await requestOsNotificationPermissions();
-            resolve();
+            const result = await requestOsNotificationPermissions();
+            resolve(result);
           })();
         },
       },
     ]);
   });
-}
-
-export async function requestReminderPermissionsFromOnboarding(): Promise<void> {
-  if (Platform.OS === "web") {
-    return;
-  }
-
-  await saveNotificationsPermissionAsked(true);
-  await requestOsNotificationPermissions();
 }

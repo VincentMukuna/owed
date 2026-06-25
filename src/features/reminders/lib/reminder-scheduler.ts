@@ -1,4 +1,4 @@
-import { formatCurrency } from "@/lib/utils/formatters";
+import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 import type { ReminderType } from "@/types";
 
 function parseISODate(dateStr: string): Date {
@@ -61,5 +61,36 @@ export function buildReminderNotificationContent(input: {
   return {
     title: "Promised today",
     body: `${input.personName} promised to pay ${amount} today.`,
+  };
+}
+
+export function groupKeyFor(type: ReminderType, bucketDate: string): string {
+  return `${type}:${bucketDate}`;
+}
+
+export function buildCollapsedReminderContent(input: {
+  type: ReminderType;
+  /** Names ordered by remaining amount descending; only the first two are shown. */
+  names: string[];
+  totalCount: number;
+  totalRemaining: number;
+  currency: string;
+}): ReminderNotificationContent {
+  const amount = formatCurrency(input.totalRemaining, input.currency);
+  const shown = input.names.slice(0, 2).map(getFirstName);
+  const remainder = input.totalCount - shown.length;
+  const lead = shown.join(", ");
+  const people = remainder > 0 ? `${lead}, and ${remainder} more` : lead;
+
+  if (input.type === "overdue") {
+    return {
+      title: "Overdue",
+      body: `${people} were due yesterday — ${amount} still owed.`,
+    };
+  }
+
+  return {
+    title: "Promised today",
+    body: `${people} promised you ${amount} today.`,
   };
 }

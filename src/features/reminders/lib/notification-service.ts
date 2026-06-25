@@ -43,10 +43,11 @@ export async function initNotifications(): Promise<void> {
   initialized = true;
 }
 
-export type ScheduleReminderNotificationInput = ReminderNotificationData & {
+export type ScheduleReminderNotificationInput = {
   remindAt: string;
   title: string;
   body: string;
+  data: ReminderNotificationData;
 };
 
 export async function scheduleReminderNotification(
@@ -65,11 +66,7 @@ export async function scheduleReminderNotification(
     content: {
       title: input.title,
       body: input.body,
-      data: {
-        debtId: input.debtId,
-        reminderId: input.reminderId,
-        type: input.type,
-      },
+      data: input.data as unknown as Record<string, unknown>,
     },
     trigger: {
       type: SchedulableTriggerInputTypes.DATE,
@@ -89,6 +86,17 @@ export async function cancelReminderNotification(notificationId: string): Promis
   } catch {
     // Notification may already have fired or been cleared by the OS.
   }
+}
+
+export async function cancelReminderNotifications(
+  notificationIds: Iterable<string>,
+): Promise<void> {
+  if (Platform.OS === "web") {
+    return;
+  }
+
+  const unique = new Set(notificationIds);
+  await Promise.all([...unique].map((id) => cancelReminderNotification(id)));
 }
 
 export async function listScheduledOsNotificationIds(): Promise<Set<string>> {

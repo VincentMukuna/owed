@@ -14,6 +14,14 @@ function navigateToDebtFromNotification(data: Record<string, unknown> | undefine
     return;
   }
 
+  if (parsed.kind === "group") {
+    router.push({
+      pathname: "/debts",
+      params: { focusDate: parsed.focusDate, focusType: parsed.type },
+    });
+    return;
+  }
+
   router.push(`/debt/${parsed.debtId}`);
 }
 

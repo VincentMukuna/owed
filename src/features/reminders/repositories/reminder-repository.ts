@@ -9,6 +9,7 @@ export type CreateReminderInput = {
   remindAt: string;
   status?: ReminderStatus;
   notificationId?: string;
+  groupKey?: string;
 };
 
 export type ReminderInboxItem = Reminder & {
@@ -33,6 +34,8 @@ function rowToReminder(row: RemindersRow): Reminder {
     status: row.status as ReminderStatus,
     notificationId: row.notification_id ?? undefined,
     readAt: row.read_at ?? undefined,
+    groupKey: row.group_key ?? undefined,
+    archivedAt: row.archived_at ?? undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -62,15 +65,19 @@ export const reminderRepository = {
         status,
         notification_id,
         read_at,
+        group_key,
+        archived_at,
         created_at,
         updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       id,
       input.debtId,
       input.type,
       input.remindAt,
       input.status ?? "scheduled",
       input.notificationId ?? null,
+      null,
+      input.groupKey ?? null,
       null,
       now,
       now,
@@ -102,11 +109,38 @@ export const reminderRepository = {
     return row ? rowToReminder(row) : null;
   },
 
+  async getActiveByDebtTypeAndRemindAt(
+    debtId: string,
+    type: ReminderType,
+    remindAt: string,
+  ): Promise<Reminder | null> {
+    const db = await getDb();
+    const row = await db.getFirstAsync<RemindersRow>(
+      `SELECT * FROM reminders
+       WHERE debt_id = ? AND type = ? AND remind_at = ? AND status IN ('scheduled', 'sent')
+       LIMIT 1`,
+      debtId,
+      type,
+      remindAt,
+    );
+    return row ? rowToReminder(row) : null;
+  },
+
   async listScheduled(): Promise<Reminder[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<RemindersRow>(
       `SELECT * FROM reminders
        WHERE status = 'scheduled'
+       ORDER BY remind_at ASC`,
+    );
+    return rows.map(rowToReminder);
+  },
+
+  async listActive(): Promise<Reminder[]> {
+    const db = await getDb();
+    const rows = await db.getAllAsync<RemindersRow>(
+      `SELECT * FROM reminders
+       WHERE status IN ('scheduled', 'sent')
        ORDER BY remind_at ASC`,
     );
     return rows.map(rowToReminder);
@@ -182,7 +216,7 @@ export const reminderRepository = {
         FROM payments
         GROUP BY debt_id
       ) pay_totals ON pay_totals.debt_id = d.id
-      WHERE r.status = 'sent'
+      WHERE r.status = 'sent' AND r.archived_at IS NULL
       ORDER BY r.remind_at DESC`,
     );
     return rows.map(rowToInboxItem);
@@ -193,9 +227,52 @@ export const reminderRepository = {
     const row = await db.getFirstAsync<{ count: number }>(
       `SELECT COUNT(*) AS count
        FROM reminders
-       WHERE status = 'sent' AND read_at IS NULL`,
+       WHERE status = 'sent' AND read_at IS NULL AND archived_at IS NULL`,
     );
     return row?.count ?? 0;
+  },
+
+  async markArchivedBefore(iso: string): Promise<void> {
+    const db = await getDb();
+    const now = new Date().toISOString();
+    await db.runAsync(
+      `UPDATE reminders
+       SET archived_at = ?, updated_at = ?
+       WHERE status IN ('sent', 'cancelled')
+         AND archived_at IS NULL
+         AND remind_at < ?`,
+      now,
+      now,
+      iso,
+    );
+  },
+
+  async clearScheduledNotificationIds(): Promise<void> {
+    const db = await getDb();
+    const now = new Date().toISOString();
+    await db.runAsync(
+      `UPDATE reminders
+       SET notification_id = NULL, updated_at = ?
+       WHERE status = 'scheduled' AND notification_id IS NOT NULL`,
+      now,
+    );
+  },
+
+  async setRemindersNotificationId(ids: string[], notificationId: string): Promise<void> {
+    if (ids.length === 0) {
+      return;
+    }
+    const db = await getDb();
+    const now = new Date().toISOString();
+    const placeholders = ids.map(() => "?").join(", ");
+    await db.runAsync(
+      `UPDATE reminders
+       SET notification_id = ?, updated_at = ?
+       WHERE id IN (${placeholders})`,
+      notificationId,
+      now,
+      ...ids,
+    );
   },
 
   async markAllInboxRead(): Promise<void> {
@@ -217,6 +294,7 @@ export const reminderRepository = {
       remindAt?: string;
       notificationId?: string | null;
       readAt?: string | null;
+      groupKey?: string | null;
     },
   ): Promise<void> {
     const db = await getDb();
@@ -232,12 +310,13 @@ export const reminderRepository = {
 
     await db.runAsync(
       `UPDATE reminders
-       SET status = ?, remind_at = ?, notification_id = ?, read_at = ?, updated_at = ?
+       SET status = ?, remind_at = ?, notification_id = ?, read_at = ?, group_key = ?, updated_at = ?
        WHERE id = ?`,
       input.status ?? current.status,
       input.remindAt ?? current.remind_at,
       input.notificationId !== undefined ? input.notificationId : current.notification_id,
       input.readAt !== undefined ? input.readAt : current.read_at,
+      input.groupKey !== undefined ? input.groupKey : current.group_key,
       now,
       id,
     );

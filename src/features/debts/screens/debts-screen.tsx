@@ -2,33 +2,52 @@ import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } f
 
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 import type { FlashListRef } from "@shopify/flash-list";
-import { List, Search } from "lucide-react-native";
+import { List, Search, X } from "lucide-react-native";
 
 import { DebtList } from "@/components/debts/debt-list";
 import { DebtSearchBar, type DebtSearchBarRef } from "@/components/debts/debt-search-bar";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { IconButton } from "@/components/shared/icon-button";
+import { PressableScale } from "@/components/shared/pressable-scale";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import {
   type DebtFilterKey,
   computeDebtTabCounts,
+  filterDebtsByDueDate,
   filterSearchAndSortDebts,
 } from "@/features/debts/lib/debt-list-utils";
+import { formatDueDate } from "@/features/debts/lib/format-dates";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { selectionChange } from "@/lib/haptics";
+import type { ReminderType } from "@/types";
+
+type ReminderFocus = { date: string; type: ReminderType };
 
 export function DebtsScreen() {
   const { data: debts = [], isPending } = useDebts();
+  const params = useLocalSearchParams<{ focusDate?: string; focusType?: string }>();
   const [filter, setFilter] = useState<DebtFilterKey>("all");
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const listRef = useRef<FlashListRef<DebtCardView>>(null);
   const searchRef = useRef<DebtSearchBarRef>(null);
+
+  const focus = useMemo<ReminderFocus | null>(() => {
+    const focusDate = params.focusDate;
+    if (typeof focusDate !== "string" || focusDate.length === 0) {
+      return null;
+    }
+    return { date: focusDate, type: params.focusType === "overdue" ? "overdue" : "due" };
+  }, [params.focusDate, params.focusType]);
+
+  const clearFocus = useCallback(() => {
+    router.setParams({ focusDate: "", focusType: "" });
+  }, []);
 
   const tabCounts = useMemo(() => computeDebtTabCounts(debts), [debts]);
 
@@ -43,13 +62,16 @@ export function DebtsScreen() {
   );
 
   const visibleDebts = useMemo(
-    () => filterSearchAndSortDebts(debts, filter, deferredSearchQuery),
-    [debts, filter, deferredSearchQuery],
+    () =>
+      focus
+        ? filterDebtsByDueDate(debts, focus.date)
+        : filterSearchAndSortDebts(debts, filter, deferredSearchQuery),
+    [debts, filter, deferredSearchQuery, focus],
   );
 
   useEffect(() => {
     listRef.current?.scrollToTop({ animated: false });
-  }, [filter, deferredSearchQuery]);
+  }, [filter, deferredSearchQuery, focus]);
 
   useEffect(() => {
     if (!searchOpen) {
@@ -67,8 +89,18 @@ export function DebtsScreen() {
 
   const openSearch = useCallback(() => {
     selectionChange();
+    clearFocus();
     setSearchOpen(true);
-  }, []);
+  }, [clearFocus]);
+
+  const selectFilter = useCallback(
+    (key: DebtFilterKey) => {
+      selectionChange();
+      clearFocus();
+      setFilter(key);
+    },
+    [clearFocus],
+  );
 
   const closeSearch = useCallback(() => {
     setSearchQuery("");
@@ -140,10 +172,7 @@ export function DebtsScreen() {
             return (
               <Pressable
                 key={tab.key}
-                onPress={() => {
-                  selectionChange();
-                  setFilter(tab.key);
-                }}
+                onPress={() => selectFilter(tab.key)}
                 style={[styles.tab, active && styles.tabActive]}
               >
                 <Text style={[styles.tabText, active && styles.tabTextActive]}>
@@ -157,6 +186,20 @@ export function DebtsScreen() {
           })}
         </View>
       </View>
+
+      {focus ? (
+        <View style={styles.focusBanner}>
+          <Text style={styles.focusText} numberOfLines={1}>
+            {focus.type === "overdue"
+              ? `${visibleDebts.length} overdue from ${formatDueDate(focus.date)}`
+              : `${visibleDebts.length} promised on ${formatDueDate(focus.date)}`}
+          </Text>
+          <PressableScale hitSlop={8} onPress={clearFocus} style={styles.focusClear}>
+            <Text style={styles.focusClearText}>Clear</Text>
+            <X color="#4A4A42" size={14} strokeWidth={2} />
+          </PressableScale>
+        </View>
+      ) : null}
 
       <DebtList
         ref={listRef}
@@ -197,6 +240,34 @@ const styles = StyleSheet.create({
   tabsWrap: {
     paddingHorizontal: 20,
     paddingBottom: 12,
+  },
+  focusBanner: {
+    marginHorizontal: 20,
+    marginBottom: 8,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: "#EFEFEC",
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  focusText: {
+    flex: 1,
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#4A4A42",
+  },
+  focusClear: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+  },
+  focusClearText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: "#4A4A42",
   },
   tabs: {
     flexDirection: "row",

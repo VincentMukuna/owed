@@ -7,25 +7,22 @@ import { useFocusEffect } from "expo-router";
 
 import { ChevronRight } from "lucide-react-native";
 
-import { TabScreen } from "@/components/navigation/tab-screen";
+import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import {
   type NotificationPermissionState,
   getNotificationPermissionState,
   openOsNotificationSettings,
   requestOsNotificationPermissions,
 } from "@/features/reminders/lib/notification-permissions";
-import { reconcileReminders } from "@/features/reminders/lib/reconcile-reminders";
 import {
   saveDefaultReminderTime,
   saveOverdueReminderEnabled,
 } from "@/features/reminders/lib/reminder-storage";
-import { rescheduleAllEligibleReminders } from "@/features/reminders/lib/reminder-sync";
+import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 import { ReminderTimePickerModal } from "@/features/settings/components/reminder-time-picker-modal";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { formatReminderTimeDisplay } from "@/features/settings/lib/format-reminder-time";
-import { queryClient } from "@/lib/api/query-client";
 import { selectionChange } from "@/lib/haptics";
 
 let DevToolsSection: ComponentType | null = null;
@@ -48,6 +45,7 @@ function permissionLabel(state: NotificationPermissionState): string {
 }
 
 export function SettingsScreen() {
+  const tabScrollPadding = useTabScrollPadding();
   const defaultCurrency = useSettingsStore((state) => state.defaultCurrency);
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
   const overdueReminderEnabled = useSettingsStore((state) => state.overdueReminderEnabled);
@@ -79,16 +77,13 @@ export function SettingsScreen() {
 
   const handleReminderTimeSave = useCallback(async (time24: string) => {
     await saveDefaultReminderTime(time24);
-    await rescheduleAllEligibleReminders();
-    await reconcileReminders();
-    await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
+    await runReminderSync();
   }, []);
 
   const handleOverdueToggle = useCallback(async (enabled: boolean) => {
     selectionChange();
     await saveOverdueReminderEnabled(enabled);
-    await reconcileReminders();
-    await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
+    await runReminderSync();
   }, []);
 
   const handleNotificationsPress = useCallback(async () => {
@@ -100,8 +95,11 @@ export function SettingsScreen() {
     }
 
     if (permissionState === "not-asked") {
-      await requestOsNotificationPermissions();
+      const state = await requestOsNotificationPermissions();
       refreshPermissionState();
+      if (state === "allowed") {
+        await runReminderSync();
+      }
     }
   }, [permissionState, refreshPermissionState]);
 
@@ -111,7 +109,10 @@ export function SettingsScreen() {
         <Text style={styles.title}>Settings</Text>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, { paddingBottom: tabScrollPadding }]}
+        showsVerticalScrollIndicator={false}
+      >
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Preferences</Text>
           <View style={styles.card}>
@@ -235,7 +236,6 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
     gap: 20,
   },
   section: {

@@ -4,7 +4,7 @@ import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
 import type { RecordPaymentInput } from "@/features/debts/view-models";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
-import { cancelRemindersForDebt } from "@/features/reminders/lib/reminder-sync";
+import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 
 import { activityKeys, debtKeys } from "./query-keys";
 
@@ -21,11 +21,11 @@ export function useRecordPayment() {
   return useMutation({
     mutationFn: ({ debtId, input }: RecordPaymentVariables) =>
       debtRepository.recordPayment(debtId, input),
-    onSuccess: async (debt, variables) => {
-      if (debt.remainingAmount <= 0) {
-        await cancelRemindersForDebt(variables.debtId);
-        await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
-      }
+    onSuccess: async (_debt, variables) => {
+      // Any payment can change a debt's balance (and therefore an individual
+      // reminder's amount or a collapsed bucket's total), so always re-sync.
+      await runReminderSync();
+      await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
 
       await queryClient.invalidateQueries({ queryKey: debtKeys.all });
       await queryClient.invalidateQueries({ queryKey: debtKeys.detail(variables.debtId) });
