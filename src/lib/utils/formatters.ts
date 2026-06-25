@@ -54,10 +54,13 @@ function formatCurrencyParts(amount: number, code: string): string {
   const parts = formatToPartsSafe(formatter, amount);
 
   if (parts) {
-    return parts.map((part) => (part.type === "currency" ? symbol : part.value)).join("");
+    return parts
+      .filter((part) => part.type !== "literal" || !/^\s*$/.test(part.value))
+      .map((part) => (part.type === "currency" ? symbol : part.value))
+      .join("");
   }
 
-  return `${symbol} ${amount.toLocaleString()}`;
+  return `${symbol}${amount.toLocaleString()}`;
 }
 
 export function formatCurrency(amount: number, currency?: string): string {
@@ -67,7 +70,7 @@ export function formatCurrency(amount: number, currency?: string): string {
     return formatCurrencyParts(amount, code);
   } catch {
     const symbol = CURRENCY_SYMBOLS[code] ?? code;
-    return `${symbol} ${amount.toLocaleString()}`;
+    return `${symbol}${amount.toLocaleString()}`;
   }
 }
 
