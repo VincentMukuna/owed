@@ -60,6 +60,8 @@ export interface Reminder {
   status: ReminderStatus;
   notificationId?: string;
   readAt?: string;
+  groupKey?: string;
+  archivedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

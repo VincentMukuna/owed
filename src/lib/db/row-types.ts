@@ -54,6 +54,8 @@ export interface RemindersRow {
   status: string;
   notification_id: string | null;
   read_at: string | null;
+  group_key: string | null;
+  archived_at: string | null;
   created_at: string;
   updated_at: string;
 }
