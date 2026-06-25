@@ -20,7 +20,7 @@ type SettingsState = {
 
 export const useSettingsStore = create<SettingsState>((set) => ({
   defaultCurrency: APP_CONFIG.defaultCurrency,
-  themePreference: "light",
+  themePreference: "auto",
   defaultReminderTime: APP_CONFIG.defaultReminderTime,
   overdueReminderEnabled: false,
   notificationsPermissionAsked: false,

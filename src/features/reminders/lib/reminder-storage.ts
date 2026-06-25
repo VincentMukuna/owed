@@ -45,7 +45,7 @@ function applyThemePreference(themePreference: ThemePreference): void {
 export async function hydratePersistedSettings(): Promise<void> {
   const stored = await loadPersistedSettings();
   const store = useSettingsStore.getState();
-  const themePreference = stored?.themePreference ?? "light";
+  const themePreference = stored?.themePreference ?? "auto";
 
   store.setDefaultCurrency(stored?.defaultCurrency ?? APP_CONFIG.defaultCurrency);
   applyThemePreference(themePreference);
