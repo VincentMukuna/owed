@@ -17,16 +17,32 @@ function normalizeCurrencySymbol(symbol: string): string {
   return symbol === "US$" ? "$" : symbol;
 }
 
-function resolveCurrencySymbol(code: string): string {
-  const parts = new Intl.NumberFormat(undefined, {
+function createCurrencyFormatter(code: string): Intl.NumberFormat {
+  return new Intl.NumberFormat(undefined, {
     ...CURRENCY_FORMAT_OPTIONS,
     currency: code,
     currencyDisplay: "symbol",
-  }).formatToParts(0);
+  });
+}
 
-  const fromIntl = parts.find((part) => part.type === "currency")?.value;
-  if (fromIntl && fromIntl !== code) {
-    return normalizeCurrencySymbol(fromIntl);
+/** Hermes does not implement `formatToParts`; fall back to the static symbol map. */
+function formatToPartsSafe(
+  formatter: Intl.NumberFormat,
+  value: number,
+): Intl.NumberFormatPart[] | null {
+  if (typeof formatter.formatToParts !== "function") {
+    return null;
+  }
+  return formatter.formatToParts(value);
+}
+
+function resolveCurrencySymbol(code: string): string {
+  const parts = formatToPartsSafe(createCurrencyFormatter(code), 0);
+  if (parts) {
+    const fromIntl = parts.find((part) => part.type === "currency")?.value;
+    if (fromIntl && fromIntl !== code) {
+      return normalizeCurrencySymbol(fromIntl);
+    }
   }
 
   return CURRENCY_SYMBOLS[code] ?? code;
@@ -34,13 +50,14 @@ function resolveCurrencySymbol(code: string): string {
 
 function formatCurrencyParts(amount: number, code: string): string {
   const symbol = resolveCurrencySymbol(code);
-  const parts = new Intl.NumberFormat(undefined, {
-    ...CURRENCY_FORMAT_OPTIONS,
-    currency: code,
-    currencyDisplay: "symbol",
-  }).formatToParts(amount);
+  const formatter = createCurrencyFormatter(code);
+  const parts = formatToPartsSafe(formatter, amount);
 
-  return parts.map((part) => (part.type === "currency" ? symbol : part.value)).join("");
+  if (parts) {
+    return parts.map((part) => (part.type === "currency" ? symbol : part.value)).join("");
+  }
+
+  return `${symbol} ${amount.toLocaleString()}`;
 }
 
 export function formatCurrency(amount: number, currency?: string): string {
