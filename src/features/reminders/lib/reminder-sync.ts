@@ -179,3 +179,15 @@ export async function cancelReminderRecord(reminder: Reminder): Promise<void> {
     notificationId: null,
   });
 }
+
+export async function rescheduleAllEligibleReminders(): Promise<void> {
+  const summaries = await debtRepository.listSummaries();
+
+  for (const debt of summaries) {
+    if (!isDebtReminderEligible(debt)) {
+      continue;
+    }
+
+    await syncRemindersForDebt(debt.id);
+  }
+}

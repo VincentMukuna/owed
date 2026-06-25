@@ -12,6 +12,7 @@ import { useAddDebt } from "@/features/debts/hooks/use-add-debt";
 import { resolveQuickDate } from "@/features/debts/lib/format-dates";
 import type { CreateDebtInput } from "@/features/debts/view-models";
 import { completeOnboarding } from "@/features/onboarding/lib/onboarding-storage";
+import { promptForReminderPermissionsIfNeeded } from "@/features/reminders/lib/request-reminder-permissions";
 import { selectionChange } from "@/lib/haptics";
 import { HOME_ROUTE } from "@/lib/navigation/routes";
 
@@ -54,6 +55,18 @@ export function AddDebtScreen() {
   const parsedAmount = parseInt(amount, 10);
   const resolvedDueDate = resolveDueDate(quickDate, dueDate);
   const canSave = name.trim().length > 0 && parsedAmount > 0 && Boolean(resolvedDueDate);
+
+  const handleReminderToggle = useCallback(async (value: boolean) => {
+    selectionChange();
+
+    if (!value) {
+      setReminder(false);
+      return;
+    }
+
+    await promptForReminderPermissionsIfNeeded();
+    setReminder(true);
+  }, []);
 
   const handleSave = useCallback(() => {
     if (!canSave || !resolvedDueDate) return;
@@ -171,8 +184,7 @@ export function AddDebtScreen() {
         </View>
         <Switch
           onValueChange={(value) => {
-            selectionChange();
-            setReminder(value);
+            void handleReminderToggle(value);
           }}
           thumbColor="#FFFFFF"
           trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}

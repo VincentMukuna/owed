@@ -5,7 +5,7 @@ import { ScrollView, StyleSheet, Text, View } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
 
-import { Wallet } from "lucide-react-native";
+import { Bell, Wallet } from "lucide-react-native";
 import Animated, {
   FadeInDown,
   useAnimatedStyle,
@@ -18,6 +18,8 @@ import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { completeOnboarding } from "@/features/onboarding/lib/onboarding-storage";
+import { requestReminderPermissionsFromOnboarding } from "@/features/reminders/lib/request-reminder-permissions";
+import { selectionChange } from "@/lib/haptics";
 import { HOME_ROUTE } from "@/lib/navigation/routes";
 
 function PreviewDebtCard() {
@@ -76,6 +78,33 @@ export function OnboardingScreen() {
 
         <Animated.View entering={FadeInDown.delay(150).duration(400)} style={styles.previewWrap}>
           <PreviewDebtCard />
+        </Animated.View>
+
+        <Animated.View
+          entering={FadeInDown.delay(250).duration(400)}
+          style={styles.notificationsCard}
+        >
+          <View style={styles.notificationsIcon}>
+            <Bell color="#1A3A2A" size={18} strokeWidth={1.5} />
+          </View>
+          <Text style={styles.notificationsTitle}>Get a nudge on promised dates</Text>
+          <Text style={styles.notificationsCopy}>
+            We will remind you when someone said they would pay. Your data stays private.
+          </Text>
+          <View style={styles.notificationsActions}>
+            <PressableScale onPress={() => selectionChange()} style={styles.notificationsGhost}>
+              <Text style={styles.notificationsGhostText}>Not now</Text>
+            </PressableScale>
+            <PressableScale
+              onPress={() => {
+                selectionChange();
+                void requestReminderPermissionsFromOnboarding();
+              }}
+              style={styles.notificationsAllow}
+            >
+              <Text style={styles.notificationsAllowText}>Allow</Text>
+            </PressableScale>
+          </View>
         </Animated.View>
 
         <Text style={styles.privacy}>
@@ -207,6 +236,70 @@ const styles = StyleSheet.create({
   previewDue: {
     fontSize: 12,
     color: "#8A8A82",
+  },
+  notificationsCard: {
+    width: "100%",
+    maxWidth: 300,
+    backgroundColor: "#FFFFFF",
+    borderRadius: 16,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.06)",
+    marginBottom: 16,
+    alignItems: "center",
+  },
+  notificationsIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 12,
+    backgroundColor: "#ECFDF5",
+    alignItems: "center",
+    justifyContent: "center",
+    marginBottom: 10,
+  },
+  notificationsTitle: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: "#1A1A18",
+    textAlign: "center",
+  },
+  notificationsCopy: {
+    fontSize: 12,
+    color: "#8A8A82",
+    lineHeight: 18,
+    textAlign: "center",
+    marginTop: 6,
+    marginBottom: 14,
+  },
+  notificationsActions: {
+    flexDirection: "row",
+    gap: 10,
+    width: "100%",
+  },
+  notificationsGhost: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: "rgba(0,0,0,0.08)",
+    alignItems: "center",
+  },
+  notificationsGhostText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#4A4A42",
+  },
+  notificationsAllow: {
+    flex: 1,
+    paddingVertical: 10,
+    borderRadius: 12,
+    backgroundColor: "#1A3A2A",
+    alignItems: "center",
+  },
+  notificationsAllowText: {
+    fontSize: 13,
+    fontWeight: "600",
+    color: "#FFFFFF",
   },
   privacy: {
     fontSize: 11,
