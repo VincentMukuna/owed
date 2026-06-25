@@ -3,10 +3,13 @@ import { StyleSheet, Text, View } from "react-native";
 import { Button } from "@/components/ui/button";
 
 import { useSeedDebts } from "../hooks/use-seed-debts";
+import { useSeedReminderTest } from "../hooks/use-seed-reminder-test";
 import { SEED_DEBT_COUNT, SEED_PAYMENT_ACTIVITY_COUNT, SEED_PEOPLE_COUNT } from "./seed-debts";
+import { SEED_REMINDER_TEST_COUNT } from "./seed-reminder-test";
 
 export function DevToolsSection() {
   const seedDebts = useSeedDebts();
+  const seedReminderTest = useSeedReminderTest();
 
   return (
     <View style={styles.section}>
@@ -24,6 +27,24 @@ export function DevToolsSection() {
             variant="secondary"
           >
             {seedDebts.isPending ? "Seeding…" : "Seed sample data"}
+          </Button>
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.content}>
+          <Text style={styles.description}>
+            Set the reminder time a few minutes ahead, then seed {SEED_REMINDER_TEST_COUNT}{" "}
+            reminder-enabled debts due today. They share one bucket, so the next run fires a single
+            grouped notification.
+          </Text>
+          <Button
+            disabled={seedReminderTest.isPending}
+            fullWidth
+            onPress={() => seedReminderTest.mutate()}
+            variant="secondary"
+          >
+            {seedReminderTest.isPending ? "Seeding…" : "Seed grouped reminder test"}
           </Button>
         </View>
       </View>
