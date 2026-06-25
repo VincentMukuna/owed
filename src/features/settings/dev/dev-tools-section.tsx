@@ -1,21 +1,68 @@
 import { Alert, Text, View } from "react-native";
 
+import { useRouter } from "expo-router";
+
+import { ChevronRight } from "lucide-react-native";
 import { StyleSheet } from "react-native-unistyles";
 
-import { Button } from "@/components/ui/button";
+import { PressableScale } from "@/components/shared/pressable-scale";
+import { selectionChange } from "@/lib/haptics";
 
 import { useResetDatabase } from "../hooks/use-reset-database";
+import { useResetOnboardingState } from "../hooks/use-reset-onboarding-state";
 import { useSeedDebts } from "../hooks/use-seed-debts";
 import { useSeedReminderTest } from "../hooks/use-seed-reminder-test";
 import { SEED_DEBT_COUNT, SEED_PAYMENT_ACTIVITY_COUNT, SEED_PEOPLE_COUNT } from "./seed-debts";
 import { SEED_REMINDER_TEST_COUNT } from "./seed-reminder-test";
 
+type DevToolRowProps = {
+  icon: string;
+  title: string;
+  description: string;
+  value: string;
+  disabled?: boolean;
+  bordered?: boolean;
+  onPress: () => void;
+};
+
+function DevToolRow({
+  icon,
+  title,
+  description,
+  value,
+  disabled = false,
+  bordered = false,
+  onPress,
+}: DevToolRowProps) {
+  return (
+    <PressableScale
+      accessibilityRole="button"
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.row, bordered && styles.rowBorder]}
+    >
+      <Text style={styles.icon}>{icon}</Text>
+      <View style={styles.rowCopy}>
+        <Text style={styles.label}>{title}</Text>
+        <Text style={styles.description}>{description}</Text>
+      </View>
+      <View style={styles.valueWrap}>
+        <Text style={styles.value}>{value}</Text>
+        <ChevronRight color={styles.chevron.color} size={16} strokeWidth={2} />
+      </View>
+    </PressableScale>
+  );
+}
+
 export function DevToolsSection() {
+  const router = useRouter();
   const seedDebts = useSeedDebts();
   const seedReminderTest = useSeedReminderTest();
   const resetDatabase = useResetDatabase();
+  const resetOnboarding = useResetOnboardingState();
 
   const confirmReset = () => {
+    selectionChange();
     Alert.alert(
       "Clear all records?",
       "Deletes all debts, people, payments, activity, and notifications. Your preferences stay unchanged. OS notification permission is unchanged.",
@@ -32,62 +79,67 @@ export function DevToolsSection() {
     );
   };
 
+  const confirmOnboardingReset = () => {
+    selectionChange();
+    Alert.alert(
+      "Reset onboarding?",
+      "Marks onboarding as incomplete and opens the onboarding flow again. Your records and preferences stay unchanged.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Reset",
+          style: "destructive",
+          onPress: () => {
+            resetOnboarding.mutate(undefined, {
+              onSuccess: () => {
+                router.replace("/onboarding");
+              },
+            });
+          },
+        },
+      ],
+    );
+  };
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Developer</Text>
       <View style={styles.card}>
-        <View style={styles.content}>
-          <Text style={styles.description}>
-            Populate sample IOUs for testing and screenshots: {SEED_PEOPLE_COUNT} people,{" "}
-            {SEED_DEBT_COUNT} debts, and {SEED_PAYMENT_ACTIVITY_COUNT} payments spread over ~18
-            months. Amounts are small round values; every debt includes a short description.
-          </Text>
-          <Button
-            disabled={seedDebts.isPending}
-            fullWidth
-            onPress={() => seedDebts.mutate()}
-            variant="secondary"
-          >
-            {seedDebts.isPending ? "Seeding…" : "Seed sample data"}
-          </Button>
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.content}>
-          <Text style={styles.description}>
-            Notification QA: set your reminder time a few minutes ahead, then seed{" "}
-            {SEED_REMINDER_TEST_COUNT} debts due today and {SEED_REMINDER_TEST_COUNT} due yesterday.
-            Each bucket collapses into one grouped notification at that time. Overdue reminders are
-            turned on if needed.
-          </Text>
-          <Button
-            disabled={seedReminderTest.isPending}
-            fullWidth
-            onPress={() => seedReminderTest.mutate()}
-            variant="secondary"
-          >
-            {seedReminderTest.isPending ? "Seeding…" : "Seed grouped notification test"}
-          </Button>
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.content}>
-          <Text style={styles.description}>
-            Delete all debts, people, payments, activity, and notifications, and cancel pending
-            notifications. Your preferences (currency, notification settings, onboarding) stay
-            unchanged.
-          </Text>
-          <Button
-            disabled={resetDatabase.isPending}
-            fullWidth
-            onPress={confirmReset}
-            variant="secondary"
-          >
-            {resetDatabase.isPending ? "Clearing…" : "Clear all records"}
-          </Button>
-        </View>
+        <DevToolRow
+          description={`${SEED_PEOPLE_COUNT} people, ${SEED_DEBT_COUNT} debts, ${SEED_PAYMENT_ACTIVITY_COUNT} payments over ~18 months.`}
+          disabled={seedDebts.isPending}
+          icon="🧾"
+          onPress={() => seedDebts.mutate()}
+          title="Seed sample data"
+          value={seedDebts.isPending ? "Seeding" : "Run"}
+        />
+        <DevToolRow
+          bordered
+          description={`${SEED_REMINDER_TEST_COUNT} due today and ${SEED_REMINDER_TEST_COUNT} overdue debts for grouped notification QA.`}
+          disabled={seedReminderTest.isPending}
+          icon="🔔"
+          onPress={() => seedReminderTest.mutate()}
+          title="Seed reminder test"
+          value={seedReminderTest.isPending ? "Seeding" : "Run"}
+        />
+        <DevToolRow
+          bordered
+          description="Mark onboarding incomplete and reopen the onboarding flow."
+          disabled={resetOnboarding.isPending}
+          icon="👋"
+          onPress={confirmOnboardingReset}
+          title="Reset onboarding"
+          value={resetOnboarding.isPending ? "Resetting" : "Reset"}
+        />
+        <DevToolRow
+          bordered
+          description="Delete debts, people, payments, activity, and pending notifications."
+          disabled={resetDatabase.isPending}
+          icon="🧹"
+          onPress={confirmReset}
+          title="Clear all records"
+          value={resetDatabase.isPending ? "Clearing" : "Clear"}
+        />
       </View>
     </View>
   );
@@ -116,13 +168,44 @@ const styles = StyleSheet.create((theme) => ({
     shadowRadius: 2,
     elevation: 1,
   },
-  content: {
-    gap: 16,
-    padding: 16,
+  row: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 16,
+  },
+  rowBorder: {
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  icon: {
+    fontSize: 16,
+  },
+  rowCopy: {
+    flex: 1,
+    gap: 2,
+  },
+  label: {
+    fontSize: 14,
+    fontWeight: "500",
+    color: theme.colors.text,
   },
   description: {
-    fontSize: 14,
-    lineHeight: 20,
+    fontSize: 12,
+    lineHeight: 17,
     color: theme.colors.muted,
+  },
+  valueWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  value: {
+    fontSize: 14,
+    color: theme.colors.muted,
+  },
+  chevron: {
+    color: theme.colors.iconMuted,
   },
 }));
