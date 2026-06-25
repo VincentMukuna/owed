@@ -96,7 +96,7 @@ function buildDebts(people: SeedPerson[], now: Date): SeedDebt[] {
     return {
       id: createId(),
       personId: person.id,
-      originalAmount: faker.number.int({ min: 500, max: 150_000 }),
+      originalAmount: faker.number.int({ min: 50, max: 3_000 }),
       reason: faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.55 }) ?? null,
       dueDate: toISODate(dueDate),
       lentDate:
