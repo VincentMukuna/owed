@@ -1,7 +1,8 @@
-import { Pressable, StyleSheet, Text } from "react-native";
+import { Pressable, Text } from "react-native";
+
+import { StyleSheet } from "react-native-unistyles";
 
 import { lightImpact } from "@/lib/haptics";
-import { HEADER_TINT } from "@/lib/navigation/stack-options";
 
 type HeaderSaveButtonProps = {
   disabled?: boolean;
@@ -31,7 +32,7 @@ export function HeaderSaveButton({
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   button: {
     paddingHorizontal: 4,
     minWidth: 44,
@@ -41,9 +42,9 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     fontWeight: "600",
-    color: HEADER_TINT,
+    color: theme.colors.primary,
   },
   labelDisabled: {
     opacity: 0.35,
   },
-});
+}));

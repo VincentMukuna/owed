@@ -1,9 +1,10 @@
-import { Platform, StyleSheet } from "react-native";
+import { Platform } from "react-native";
 
 import { router } from "expo-router";
 
 import { Plus } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 
@@ -19,6 +20,7 @@ export function FabButton({
   onPress = () => router.push("/add-debt"),
   accessibilityLabel = "Add debt",
 }: FabButtonProps) {
+  const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
   const bottom = TAB_BAR_HEIGHT + Math.max(insets.bottom, FAB_GAP) + FAB_GAP;
 
@@ -30,19 +32,23 @@ export function FabButton({
       scaleTo={0.91}
       style={[styles.fab, Platform.OS === "ios" ? styles.fabIos : styles.fabAndroid, { bottom }]}
     >
-      <Plus color="#FFFFFF" size={Platform.OS === "ios" ? 22 : 24} strokeWidth={2.5} />
+      <Plus
+        color={theme.colors.primaryForeground}
+        size={Platform.OS === "ios" ? 22 : 24}
+        strokeWidth={2.5}
+      />
     </PressableScale>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   fab: {
     position: "absolute",
     right: 20,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#1A3A2A",
-    shadowColor: "#000",
+    backgroundColor: theme.colors.primary,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
     shadowRadius: 8,
@@ -59,7 +65,7 @@ const styles = StyleSheet.create({
     height: 56,
     borderRadius: 16,
   },
-});
+}));
 
 /** Extra scroll padding so list content clears the FAB. */
 export const FAB_SCROLL_PADDING = 88;

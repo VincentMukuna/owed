@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
 import { router } from "expo-router";
@@ -13,6 +13,7 @@ import Animated, {
   withTiming,
 } from "react-native-reanimated";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
@@ -48,6 +49,7 @@ function PreviewDebtCard() {
 }
 
 export function OnboardingScreen() {
+  const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
   const heroScale = useSharedValue(0.85);
   const heroOpacity = useSharedValue(0);
@@ -70,7 +72,7 @@ export function OnboardingScreen() {
       >
         <Animated.View style={[styles.hero, heroStyle]}>
           <View style={styles.logoWrap}>
-            <Wallet color="#FFFFFF" size={28} strokeWidth={1.5} />
+            <Wallet color={theme.colors.primaryForeground} size={28} strokeWidth={1.5} />
           </View>
           <Text style={styles.title}>Never forget{"\n"}who owes you.</Text>
           <Text style={styles.subtitle}>
@@ -88,7 +90,7 @@ export function OnboardingScreen() {
       </ScrollView>
 
       <LinearGradient
-        colors={["rgba(247,245,241,0)", "rgba(247,245,241,0.95)", "#F7F5F1"]}
+        colors={theme.colors.footerGradient}
         style={[styles.footer, { paddingBottom: insets.bottom + 48 }]}
       >
         <PressableScale
@@ -112,10 +114,10 @@ export function OnboardingScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   screen: {
     flex: 1,
-    backgroundColor: "#F7F5F1",
+    backgroundColor: theme.colors.background,
   },
   scroll: {
     flexGrow: 1,
@@ -131,11 +133,11 @@ const styles = StyleSheet.create({
     width: 64,
     height: 64,
     borderRadius: 22,
-    backgroundColor: "#1A3A2A",
+    backgroundColor: theme.colors.primary,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 20,
-    shadowColor: "#000",
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 8 },
     shadowOpacity: 0.15,
     shadowRadius: 16,
@@ -144,14 +146,14 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
     lineHeight: 34,
     textAlign: "center",
     letterSpacing: -0.3,
   },
   subtitle: {
     fontSize: 14,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     lineHeight: 22,
     textAlign: "center",
     marginTop: 12,
@@ -163,12 +165,12 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   previewCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-    shadowColor: "#000",
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.08,
     shadowRadius: 12,
@@ -189,17 +191,17 @@ const styles = StyleSheet.create({
   previewName: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   previewReason: {
     fontSize: 12,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     marginTop: 2,
   },
   previewAmount: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
     fontVariant: ["tabular-nums"],
   },
   previewFooter: {
@@ -210,11 +212,11 @@ const styles = StyleSheet.create({
   },
   previewDue: {
     fontSize: 12,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   privacy: {
     fontSize: 11,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     lineHeight: 18,
     textAlign: "center",
     maxWidth: 240,
@@ -229,18 +231,18 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   primaryBtn: {
-    backgroundColor: "#1A3A2A",
+    backgroundColor: theme.colors.primary,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 4,
   },
   primaryBtnText: {
-    color: "#FFFFFF",
+    color: theme.colors.primaryForeground,
     fontSize: 15,
     fontWeight: "600",
   },
@@ -249,8 +251,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   ghostBtnText: {
-    color: "#8A8A82",
+    color: theme.colors.muted,
     fontSize: 14,
     fontWeight: "500",
   },
-});
+}));

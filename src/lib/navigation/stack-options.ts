@@ -1,16 +1,27 @@
 import type { NativeStackNavigationOptions } from "expo-router";
 
-export const APP_BACKGROUND = "#F7F5F1";
-export const HEADER_TINT = "#1A3A2A";
+import { type AppTheme, lightTheme } from "@/styles/themes";
 
-export const STACK_SCREEN_OPTIONS: NativeStackNavigationOptions = {
-  headerTintColor: HEADER_TINT,
-  headerStyle: { backgroundColor: APP_BACKGROUND },
-  headerLargeStyle: { backgroundColor: APP_BACKGROUND },
-  contentStyle: { backgroundColor: APP_BACKGROUND },
-  headerShadowVisible: false,
-  headerBackButtonDisplayMode: "minimal",
-};
+export function getStackScreenOptions(theme: AppTheme): NativeStackNavigationOptions {
+  return {
+    headerTintColor: theme.colors.primary,
+    headerStyle: { backgroundColor: theme.colors.background },
+    headerLargeStyle: { backgroundColor: theme.colors.background },
+    headerTitleStyle: { color: theme.colors.text },
+    contentStyle: { backgroundColor: theme.colors.background },
+    headerShadowVisible: false,
+    headerBackButtonDisplayMode: "minimal",
+  };
+}
+
+export function getModalScreenOptions(theme: AppTheme): NativeStackNavigationOptions {
+  return {
+    ...getStackScreenOptions(theme),
+    headerLargeTitleEnabled: false,
+  };
+}
+
+export const STACK_SCREEN_OPTIONS = getStackScreenOptions(lightTheme);
 
 export const MODAL_SCREEN_OPTIONS: NativeStackNavigationOptions = {
   ...STACK_SCREEN_OPTIONS,

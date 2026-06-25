@@ -1,6 +1,8 @@
 import { memo } from "react";
 
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
+
+import { StyleSheet } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -69,14 +71,14 @@ export const PersonCard = memo(({ person, onPress }: PersonCardProps) => {
 
 PersonCard.displayName = "PersonCard";
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-    shadowColor: "#000",
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -93,12 +95,12 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ECEBE4",
+    backgroundColor: theme.colors.personNeutralBg,
   },
   avatarText: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#4A4A42",
+    color: theme.colors.personNeutralText,
   },
   body: {
     flex: 1,
@@ -116,12 +118,12 @@ const styles = StyleSheet.create({
   name: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
     lineHeight: 18,
   },
   sub: {
     fontSize: 12,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     marginTop: 2,
   },
   amountCol: {
@@ -131,15 +133,15 @@ const styles = StyleSheet.create({
   amount: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
     fontVariant: ["tabular-nums"],
   },
   lastActivity: {
     fontSize: 11,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     marginTop: 2,
   },
   footer: {
     marginTop: 12,
   },
-});
+}));

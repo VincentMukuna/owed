@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, ScrollView, Text, View } from "react-native";
 
 import * as Clipboard from "expo-clipboard";
 import { LinearGradient } from "expo-linear-gradient";
@@ -8,12 +8,12 @@ import { Stack, router } from "expo-router";
 
 import { Check, Copy } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Badge } from "@/components/ui/badge";
 import { useDebt } from "@/features/debts/hooks/use-debt";
 import type { DebtDetailView } from "@/features/debts/view-models";
-import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
 type DebtDetailScreenProps = {
@@ -21,6 +21,7 @@ type DebtDetailScreenProps = {
 };
 
 export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
+  const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
   const { data: debt, isPending } = useDebt(debtId);
   const [copied, setCopied] = useState(false);
@@ -110,9 +111,9 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
               <Text style={styles.messageBox}>{followUpMsg}</Text>
               <Pressable onPress={handleCopy} style={styles.copyBtn}>
                 {copied ? (
-                  <Check color="#16A34A" size={14} strokeWidth={2.5} />
+                  <Check color={theme.colors.success} size={14} strokeWidth={2.5} />
                 ) : (
-                  <Copy color="#1A3A2A" size={14} strokeWidth={2.5} />
+                  <Copy color={theme.colors.primary} size={14} strokeWidth={2.5} />
                 )}
                 <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
                   {copied ? "Copied!" : "Copy message"}
@@ -124,7 +125,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
 
         {debt.status !== "paid" ? (
           <LinearGradient
-            colors={["rgba(247,245,241,0)", "rgba(247,245,241,0.95)", "#F7F5F1"]}
+            colors={theme.colors.footerGradient}
             style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
           >
             <PressableScale onPress={openRecordPayment} style={styles.primaryBtn}>
@@ -168,12 +169,13 @@ function ActiveSummary({ debt, pct }: { debt: DebtDetailView; pct: number }) {
 }
 
 function PaidSummary({ debt, firstName }: { debt: DebtDetailView; firstName: string }) {
+  const { theme } = useUnistyles();
   const lastPayment = debt.payments[debt.payments.length - 1];
 
   return (
     <View style={styles.paidCard}>
       <View style={styles.paidIcon}>
-        <Check color="#16A34A" size={24} strokeWidth={2.5} />
+        <Check color={theme.colors.success} size={24} strokeWidth={2.5} />
       </View>
       <Text style={styles.paidTitle}>Settled</Text>
       <Text style={styles.paidCopy}>{firstName} has fully paid this amount.</Text>
@@ -183,33 +185,33 @@ function PaidSummary({ debt, firstName }: { debt: DebtDetailView; firstName: str
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   screen: {
     flex: 1,
-    backgroundColor: APP_BACKGROUND,
+    backgroundColor: theme.colors.background,
   },
   missing: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-    backgroundColor: APP_BACKGROUND,
+    backgroundColor: theme.colors.background,
   },
   missingText: {
     fontSize: 16,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   content: {
     paddingHorizontal: 20,
     gap: 14,
   },
   summaryCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-    shadowColor: "#000",
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -217,13 +219,13 @@ const styles = StyleSheet.create({
   },
   summaryHint: {
     fontSize: 12,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     fontWeight: "500",
   },
   summaryAmount: {
     fontSize: 34,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
     lineHeight: 36,
     marginTop: 2,
     fontVariant: ["tabular-nums"],
@@ -238,17 +240,17 @@ const styles = StyleSheet.create({
   },
   partialMetaText: {
     fontSize: 12,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   progressTrackLg: {
     height: 6,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: theme.colors.progressTrack,
     borderRadius: 999,
     overflow: "hidden",
   },
   progressFillLg: {
     height: "100%",
-    backgroundColor: "#818CF8",
+    backgroundColor: theme.colors.progressFill,
     borderRadius: 999,
   },
   summaryFooter: {
@@ -257,27 +259,27 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.05)",
+    borderTopColor: theme.colors.border,
   },
   summaryFooterLabel: {
     fontSize: 11,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     fontWeight: "500",
   },
   summaryFooterValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
     marginTop: 2,
   },
   paidCard: {
-    backgroundColor: "#ECFDF5",
+    backgroundColor: theme.colors.paidSurface,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: "#D1FAE5",
+    borderColor: theme.colors.paidBorder,
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -287,7 +289,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 999,
-    backgroundColor: "#D1FAE5",
+    backgroundColor: theme.colors.paidIcon,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
@@ -295,32 +297,32 @@ const styles = StyleSheet.create({
   paidTitle: {
     fontSize: 18,
     fontWeight: "700",
-    color: "#065F46",
+    color: theme.colors.paidTitle,
   },
   paidCopy: {
     fontSize: 14,
-    color: "#059669",
+    color: theme.colors.paidText,
     marginTop: 4,
   },
   paidAmount: {
     fontSize: 24,
     fontWeight: "700",
-    color: "#047857",
+    color: theme.colors.paidAmount,
     marginTop: 12,
     fontVariant: ["tabular-nums"],
   },
   paidDate: {
     fontSize: 12,
-    color: "#10B981",
+    color: theme.colors.paidMuted,
     marginTop: 4,
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-    shadowColor: "#000",
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -329,7 +331,7 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
@@ -338,7 +340,7 @@ const styles = StyleSheet.create({
   },
   cardBody: {
     fontSize: 14,
-    color: "#1A1A18",
+    color: theme.colors.text,
     marginTop: 6,
   },
   timelineRow: {
@@ -353,13 +355,13 @@ const styles = StyleSheet.create({
     width: 10,
     height: 10,
     borderRadius: 999,
-    backgroundColor: "#34D399",
+    backgroundColor: theme.colors.success,
     marginTop: 4,
   },
   timelineLine: {
     width: 1,
     flex: 1,
-    backgroundColor: "#EFEFEC",
+    backgroundColor: theme.colors.surface,
     marginVertical: 4,
   },
   timelineBody: {
@@ -374,23 +376,23 @@ const styles = StyleSheet.create({
   paymentAmount: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
     fontVariant: ["tabular-nums"],
   },
   paymentDate: {
     fontSize: 12,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
   },
   paymentNote: {
     fontSize: 12,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     marginTop: 2,
   },
   messageBox: {
     fontSize: 14,
-    color: "#4A4A42",
+    color: theme.colors.icon,
     lineHeight: 22,
-    backgroundColor: "#F7F5F1",
+    backgroundColor: theme.colors.message,
     borderRadius: 12,
     padding: 14,
     marginTop: 12,
@@ -404,10 +406,10 @@ const styles = StyleSheet.create({
   copyText: {
     fontSize: 12,
     fontWeight: "700",
-    color: "#1A3A2A",
+    color: theme.colors.primary,
   },
   copyTextSuccess: {
-    color: "#16A34A",
+    color: theme.colors.success,
   },
   footer: {
     position: "absolute",
@@ -418,19 +420,19 @@ const styles = StyleSheet.create({
     paddingTop: 20,
   },
   primaryBtn: {
-    backgroundColor: "#1A3A2A",
+    backgroundColor: theme.colors.primary,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 4,
   },
   primaryBtnText: {
-    color: "#FFFFFF",
+    color: theme.colors.primaryForeground,
     fontSize: 15,
     fontWeight: "600",
   },
-});
+}));

@@ -1,12 +1,13 @@
 import type { ComponentType } from "react";
 import { useCallback, useRef, useState } from "react";
 
-import { AppState, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
+import { AppState, ScrollView, Switch, Text, View } from "react-native";
 
 import { useFocusEffect } from "expo-router";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { ChevronRight } from "lucide-react-native";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
 import { PressableScale } from "@/components/shared/pressable-scale";
@@ -20,6 +21,7 @@ import {
 import {
   saveDefaultReminderTime,
   saveOverdueReminderEnabled,
+  saveThemePreference,
 } from "@/features/reminders/lib/reminder-storage";
 import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 import {
@@ -59,8 +61,10 @@ function permissionLabel(state: NotificationPermissionState): string {
 }
 
 export function SettingsScreen() {
+  const { theme } = useUnistyles();
   const tabScrollPadding = useTabScrollPadding();
   const defaultCurrency = useCurrentCurrency();
+  const themePreference = useSettingsStore((state) => state.themePreference);
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
   const overdueReminderEnabled = useSettingsStore((state) => state.overdueReminderEnabled);
   const changeCurrency = useChangeCurrency();
@@ -103,6 +107,11 @@ export function SettingsScreen() {
     selectionChange();
     await saveOverdueReminderEnabled(enabled);
     await runReminderSync();
+  }, []);
+
+  const handleThemeToggle = useCallback(async (enabled: boolean) => {
+    selectionChange();
+    await saveThemePreference(enabled ? "dark" : "light");
   }, []);
 
   const handleNotificationsPress = useCallback(async () => {
@@ -193,18 +202,31 @@ export function SettingsScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Preferences</Text>
             <View style={styles.card}>
+              <View style={styles.row}>
+                <Text style={styles.icon}>◐</Text>
+                <Text style={styles.label}>Dark mode</Text>
+                <Switch
+                  onValueChange={(value) => {
+                    void handleThemeToggle(value);
+                  }}
+                  thumbColor={theme.colors.primaryForeground}
+                  trackColor={{ false: theme.colors.switchTrackOff, true: theme.colors.primary }}
+                  value={themePreference === "dark"}
+                />
+              </View>
+
               <PressableScale
                 onPress={() => {
                   selectionChange();
                   currencyPickerRef.current?.present();
                 }}
-                style={styles.row}
+                style={[styles.row, styles.rowBorder]}
               >
                 <Text style={styles.icon}>💱</Text>
                 <Text style={styles.label}>Default currency</Text>
                 <View style={styles.valueWrap}>
                   <Text style={styles.value}>{defaultCurrency}</Text>
-                  <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
                 </View>
               </PressableScale>
             </View>
@@ -212,9 +234,7 @@ export function SettingsScreen() {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Notifications</Text>
-            <Text style={styles.sectionHint}>
-              For you only. Never sent to the person who owes.
-            </Text>
+            <Text style={styles.sectionHint}>For you only. Never sent to the person who owes.</Text>
             <View style={styles.card}>
               <PressableScale
                 onPress={() => {
@@ -230,7 +250,7 @@ export function SettingsScreen() {
                 </View>
                 <View style={styles.valueWrap}>
                   <Text style={styles.value}>{formatReminderTimeDisplay(defaultReminderTime)}</Text>
-                  <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
                 </View>
               </PressableScale>
 
@@ -244,8 +264,8 @@ export function SettingsScreen() {
                   onValueChange={(value) => {
                     void handleOverdueToggle(value);
                   }}
-                  thumbColor="#FFFFFF"
-                  trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
+                  thumbColor={theme.colors.primaryForeground}
+                  trackColor={{ false: theme.colors.switchTrackOff, true: theme.colors.primary }}
                   value={overdueReminderEnabled}
                 />
               </View>
@@ -263,7 +283,7 @@ export function SettingsScreen() {
                 </View>
                 <View style={styles.valueWrap}>
                   <Text style={styles.value}>{permissionLabel(permissionState)}</Text>
-                  <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
                 </View>
               </PressableScale>
             </View>
@@ -277,7 +297,7 @@ export function SettingsScreen() {
                 <Text style={styles.label}>Export data</Text>
                 <View style={styles.valueWrap}>
                   <Text style={styles.value}>CSV</Text>
-                  <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
                 </View>
               </View>
             </View>
@@ -294,7 +314,7 @@ export function SettingsScreen() {
               <View style={[styles.row, styles.rowBorder]}>
                 <Text style={styles.icon}>💬</Text>
                 <Text style={styles.label}>Send feedback</Text>
-                <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
               </View>
             </View>
           </View>
@@ -336,7 +356,7 @@ export function SettingsScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   header: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -345,7 +365,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   scroll: {
     paddingHorizontal: 20,
@@ -357,23 +377,23 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
   sectionHint: {
     fontSize: 12,
     lineHeight: 18,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     marginTop: -4,
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
+    borderColor: theme.colors.border,
     overflow: "hidden",
-    shadowColor: "#000",
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -388,7 +408,7 @@ const styles = StyleSheet.create({
   },
   rowBorder: {
     borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.05)",
+    borderTopColor: theme.colors.border,
   },
   icon: {
     fontSize: 16,
@@ -397,7 +417,7 @@ const styles = StyleSheet.create({
     flex: 1,
     fontSize: 14,
     fontWeight: "500",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   toggleCopy: {
     flex: 1,
@@ -405,7 +425,7 @@ const styles = StyleSheet.create({
   },
   subLabel: {
     fontSize: 12,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   valueWrap: {
     flexDirection: "row",
@@ -414,6 +434,6 @@ const styles = StyleSheet.create({
   },
   value: {
     fontSize: 14,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
-});
+}));

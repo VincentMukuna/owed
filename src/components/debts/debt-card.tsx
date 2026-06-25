@@ -63,7 +63,7 @@ const styles = StyleSheet.create((theme) => ({
     padding: theme.spacing.md,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    shadowColor: "#000",
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -127,13 +127,13 @@ const styles = StyleSheet.create((theme) => ({
   progressTrack: {
     width: 64,
     height: 4,
-    backgroundColor: "#F1F5F9",
+    backgroundColor: theme.colors.progressTrack,
     borderRadius: 999,
     overflow: "hidden",
   },
   progressFill: {
     height: "100%",
-    backgroundColor: "#818CF8",
+    backgroundColor: theme.colors.progressFill,
     borderRadius: 999,
   },
   progressLabel: {

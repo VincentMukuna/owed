@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 
-import { Platform, StyleSheet, Text, type TextInput, View } from "react-native";
+import { Platform, Text, type TextInput, View } from "react-native";
 
 import {
   BottomSheetBackdrop,
@@ -20,6 +20,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { Check, Search } from "lucide-react-native";
 import { FullWindowOverlay } from "react-native-screens";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { CURRENCIES, type CurrencyOption } from "@/features/settings/lib/currencies";
@@ -54,6 +55,7 @@ function matchesQuery(currency: CurrencyOption, query: string): boolean {
 
 export const CurrencyPickerSheet = forwardRef<CurrencyPickerSheetRef, CurrencyPickerSheetProps>(
   ({ value, onSelect }, ref) => {
+    const { theme } = useUnistyles();
     const sheetRef = useRef<BottomSheetModal>(null);
     const inputRef = useRef<TextInput>(null);
     const pendingSelectionRef = useRef<string | null>(null);
@@ -128,11 +130,11 @@ export const CurrencyPickerSheet = forwardRef<CurrencyPickerSheetRef, CurrencyPi
                 {item.name}
               </Text>
             </View>
-            {selected ? <Check color="#1A3A2A" size={18} strokeWidth={2.5} /> : null}
+            {selected ? <Check color={theme.colors.primary} size={18} strokeWidth={2.5} /> : null}
           </PressableScale>
         );
       },
-      [selectCurrency, value],
+      [selectCurrency, theme.colors.primary, value],
     );
 
     const keyExtractor = useCallback((item: CurrencyOption) => item.code, []);
@@ -168,14 +170,14 @@ export const CurrencyPickerSheet = forwardRef<CurrencyPickerSheetRef, CurrencyPi
           <Text style={styles.title}>Default currency</Text>
         </View>
         <View style={styles.searchWrap}>
-          <Search color="#8A8A82" size={18} strokeWidth={1.75} />
+          <Search color={theme.colors.muted} size={18} strokeWidth={1.75} />
           <BottomSheetTextInput
             ref={inputRef as never}
             autoCapitalize="characters"
             autoCorrect={false}
             onChangeText={setQuery}
             placeholder="Search currencies"
-            placeholderTextColor="#C8C8C0"
+            placeholderTextColor={theme.colors.placeholder}
             style={styles.searchInput}
             value={query}
           />
@@ -195,12 +197,12 @@ export const CurrencyPickerSheet = forwardRef<CurrencyPickerSheetRef, CurrencyPi
 
 CurrencyPickerSheet.displayName = "CurrencyPickerSheet";
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   sheetBackground: {
-    backgroundColor: "#FBFBF8",
+    backgroundColor: theme.colors.sheet,
   },
   handle: {
-    backgroundColor: "#DDDDD8",
+    backgroundColor: theme.colors.sheetHandle,
     width: 36,
   },
   headerRow: {
@@ -210,7 +212,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
@@ -223,15 +225,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
+    borderColor: theme.colors.borderStrong,
     borderRadius: 12,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: "#1A1A18",
+    color: theme.colors.text,
     padding: 0,
   },
   listContent: {
@@ -248,9 +250,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   rowSelected: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.selected,
     borderWidth: 1,
-    borderColor: "rgba(26,58,42,0.25)",
+    borderColor: theme.colors.selectedBorder,
   },
   rowCopy: {
     flex: 1,
@@ -260,11 +262,11 @@ const styles = StyleSheet.create({
   rowCode: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   rowName: {
     fontSize: 13,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   empty: {
     paddingTop: 40,
@@ -273,8 +275,8 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 13,
-    color: "#A8A8A0",
+    color: theme.colors.mutedLight,
     textAlign: "center",
     lineHeight: 19,
   },
-});
+}));

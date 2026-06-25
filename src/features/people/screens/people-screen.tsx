@@ -1,11 +1,12 @@
 import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { Pressable, Text, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
 import type { FlashListRef } from "@shopify/flash-list";
 import { Search, Users } from "lucide-react-native";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { DebtSearchBar, type DebtSearchBarRef } from "@/components/debts/debt-search-bar";
 import { TabScreen } from "@/components/navigation/tab-screen";
@@ -20,6 +21,7 @@ import { usePeopleList } from "../hooks/use-people-list";
 import { filterAndSortPeople } from "../lib/people-list-utils";
 
 export function PeopleScreen() {
+  const { theme } = useUnistyles();
   const { data: people = [], isPending } = usePeopleList();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -88,9 +90,9 @@ export function PeopleScreen() {
       <View style={styles.empty}>
         <View style={styles.emptyIcon}>
           {isSearching ? (
-            <Search color="#B8B8B0" size={20} strokeWidth={1.5} />
+            <Search color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />
           ) : (
-            <Users color="#B8B8B0" size={20} strokeWidth={1.5} />
+            <Users color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />
           )}
         </View>
         <Text style={styles.emptyTitle}>{isSearching ? "No person found." : "No people yet."}</Text>
@@ -106,7 +108,7 @@ export function PeopleScreen() {
         ) : null}
       </View>
     ),
-    [isSearching, openAddPerson],
+    [isSearching, openAddPerson, theme.colors.mutedLight],
   );
 
   if (isPending) {
@@ -135,7 +137,7 @@ export function PeopleScreen() {
               <Text style={styles.subtitle}>See what each person still owes.</Text>
             </View>
             <IconButton onPress={openSearch}>
-              <Search color="#4A4A42" size={16} strokeWidth={1.5} />
+              <Search color={theme.colors.icon} size={16} strokeWidth={1.5} />
             </IconButton>
           </>
         )}
@@ -155,7 +157,7 @@ export function PeopleScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   header: {
     paddingHorizontal: 20,
     paddingTop: 16,
@@ -168,11 +170,11 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 28,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   subtitle: {
     fontSize: 13,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     marginTop: 2,
   },
   cancel: {
@@ -181,7 +183,7 @@ const styles = StyleSheet.create({
   cancelText: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#4A4A42",
+    color: theme.colors.icon,
   },
   summary: {
     paddingBottom: 12,
@@ -189,7 +191,7 @@ const styles = StyleSheet.create({
   summaryText: {
     fontSize: 12,
     fontWeight: "600",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     fontVariant: ["tabular-nums"],
   },
   scroll: {
@@ -206,7 +208,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: "#EFEFEC",
+    backgroundColor: theme.colors.surface,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
@@ -214,11 +216,11 @@ const styles = StyleSheet.create({
   emptyTitle: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   emptyCopy: {
     fontSize: 13,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     marginTop: 6,
     textAlign: "center",
     lineHeight: 20,
@@ -226,14 +228,14 @@ const styles = StyleSheet.create({
   },
   emptyCta: {
     marginTop: 16,
-    backgroundColor: "#1A3A2A",
+    backgroundColor: theme.colors.primary,
     paddingHorizontal: 20,
     paddingVertical: 12,
     borderRadius: 12,
   },
   emptyCtaText: {
-    color: "#FFFFFF",
+    color: theme.colors.primaryForeground,
     fontSize: 14,
     fontWeight: "600",
   },
-});
+}));

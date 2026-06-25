@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 
-import { Platform, StyleSheet, Text, type TextInput, View } from "react-native";
+import { Platform, Text, type TextInput, View } from "react-native";
 
 import {
   BottomSheetBackdrop,
@@ -20,6 +20,7 @@ import {
 } from "@gorhom/bottom-sheet";
 import { Check, Plus, Search } from "lucide-react-native";
 import { FullWindowOverlay } from "react-native-screens";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { normalizePersonName } from "@/features/debts/lib/person-name";
@@ -45,6 +46,7 @@ type PersonPickerSheetProps = {
 
 export const PersonPickerSheet = forwardRef<PersonPickerSheetRef, PersonPickerSheetProps>(
   ({ people, onSelect }, ref) => {
+    const { theme } = useUnistyles();
     const sheetRef = useRef<BottomSheetModal>(null);
     const inputRef = useRef<TextInput>(null);
     const [query, setQuery] = useState("");
@@ -160,7 +162,7 @@ export const PersonPickerSheet = forwardRef<PersonPickerSheetRef, PersonPickerSh
         return (
           <PressableScale onPress={() => createNew(trimmed)} style={styles.addRowPrimary}>
             <View style={styles.addIcon}>
-              <Plus color="#1A3A2A" size={18} strokeWidth={2} />
+              <Plus color={theme.colors.primary} size={18} strokeWidth={2} />
             </View>
             <View style={styles.addCopy}>
               <Text style={styles.addTitle}>Add new person</Text>
@@ -176,13 +178,13 @@ export const PersonPickerSheet = forwardRef<PersonPickerSheetRef, PersonPickerSh
       // escape hatch for the rare case of two different people with the same name.
       return (
         <PressableScale onPress={() => createNew(trimmed)} style={styles.addRowSubtle}>
-          <Plus color="#8A8A82" size={15} strokeWidth={2} />
+          <Plus color={theme.colors.muted} size={15} strokeWidth={2} />
           <Text style={styles.addSubtleText} numberOfLines={1}>
             Add “{trimmed}” as a new person instead
           </Text>
         </PressableScale>
       );
-    }, [trimmed, exactMatch, createNew]);
+    }, [trimmed, exactMatch, createNew, theme.colors.muted, theme.colors.primary]);
 
     const listEmpty = useMemo(() => {
       if (trimmed.length > 0) {
@@ -218,7 +220,7 @@ export const PersonPickerSheet = forwardRef<PersonPickerSheetRef, PersonPickerSh
           <Text style={styles.title}>Person</Text>
         </View>
         <View style={styles.searchWrap}>
-          <Search color="#8A8A82" size={18} strokeWidth={1.75} />
+          <Search color={theme.colors.muted} size={18} strokeWidth={1.75} />
           <BottomSheetTextInput
             ref={inputRef as never}
             autoCapitalize="words"
@@ -226,7 +228,7 @@ export const PersonPickerSheet = forwardRef<PersonPickerSheetRef, PersonPickerSh
             onChangeText={setQuery}
             onSubmitEditing={handleSubmit}
             placeholder="Search or type a name"
-            placeholderTextColor="#C8C8C0"
+            placeholderTextColor={theme.colors.placeholder}
             returnKeyType="done"
             style={styles.searchInput}
             submitBehavior="submit"
@@ -256,6 +258,7 @@ type PersonRowProps = {
 };
 
 function PersonRow({ person, isExactMatch, onPress }: PersonRowProps) {
+  const { theme } = useUnistyles();
   const subtitle =
     person.openDebtCount > 0
       ? `${formatCurrency(person.outstanding)} · ${person.openDebtCount} open`
@@ -274,17 +277,17 @@ function PersonRow({ person, isExactMatch, onPress }: PersonRowProps) {
           {subtitle}
         </Text>
       </View>
-      {isExactMatch ? <Check color="#1A3A2A" size={18} strokeWidth={2.25} /> : null}
+      {isExactMatch ? <Check color={theme.colors.primary} size={18} strokeWidth={2.25} /> : null}
     </PressableScale>
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   sheetBackground: {
-    backgroundColor: "#FBFBF8",
+    backgroundColor: theme.colors.sheet,
   },
   handle: {
-    backgroundColor: "#DDDDD8",
+    backgroundColor: theme.colors.sheetHandle,
     width: 36,
   },
   headerRow: {
@@ -294,7 +297,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
@@ -307,15 +310,15 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingHorizontal: 14,
     paddingVertical: 12,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.08)",
+    borderColor: theme.colors.borderStrong,
     borderRadius: 12,
   },
   searchInput: {
     flex: 1,
     fontSize: 16,
-    color: "#1A1A18",
+    color: theme.colors.text,
     padding: 0,
   },
   listContent: {
@@ -329,7 +332,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     paddingHorizontal: 12,
     marginBottom: 8,
-    backgroundColor: "#EAF0EC",
+    backgroundColor: theme.colors.personAddBg,
     borderRadius: 12,
   },
   addIcon: {
@@ -338,7 +341,7 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#D6E3DA",
+    backgroundColor: theme.colors.personAddPressedBg,
   },
   addCopy: {
     flex: 1,
@@ -347,11 +350,11 @@ const styles = StyleSheet.create({
   addTitle: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#1A3A2A",
+    color: theme.colors.primary,
   },
   addName: {
     fontSize: 13,
-    color: "#4A6A56",
+    color: theme.colors.personAddText,
     marginTop: 1,
   },
   addRowSubtle: {
@@ -365,7 +368,7 @@ const styles = StyleSheet.create({
   addSubtleText: {
     fontSize: 13,
     fontWeight: "500",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     flexShrink: 1,
   },
   row: {
@@ -377,9 +380,9 @@ const styles = StyleSheet.create({
     borderRadius: 12,
   },
   rowMatch: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.selected,
     borderWidth: 1,
-    borderColor: "rgba(26,58,42,0.25)",
+    borderColor: theme.colors.selectedBorder,
   },
   avatar: {
     width: 40,
@@ -387,12 +390,12 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     alignItems: "center",
     justifyContent: "center",
-    backgroundColor: "#ECEBE4",
+    backgroundColor: theme.colors.personNeutralBg,
   },
   avatarText: {
     fontSize: 14,
     fontWeight: "700",
-    color: "#4A4A42",
+    color: theme.colors.personNeutralText,
   },
   rowBody: {
     flex: 1,
@@ -401,11 +404,11 @@ const styles = StyleSheet.create({
   rowName: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
   },
   rowSub: {
     fontSize: 12,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     marginTop: 2,
     fontVariant: ["tabular-nums"],
   },
@@ -416,8 +419,8 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 13,
-    color: "#A8A8A0",
+    color: theme.colors.mutedLight,
     textAlign: "center",
     lineHeight: 19,
   },
-});
+}));

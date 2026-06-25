@@ -1,10 +1,9 @@
 import type { ReactNode } from "react";
 
-import { Platform, StyleSheet, View, type ViewStyle } from "react-native";
+import { Platform, View, type ViewStyle } from "react-native";
 
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-
-import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
+import { StyleSheet as UnistylesStyleSheet } from "react-native-unistyles";
 
 export const TAB_BAR_HEIGHT = Platform.OS === "ios" ? 49 : 56;
 
@@ -27,12 +26,12 @@ export function TabScreen({ children, style }: TabScreenProps) {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = UnistylesStyleSheet.create((theme) => ({
   safe: {
     flex: 1,
-    backgroundColor: APP_BACKGROUND,
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
   },
-});
+}));

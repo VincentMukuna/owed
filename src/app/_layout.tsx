@@ -8,6 +8,7 @@ import { StatusBar } from "expo-status-bar";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { useUnistyles } from "react-native-unistyles";
 
 import { Toast } from "@/components/shared/toast";
 import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
@@ -19,24 +20,25 @@ import { fetchPeopleListViews } from "@/features/people/lib/fetch-people-list";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { fetchUnreadReminderCount } from "@/features/reminders/lib/fetch-reminders";
 import { registerNotificationHandlers } from "@/features/reminders/lib/register-notification-handlers";
-import { hydrateReminderSettings } from "@/features/reminders/lib/reminder-storage";
+import { hydratePersistedSettings } from "@/features/reminders/lib/reminder-storage";
 import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
+import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { bootstrapCurrency } from "@/features/settings/lib/bootstrap-currency";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
-import {
-  APP_BACKGROUND,
-  MODAL_SCREEN_OPTIONS,
-  STACK_SCREEN_OPTIONS,
-} from "@/lib/navigation/stack-options";
+import { getModalScreenOptions, getStackScreenOptions } from "@/lib/navigation/stack-options";
 
 export default function RootLayout() {
+  const { theme } = useUnistyles();
+  const themePreference = useSettingsStore((state) => state.themePreference);
   const [dbReady, setDbReady] = useState(false);
+  const stackOptions = getStackScreenOptions(theme);
+  const modalOptions = getModalScreenOptions(theme);
 
   useEffect(() => {
     void Promise.all([
       getDb(),
-      bootstrapCurrency().then(() => hydrateReminderSettings()),
+      bootstrapCurrency().then(() => hydratePersistedSettings()),
       hydrateOnboardingState(),
       queryClient.prefetchQuery({
         queryKey: debtKeys.all,
@@ -105,14 +107,14 @@ export default function RootLayout() {
   }, [dbReady]);
 
   return (
-    <GestureHandlerRootView style={styles.root}>
+    <GestureHandlerRootView style={[styles.root, { backgroundColor: theme.colors.background }]}>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style={dbReady ? "dark" : "light"} />
+        <StatusBar style={dbReady && themePreference === "dark" ? "light" : "dark"} />
         {dbReady ? (
           <Stack
             screenOptions={{
               headerShown: false,
-              contentStyle: { backgroundColor: APP_BACKGROUND },
+              contentStyle: { backgroundColor: theme.colors.background },
             }}
           >
             <Stack.Screen name="index" />
@@ -121,7 +123,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="add-debt"
               options={{
-                ...MODAL_SCREEN_OPTIONS,
+                ...modalOptions,
                 presentation: "modal",
                 animation: "slide_from_bottom",
                 headerShown: true,
@@ -131,7 +133,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="debt/[id]"
               options={{
-                ...STACK_SCREEN_OPTIONS,
+                ...stackOptions,
                 headerShown: true,
                 headerLargeTitleEnabled: false,
                 animation: "slide_from_right",
@@ -140,7 +142,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="person/[id]"
               options={{
-                ...STACK_SCREEN_OPTIONS,
+                ...stackOptions,
                 headerShown: true,
                 headerLargeTitleEnabled: false,
                 animation: "slide_from_right",
@@ -149,7 +151,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="activity"
               options={{
-                ...STACK_SCREEN_OPTIONS,
+                ...stackOptions,
                 headerShown: true,
                 headerLargeTitleEnabled: false,
                 animation: "slide_from_right",
@@ -159,7 +161,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="add-person"
               options={{
-                ...MODAL_SCREEN_OPTIONS,
+                ...modalOptions,
                 presentation: "modal",
                 animation: "slide_from_bottom",
                 headerShown: true,
@@ -169,7 +171,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="edit-person"
               options={{
-                ...MODAL_SCREEN_OPTIONS,
+                ...modalOptions,
                 presentation: "modal",
                 animation: "slide_from_bottom",
                 headerShown: true,
@@ -179,7 +181,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="record-payment"
               options={{
-                ...MODAL_SCREEN_OPTIONS,
+                ...modalOptions,
                 presentation: "modal",
                 animation: "slide_from_bottom",
                 headerShown: true,
@@ -191,7 +193,7 @@ export default function RootLayout() {
             <Stack.Screen
               name="notifications"
               options={{
-                ...MODAL_SCREEN_OPTIONS,
+                ...modalOptions,
                 presentation: "modal",
                 animation: "slide_from_bottom",
                 headerShown: true,

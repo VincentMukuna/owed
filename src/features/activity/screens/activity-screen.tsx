@@ -1,10 +1,10 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Text, View } from "react-native";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StyleSheet } from "react-native-unistyles";
 
 import { ActivityList } from "@/components/activity/activity-list";
 import { useActivities } from "@/features/debts/hooks/use-activities";
-import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
 
 export function ActivityScreen() {
   const insets = useSafeAreaInsets();
@@ -30,10 +30,10 @@ export function ActivityScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   screen: {
     flex: 1,
-    backgroundColor: APP_BACKGROUND,
+    backgroundColor: theme.colors.background,
   },
   scroll: {
     paddingHorizontal: 20,
@@ -47,6 +47,6 @@ const styles = StyleSheet.create({
   },
   emptyText: {
     fontSize: 14,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
-});
+}));

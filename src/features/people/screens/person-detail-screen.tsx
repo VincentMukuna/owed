@@ -1,16 +1,16 @@
 import { type ReactNode, useState } from "react";
 
-import { ScrollView, StyleSheet, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 import { type Href, Stack, router } from "expo-router";
 
 import { CheckCircle2, ChevronDown, ChevronUp, Receipt, Wallet } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { ActivityRow } from "@/components/activity/activity-list";
 import { DebtCard } from "@/components/debts/debt-card";
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
 import { PersonStatusBadge } from "../components/person-status-badge";
@@ -22,6 +22,7 @@ type PersonDetailScreenProps = {
 };
 
 export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
+  const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
   const { data: person, isPending } = usePersonDetail(personId);
   const [activeExpanded, setActiveExpanded] = useState(true);
@@ -118,7 +119,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
                     ? `Add the first amount ${firstName} owes you.`
                     : `All amounts from ${firstName} are settled.`
                 }
-                icon={<Wallet color="#B8B8B0" size={20} strokeWidth={1.5} />}
+                icon={<Wallet color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
                 title={hasNoDebts ? "No debts yet" : "Nothing pending"}
               />
             )}
@@ -139,7 +140,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
             ) : (
               <SectionEmpty
                 copy="Paid debts from this person will appear here."
-                icon={<CheckCircle2 color="#B8B8B0" size={20} strokeWidth={1.5} />}
+                icon={<CheckCircle2 color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
                 title="No settled amounts yet"
               />
             )}
@@ -160,7 +161,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
             ) : (
               <SectionEmpty
                 copy={`Payments from ${firstName} will show up here.`}
-                icon={<Receipt color="#B8B8B0" size={20} strokeWidth={1.5} />}
+                icon={<Receipt color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
                 title="No payments yet"
               />
             )}
@@ -226,6 +227,8 @@ function CollapsibleSection({
   onToggle: () => void;
   children: ReactNode;
 }) {
+  const { theme } = useUnistyles();
+
   return (
     <View style={styles.section}>
       <PressableScale hitSlop={8} onPress={onToggle} style={styles.sectionHeaderRow}>
@@ -233,9 +236,9 @@ function CollapsibleSection({
           {title} ({count})
         </Text>
         {expanded ? (
-          <ChevronUp color="#8A8A82" size={16} strokeWidth={2} />
+          <ChevronUp color={theme.colors.muted} size={16} strokeWidth={2} />
         ) : (
-          <ChevronDown color="#8A8A82" size={16} strokeWidth={2} />
+          <ChevronDown color={theme.colors.muted} size={16} strokeWidth={2} />
         )}
       </PressableScale>
       {expanded ? children : null}
@@ -253,26 +256,26 @@ function SectionEmpty({ icon, title, copy }: { icon: ReactNode; title: string; c
   );
 }
 
-const styles = StyleSheet.create({
+const styles = StyleSheet.create((theme) => ({
   screen: {
     flex: 1,
-    backgroundColor: APP_BACKGROUND,
+    backgroundColor: theme.colors.background,
   },
   headerAction: {
     fontSize: 15,
     fontWeight: "600",
-    color: "#1A3A2A",
+    color: theme.colors.primary,
   },
   missing: {
     flex: 1,
     alignItems: "center",
     justifyContent: "center",
     padding: 20,
-    backgroundColor: APP_BACKGROUND,
+    backgroundColor: theme.colors.background,
   },
   missingText: {
     fontSize: 16,
-    color: "#8A8A82",
+    color: theme.colors.muted,
   },
   content: {
     paddingHorizontal: 20,
@@ -280,12 +283,12 @@ const styles = StyleSheet.create({
     gap: 14,
   },
   summaryCard: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 20,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-    shadowColor: "#000",
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -298,26 +301,26 @@ const styles = StyleSheet.create({
   },
   summaryHint: {
     fontSize: 12,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     fontWeight: "500",
   },
   summaryAmount: {
     fontSize: 34,
     fontWeight: "700",
-    color: "#1A1A18",
+    color: theme.colors.text,
     lineHeight: 36,
     marginTop: 6,
     fontVariant: ["tabular-nums"],
   },
   summarySupport: {
     fontSize: 13,
-    color: "#8A8A82",
+    color: theme.colors.muted,
     marginTop: 4,
   },
   summaryOverdue: {
     fontSize: 13,
     fontWeight: "600",
-    color: "#DC2626",
+    color: theme.colors.danger,
     marginTop: 4,
   },
   summaryFooter: {
@@ -326,27 +329,27 @@ const styles = StyleSheet.create({
     marginTop: 16,
     paddingTop: 16,
     borderTopWidth: 1,
-    borderTopColor: "rgba(0,0,0,0.05)",
+    borderTopColor: theme.colors.border,
   },
   summaryFooterLabel: {
     fontSize: 11,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     fontWeight: "500",
   },
   summaryFooterValue: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#1A1A18",
+    color: theme.colors.text,
     marginTop: 2,
     fontVariant: ["tabular-nums"],
   },
   card: {
-    backgroundColor: "#FFFFFF",
+    backgroundColor: theme.colors.card,
     borderRadius: 16,
     padding: 16,
     borderWidth: 1,
-    borderColor: "rgba(0,0,0,0.06)",
-    shadowColor: "#000",
+    borderColor: theme.colors.border,
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.05,
     shadowRadius: 2,
@@ -355,7 +358,7 @@ const styles = StyleSheet.create({
   cardLabel: {
     fontSize: 11,
     fontWeight: "700",
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
@@ -365,13 +368,13 @@ const styles = StyleSheet.create({
   detailKey: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     textTransform: "uppercase",
     letterSpacing: 1,
   },
   detailValue: {
     fontSize: 14,
-    color: "#1A1A18",
+    color: theme.colors.text,
     marginTop: 4,
   },
   detailNotes: {
@@ -388,7 +391,7 @@ const styles = StyleSheet.create({
   sectionLabel: {
     fontSize: 11,
     fontWeight: "600",
-    color: "#8A8A82",
+    color: theme.colors.muted,
     textTransform: "uppercase",
     letterSpacing: 1.6,
   },
@@ -404,7 +407,7 @@ const styles = StyleSheet.create({
     width: 48,
     height: 48,
     borderRadius: 16,
-    backgroundColor: "#EFEFEC",
+    backgroundColor: theme.colors.surface,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
@@ -412,11 +415,11 @@ const styles = StyleSheet.create({
   sectionEmptyTitle: {
     fontSize: 14,
     fontWeight: "600",
-    color: "#4A4A42",
+    color: theme.colors.icon,
   },
   sectionEmptyCopy: {
     fontSize: 12,
-    color: "#B8B8B0",
+    color: theme.colors.mutedLight,
     marginTop: 4,
     textAlign: "center",
   },
@@ -427,22 +430,22 @@ const styles = StyleSheet.create({
     bottom: 0,
     paddingHorizontal: 20,
     paddingTop: 20,
-    backgroundColor: APP_BACKGROUND,
+    backgroundColor: theme.colors.background,
   },
   primaryBtn: {
-    backgroundColor: "#1A3A2A",
+    backgroundColor: theme.colors.primary,
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
-    shadowColor: "#000",
+    shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.15,
     shadowRadius: 12,
     elevation: 4,
   },
   primaryBtnText: {
-    color: "#FFFFFF",
+    color: theme.colors.primaryForeground,
     fontSize: 15,
     fontWeight: "600",
   },
-});
+}));
