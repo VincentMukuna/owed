@@ -2,6 +2,8 @@ export type DebtStatus = "active" | "due-soon" | "overdue" | "partial" | "paid" 
 
 export type ReminderStatus = "scheduled" | "sent" | "cancelled";
 
+export type ReminderType = "due" | "overdue";
+
 export interface User {
   id: string;
   name?: string;
@@ -53,8 +55,13 @@ export interface Payment {
 export interface Reminder {
   id: string;
   debtId: string;
+  type: ReminderType;
   remindAt: string;
   status: ReminderStatus;
+  notificationId?: string;
+  readAt?: string;
+  groupKey?: string;
+  archivedAt?: string;
   createdAt: string;
   updatedAt: string;
 }

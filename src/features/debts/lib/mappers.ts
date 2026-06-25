@@ -41,6 +41,7 @@ export function toDebtCardView(debt: DebtSummary | DebtWithRelations, now?: Date
     amount: debt.originalAmount,
     remaining: debt.remainingAmount,
     dueDate: formatDueDate(debt.dueDate),
+    dueDateISO: debt.dueDate,
     reason: debt.reason?.trim() || "—",
     status,
     addedDate: formatAddedDate(debt.createdAt),

@@ -12,6 +12,11 @@ import { useAddDebt } from "@/features/debts/hooks/use-add-debt";
 import { resolveQuickDate } from "@/features/debts/lib/format-dates";
 import type { CreateDebtInput } from "@/features/debts/view-models";
 import { completeOnboarding } from "@/features/onboarding/lib/onboarding-storage";
+import {
+  type NotificationPermissionState,
+  openOsNotificationSettings,
+} from "@/features/reminders/lib/notification-permissions";
+import { requestReminderPermissionOnToggle } from "@/features/reminders/lib/request-reminder-permissions";
 import { selectionChange } from "@/lib/haptics";
 import { HOME_ROUTE } from "@/lib/navigation/routes";
 
@@ -49,11 +54,25 @@ export function AddDebtScreen() {
   const [dueDate, setDueDate] = useState("");
   const [reason, setReason] = useState("");
   const [reminder, setReminder] = useState(false);
+  const [notifPermission, setNotifPermission] = useState<NotificationPermissionState>("not-asked");
   const [quickDate, setQuickDate] = useState<string | null>("Today");
 
   const parsedAmount = parseInt(amount, 10);
   const resolvedDueDate = resolveDueDate(quickDate, dueDate);
   const canSave = name.trim().length > 0 && parsedAmount > 0 && Boolean(resolvedDueDate);
+
+  const handleReminderToggle = useCallback(async (value: boolean) => {
+    selectionChange();
+
+    if (!value) {
+      setReminder(false);
+      return;
+    }
+
+    setReminder(true);
+    const state = await requestReminderPermissionOnToggle();
+    setNotifPermission(state);
+  }, []);
 
   const handleSave = useCallback(() => {
     if (!canSave || !resolvedDueDate) return;
@@ -161,23 +180,38 @@ export function AddDebtScreen() {
         />
       </Field>
 
-      <View style={styles.reminderRow}>
-        <View style={styles.reminderCopy}>
-          <Bell color="#8A8A82" size={16} strokeWidth={1.5} />
-          <View>
-            <Text style={styles.reminderTitle}>Remind me</Text>
-            <Text style={styles.reminderSub}>On the promised date</Text>
+      <View>
+        <View style={styles.reminderRow}>
+          <View style={styles.reminderCopy}>
+            <Bell color="#8A8A82" size={16} strokeWidth={1.5} />
+            <View>
+              <Text style={styles.reminderTitle}>Remind me</Text>
+              <Text style={styles.reminderSub}>On the promised date</Text>
+            </View>
           </View>
+          <Switch
+            onValueChange={(value) => {
+              void handleReminderToggle(value);
+            }}
+            thumbColor="#FFFFFF"
+            trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
+            value={reminder}
+          />
         </View>
-        <Switch
-          onValueChange={(value) => {
-            selectionChange();
-            setReminder(value);
-          }}
-          thumbColor="#FFFFFF"
-          trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
-          value={reminder}
-        />
+
+        {reminder && notifPermission === "off" ? (
+          <PressableScale
+            onPress={() => {
+              void openOsNotificationSettings();
+            }}
+            style={styles.permHint}
+          >
+            <Text style={styles.permHintText}>
+              Notifications are off — you&apos;ll still see reminders in the app. Turn on in
+              Settings.
+            </Text>
+          </PressableScale>
+        ) : null}
       </View>
     </ScrollView>
   );
@@ -285,5 +319,14 @@ const styles = StyleSheet.create({
   reminderSub: {
     fontSize: 12,
     color: "#8A8A82",
+  },
+  permHint: {
+    marginTop: 8,
+    paddingHorizontal: 4,
+  },
+  permHintText: {
+    fontSize: 12,
+    color: "#D97706",
+    lineHeight: 18,
   },
 });

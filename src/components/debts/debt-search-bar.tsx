@@ -1,6 +1,12 @@
 import { forwardRef, memo, useCallback, useImperativeHandle, useRef } from "react";
 
-import { Pressable, StyleSheet, TextInput, type TextInput as TextInputType, View } from "react-native";
+import {
+  Pressable,
+  StyleSheet,
+  TextInput,
+  type TextInput as TextInputType,
+  View,
+} from "react-native";
 
 import { Search, X } from "lucide-react-native";
 

@@ -122,6 +122,22 @@ export function sortDebts(debts: DebtCardView[]): DebtCardView[] {
   return [...debts].sort((a, b) => DEBT_SORT_ORDER[a.status] - DEBT_SORT_ORDER[b.status]);
 }
 
+/**
+ * Debts promised on a specific due date that are still unpaid — used by the
+ * transient focused view opened from a collapsed reminder notification.
+ */
+export function filterDebtsByDueDate(debts: DebtCardView[], dueDateISO: string): DebtCardView[] {
+  const result: DebtCardView[] = [];
+
+  for (const debt of debts) {
+    if (debt.dueDateISO === dueDateISO && debt.status !== "paid") {
+      result.push(debt);
+    }
+  }
+
+  return sortDebts(result);
+}
+
 export function bucketHomeDebts(debts: DebtCardView[]): HomeDebtBuckets {
   const overdue: DebtCardView[] = [];
   const dueSoon: DebtCardView[] = [];

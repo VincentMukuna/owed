@@ -3,6 +3,8 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
 import type { CreateDebtInput } from "@/features/debts/view-models";
+import { reminderKeys } from "@/features/reminders/hooks/query-keys";
+import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 
 import { activityKeys, debtKeys } from "./query-keys";
 
@@ -13,6 +15,8 @@ export function useAddDebt() {
   return useMutation({
     mutationFn: (input: CreateDebtInput) => debtRepository.create(input),
     onSuccess: async () => {
+      await runReminderSync();
+      await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
       await queryClient.invalidateQueries({ queryKey: debtKeys.all });
       await queryClient.invalidateQueries({ queryKey: activityKeys.all });
       showToast("Debt saved.");

@@ -1,10 +1,18 @@
 import type { ReactNode } from "react";
 
-import { StyleSheet, View, type ViewStyle } from "react-native";
+import { Platform, StyleSheet, View, type ViewStyle } from "react-native";
 
-import { SafeAreaView } from "react-native-safe-area-context";
+import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 
 import { APP_BACKGROUND } from "@/lib/navigation/stack-options";
+
+export const TAB_BAR_HEIGHT = Platform.OS === "ios" ? 49 : 56;
+
+/** Bottom padding for tab-root ScrollViews so content clears the native tab bar. */
+export function useTabScrollPadding(extra = 24): number {
+  const insets = useSafeAreaInsets();
+  return TAB_BAR_HEIGHT + Math.max(insets.bottom, 10) + extra;
+}
 
 type TabScreenProps = {
   children: ReactNode;
