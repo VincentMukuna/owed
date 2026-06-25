@@ -97,7 +97,7 @@ export function PeopleScreen() {
         <Text style={styles.emptyCopy}>
           {isSearching
             ? "Try searching by name or phone number."
-            : "Add the people you track money with — then log what they owe."}
+            : "Add people you lend money to, then log what they owe."}
         </Text>
         {!isSearching ? (
           <PressableScale onPress={openAddPerson} style={styles.emptyCta}>
