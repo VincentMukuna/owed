@@ -1,5 +1,7 @@
 # PRD: Reminder Layer (v0.3)
 
+> **Superseded in part by [reminders-grouping-prd.md](./reminders-grouping-prd.md) (v0.4).** That revision adds grouped/collapsed notifications and reworks scheduling into a single serialized, SQL-driven sync engine with a rolling OS-notification window. Where the two conflict, v0.4 wins.
+
 **Status:** Approved — ready for implementation  
 **Baseline:** v0.2 local persistence shipped (`main`)  
 **Depends on:** SQLite (`debts`, `payments`), `expo-notifications` (~56.0.18, plugin in `app.json`)
