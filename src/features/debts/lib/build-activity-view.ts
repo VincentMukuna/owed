@@ -40,7 +40,7 @@ export function buildActivityView(
   now: Date = new Date(),
 ): ActivityView {
   const amount = event.amount ?? 0;
-  const reason = event.debtReason?.trim() || "—";
+  const reason = event.debtReason?.trim() ?? "";
   const currency = event.debtCurrency;
 
   let text: string;
@@ -57,7 +57,9 @@ export function buildActivityView(
       break;
     case "debt_paid":
       text = `${getFirstName(event.personName)}'s debt was marked as paid`;
-      sub = `${formatCurrency(amount, currency)} · ${reason}`;
+      sub = reason
+        ? `${formatCurrency(amount, currency)} · ${reason}`
+        : formatCurrency(amount, currency);
       break;
   }
 

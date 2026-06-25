@@ -207,7 +207,7 @@ export function AddDebtScreen() {
             style={styles.permHint}
           >
             <Text style={styles.permHintText}>
-              Notifications are off — you&apos;ll still see reminders in the app. Turn on in
+              Notifications are off. You&apos;ll still see reminders in the app. Turn on in
               Settings.
             </Text>
           </PressableScale>

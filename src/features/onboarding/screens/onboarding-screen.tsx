@@ -70,7 +70,7 @@ export function OnboardingScreen() {
           </View>
           <Text style={styles.title}>Never forget{"\n"}who owes you.</Text>
           <Text style={styles.subtitle}>
-            Track amounts, promised dates, and payments — all in one private place.
+            Track amounts, promised dates, and payments, all in one private place.
           </Text>
         </Animated.View>
 

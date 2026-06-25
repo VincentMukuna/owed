@@ -54,7 +54,7 @@ export function buildReminderNotificationContent(input: {
   if (input.type === "overdue") {
     return {
       title: "Overdue",
-      body: `${input.personName} was due yesterday — ${amount} still outstanding.`,
+      body: `${input.personName} was due yesterday, ${amount} still outstanding.`,
     };
   }
 
@@ -85,7 +85,7 @@ export function buildCollapsedReminderContent(input: {
   if (input.type === "overdue") {
     return {
       title: "Overdue",
-      body: `${people} were due yesterday — ${amount} still owed.`,
+      body: `${people} were due yesterday, ${amount} still owed.`,
     };
   }
 

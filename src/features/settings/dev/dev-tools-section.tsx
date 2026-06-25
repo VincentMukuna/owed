@@ -72,7 +72,7 @@ export function DevToolsSection() {
       <View style={styles.card}>
         <View style={styles.content}>
           <Text style={styles.description}>
-            Wipe all local data — debts, activity, reminders, and settings — and cancel pending
+            Wipe all local data (debts, activity, reminders, and settings) and cancel pending
             notifications. Same as a fresh install without reinstalling the app.
           </Text>
           <Button
