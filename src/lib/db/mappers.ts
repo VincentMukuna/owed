@@ -49,11 +49,22 @@ export type DebtSummary = Omit<DebtWithRelations, "payments">;
 export type PersonSummary = {
   id: string;
   name: string;
-  /** Remaining balance summed across the person's active (non-archived) debts. */
+  phoneNumber?: string;
+  /** Remaining balance summed across the person's non-archived debts. */
   outstanding: number;
-  /** Number of active debts that still have a remaining balance. */
+  /** Original amount summed across the person's non-archived debts. */
+  originalTotal: number;
+  /** Number of non-archived debts that still have a remaining balance. */
   openDebtCount: number;
-  /** Most recent debt creation time, falling back to the person's creation time. */
+  /** Open debts whose due date is before today (timing-based, ignores partial). */
+  overdueCount: number;
+  /** Open debts due today through `dueSoonDays` ahead, none overdue. */
+  dueSoonCount: number;
+  /** Non-archived debts that are fully paid (no remaining balance). */
+  paidDebtCount: number;
+  /** Non-archived debts linked to this person. */
+  totalDebtCount: number;
+  /** Most recent of debt creation / payment time, falling back to person creation. */
   lastActivityAt: string;
 };
 

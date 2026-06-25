@@ -93,6 +93,28 @@ export function formatRelativeTime(isoDateTime: string, now: Date = new Date()):
   return `${month} ${day}`;
 }
 
+/** Calendar-relative label for list "last updated" cues: Today / Yesterday / N days ago / Mon D. */
+export function formatRelativeDay(isoDateTime: string, now: Date = new Date()): string {
+  const date = parseISODateTime(isoDateTime);
+  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startOfDay = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+  const diffDays = Math.round(
+    (startOfToday.getTime() - startOfDay.getTime()) / (24 * 60 * 60 * 1000),
+  );
+
+  if (diffDays <= 0) {
+    return "Today";
+  }
+  if (diffDays === 1) {
+    return "Yesterday";
+  }
+  if (diffDays < 7) {
+    return `${diffDays} days ago`;
+  }
+
+  return `${MONTH_SHORT[date.getMonth()]} ${date.getDate()}`;
+}
+
 export function toISODate(date: Date): string {
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, "0");

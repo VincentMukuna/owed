@@ -49,6 +49,19 @@ function rowToActivityEventWithRelations(row: ActivityEventListRow): ActivityEve
   };
 }
 
+const ACTIVITY_SELECT = `
+  SELECT
+    ae.*,
+    p.name AS person_name,
+    d.reason AS debt_reason,
+    d.currency AS debt_currency,
+    pay.note AS payment_note
+  FROM activity_events ae
+  INNER JOIN people p ON p.id = ae.person_id
+  INNER JOIN debts d ON d.id = ae.debt_id
+  LEFT JOIN payments pay ON pay.id = ae.payment_id
+`;
+
 export const activityRepository = {
   async create(input: CreateActivityEventInput): Promise<void> {
     const db = await getDb();
@@ -81,17 +94,19 @@ export const activityRepository = {
   async list(): Promise<ActivityEventWithRelations[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<ActivityEventListRow>(
-      `SELECT
-        ae.*,
-        p.name AS person_name,
-        d.reason AS debt_reason,
-        d.currency AS debt_currency,
-        pay.note AS payment_note
-      FROM activity_events ae
-      INNER JOIN people p ON p.id = ae.person_id
-      INNER JOIN debts d ON d.id = ae.debt_id
-      LEFT JOIN payments pay ON pay.id = ae.payment_id
-      ORDER BY ae.occurred_at DESC`,
+      `${ACTIVITY_SELECT} ORDER BY ae.occurred_at DESC`,
+    );
+
+    return rows.map(rowToActivityEventWithRelations);
+  },
+
+  async listForPerson(personId: string): Promise<ActivityEventWithRelations[]> {
+    const db = await getDb();
+    const rows = await db.getAllAsync<ActivityEventListRow>(
+      `${ACTIVITY_SELECT}
+       WHERE ae.person_id = ?
+       ORDER BY ae.occurred_at DESC`,
+      [personId],
     );
 
     return rows.map(rowToActivityEventWithRelations);
