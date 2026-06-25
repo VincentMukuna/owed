@@ -1,10 +1,11 @@
 import { StyleSheet, Text, View } from "react-native";
 
 import { ActivityList } from "@/components/activity/activity-list";
-import { TabScreen } from "@/components/navigation/tab-screen";
+import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
 import { useActivities } from "@/features/debts/hooks/use-activities";
 
 export function ActivityScreen() {
+  const tabScrollPadding = useTabScrollPadding();
   const { data: activities = [], isPending } = useActivities();
 
   if (isPending) {
@@ -17,7 +18,10 @@ export function ActivityScreen() {
         <Text style={styles.title}>Activity</Text>
       </View>
 
-      <ActivityList activities={activities} contentContainerStyle={styles.scroll} />
+      <ActivityList
+        activities={activities}
+        contentContainerStyle={[styles.scroll, { paddingBottom: tabScrollPadding }]}
+      />
     </TabScreen>
   );
 }
@@ -35,6 +39,5 @@ const styles = StyleSheet.create({
   },
   scroll: {
     paddingHorizontal: 20,
-    paddingBottom: 24,
   },
 });
