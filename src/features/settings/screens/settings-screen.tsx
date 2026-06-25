@@ -1,14 +1,16 @@
 import type { ComponentType } from "react";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { AppState, ScrollView, StyleSheet, Switch, Text, View } from "react-native";
 
 import { useFocusEffect } from "expo-router";
 
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { ChevronRight } from "lucide-react-native";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import {
   type NotificationPermissionState,
   getNotificationPermissionState,
@@ -20,7 +22,19 @@ import {
   saveOverdueReminderEnabled,
 } from "@/features/reminders/lib/reminder-storage";
 import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
+import {
+  CurrencyConversionSheet,
+  type CurrencyConversionSheetRef,
+} from "@/features/settings/components/currency-conversion-sheet";
+import {
+  CurrencyPickerSheet,
+  type CurrencyPickerSheetRef,
+} from "@/features/settings/components/currency-picker-sheet";
 import { ReminderTimePickerModal } from "@/features/settings/components/reminder-time-picker-modal";
+import {
+  useChangeCurrency,
+  useCurrentCurrency,
+} from "@/features/settings/hooks/use-change-currency";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { formatReminderTimeDisplay } from "@/features/settings/lib/format-reminder-time";
 import { selectionChange } from "@/lib/haptics";
@@ -46,12 +60,17 @@ function permissionLabel(state: NotificationPermissionState): string {
 
 export function SettingsScreen() {
   const tabScrollPadding = useTabScrollPadding();
-  const defaultCurrency = useSettingsStore((state) => state.defaultCurrency);
+  const defaultCurrency = useCurrentCurrency();
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
   const overdueReminderEnabled = useSettingsStore((state) => state.overdueReminderEnabled);
+  const changeCurrency = useChangeCurrency();
+  const currencyPickerRef = useRef<CurrencyPickerSheetRef>(null);
+  const conversionSheetRef = useRef<CurrencyConversionSheetRef>(null);
 
   const [permissionState, setPermissionState] = useState<NotificationPermissionState>("not-asked");
   const [timePickerOpen, setTimePickerOpen] = useState(false);
+  const [conversionTarget, setConversionTarget] = useState<string | null>(null);
+  const [totalRemaining, setTotalRemaining] = useState(0);
 
   const refreshPermissionState = useCallback(() => {
     void getNotificationPermissionState().then(setPermissionState);
@@ -103,123 +122,211 @@ export function SettingsScreen() {
     }
   }, [permissionState, refreshPermissionState]);
 
+  const handleCurrencySelect = useCallback(
+    async (code: string) => {
+      if (code === defaultCurrency) {
+        return;
+      }
+
+      const hasDebts = await debtRepository.hasAnyDebts();
+
+      if (!hasDebts) {
+        changeCurrency.mutate({
+          fromCurrency: defaultCurrency,
+          toCurrency: code,
+        });
+        return;
+      }
+
+      const total = await debtRepository.getTotalRemaining();
+      setTotalRemaining(total);
+      setConversionTarget(code);
+      requestAnimationFrame(() => {
+        conversionSheetRef.current?.present();
+      });
+    },
+    [changeCurrency, defaultCurrency],
+  );
+
+  const handleConversionConfirm = useCallback(
+    (rate: number) => {
+      if (!conversionTarget) {
+        return;
+      }
+
+      changeCurrency.mutate(
+        {
+          fromCurrency: defaultCurrency,
+          toCurrency: conversionTarget,
+          rate,
+        },
+        {
+          onSuccess: () => {
+            conversionSheetRef.current?.dismiss();
+            setConversionTarget(null);
+          },
+        },
+      );
+    },
+    [changeCurrency, conversionTarget, defaultCurrency],
+  );
+
+  const handleConversionClose = useCallback(() => {
+    if (changeCurrency.isPending) {
+      return;
+    }
+
+    setConversionTarget(null);
+  }, [changeCurrency.isPending]);
+
   return (
-    <TabScreen>
-      <View style={styles.header}>
-        <Text style={styles.title}>Settings</Text>
-      </View>
+    <BottomSheetModalProvider>
+      <TabScreen>
+        <View style={styles.header}>
+          <Text style={styles.title}>Settings</Text>
+        </View>
 
-      <ScrollView
-        contentContainerStyle={[styles.scroll, { paddingBottom: tabScrollPadding }]}
-        showsVerticalScrollIndicator={false}
-      >
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Preferences</Text>
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <Text style={styles.icon}>💱</Text>
-              <Text style={styles.label}>Default currency</Text>
-              <Text style={styles.value}>{defaultCurrency}</Text>
-            </View>
-
-            <PressableScale
-              onPress={() => {
-                selectionChange();
-                setTimePickerOpen(true);
-              }}
-              style={[styles.row, styles.rowBorder]}
-            >
-              <Text style={styles.icon}>⏰</Text>
-              <Text style={styles.label}>Default reminder time</Text>
-              <View style={styles.valueWrap}>
-                <Text style={styles.value}>{formatReminderTimeDisplay(defaultReminderTime)}</Text>
-                <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
-              </View>
-            </PressableScale>
-
-            <View style={[styles.row, styles.rowBorder]}>
-              <Text style={styles.icon}>📣</Text>
-              <View style={styles.toggleCopy}>
-                <Text style={styles.label}>Overdue reminders</Text>
-                <Text style={styles.subLabel}>One gentle nudge the day after</Text>
-              </View>
-              <Switch
-                onValueChange={(value) => {
-                  void handleOverdueToggle(value);
+        <ScrollView
+          contentContainerStyle={[styles.scroll, { paddingBottom: tabScrollPadding }]}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Preferences</Text>
+            <View style={styles.card}>
+              <PressableScale
+                onPress={() => {
+                  selectionChange();
+                  currencyPickerRef.current?.present();
                 }}
-                thumbColor="#FFFFFF"
-                trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
-                value={overdueReminderEnabled}
-              />
-            </View>
+                style={styles.row}
+              >
+                <Text style={styles.icon}>💱</Text>
+                <Text style={styles.label}>Default currency</Text>
+                <View style={styles.valueWrap}>
+                  <Text style={styles.value}>{defaultCurrency}</Text>
+                  <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                </View>
+              </PressableScale>
 
-            <PressableScale
-              onPress={() => {
-                void handleNotificationsPress();
-              }}
-              style={[styles.row, styles.rowBorder]}
-            >
-              <Text style={styles.icon}>🔔</Text>
-              <Text style={styles.label}>Notifications</Text>
-              <View style={styles.valueWrap}>
-                <Text style={styles.value}>{permissionLabel(permissionState)}</Text>
-                <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
-              </View>
-            </PressableScale>
-          </View>
-        </View>
+              <PressableScale
+                onPress={() => {
+                  selectionChange();
+                  setTimePickerOpen(true);
+                }}
+                style={[styles.row, styles.rowBorder]}
+              >
+                <Text style={styles.icon}>⏰</Text>
+                <Text style={styles.label}>Default reminder time</Text>
+                <View style={styles.valueWrap}>
+                  <Text style={styles.value}>{formatReminderTimeDisplay(defaultReminderTime)}</Text>
+                  <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                </View>
+              </PressableScale>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>Privacy</Text>
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <Text style={styles.icon}>🔒</Text>
-              <Text style={styles.label}>App lock</Text>
-              <View style={styles.valueWrap}>
-                <Text style={styles.value}>Off</Text>
-                <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+              <View style={[styles.row, styles.rowBorder]}>
+                <Text style={styles.icon}>📣</Text>
+                <View style={styles.toggleCopy}>
+                  <Text style={styles.label}>Overdue reminders</Text>
+                  <Text style={styles.subLabel}>One gentle nudge the day after</Text>
+                </View>
+                <Switch
+                  onValueChange={(value) => {
+                    void handleOverdueToggle(value);
+                  }}
+                  thumbColor="#FFFFFF"
+                  trackColor={{ false: "#DDDDD8", true: "#1A3A2A" }}
+                  value={overdueReminderEnabled}
+                />
               </View>
-            </View>
-            <View style={[styles.row, styles.rowBorder]}>
-              <Text style={styles.icon}>📤</Text>
-              <Text style={styles.label}>Export data</Text>
-              <View style={styles.valueWrap}>
-                <Text style={styles.value}>CSV</Text>
-                <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
-              </View>
-            </View>
-          </View>
-        </View>
 
-        <View style={styles.section}>
-          <Text style={styles.sectionTitle}>About</Text>
-          <View style={styles.card}>
-            <View style={styles.row}>
-              <Text style={styles.icon}>ℹ️</Text>
-              <Text style={styles.label}>App version</Text>
-              <Text style={styles.value}>1.0.0</Text>
-            </View>
-            <View style={[styles.row, styles.rowBorder]}>
-              <Text style={styles.icon}>💬</Text>
-              <Text style={styles.label}>Send feedback</Text>
-              <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+              <PressableScale
+                onPress={() => {
+                  void handleNotificationsPress();
+                }}
+                style={[styles.row, styles.rowBorder]}
+              >
+                <Text style={styles.icon}>🔔</Text>
+                <Text style={styles.label}>Notifications</Text>
+                <View style={styles.valueWrap}>
+                  <Text style={styles.value}>{permissionLabel(permissionState)}</Text>
+                  <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                </View>
+              </PressableScale>
             </View>
           </View>
-        </View>
 
-        {DevToolsSection ? <DevToolsSection /> : null}
-      </ScrollView>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Privacy</Text>
+            <View style={styles.card}>
+              <View style={styles.row}>
+                <Text style={styles.icon}>🔒</Text>
+                <Text style={styles.label}>App lock</Text>
+                <View style={styles.valueWrap}>
+                  <Text style={styles.value}>Off</Text>
+                  <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                </View>
+              </View>
+              <View style={[styles.row, styles.rowBorder]}>
+                <Text style={styles.icon}>📤</Text>
+                <Text style={styles.label}>Export data</Text>
+                <View style={styles.valueWrap}>
+                  <Text style={styles.value}>CSV</Text>
+                  <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+                </View>
+              </View>
+            </View>
+          </View>
 
-      <ReminderTimePickerModal
-        key={timePickerOpen ? defaultReminderTime : "closed"}
-        onClose={() => setTimePickerOpen(false)}
-        onSave={(time24) => {
-          void handleReminderTimeSave(time24);
-        }}
-        value={defaultReminderTime}
-        visible={timePickerOpen}
-      />
-    </TabScreen>
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>About</Text>
+            <View style={styles.card}>
+              <View style={styles.row}>
+                <Text style={styles.icon}>ℹ️</Text>
+                <Text style={styles.label}>App version</Text>
+                <Text style={styles.value}>1.0.0</Text>
+              </View>
+              <View style={[styles.row, styles.rowBorder]}>
+                <Text style={styles.icon}>💬</Text>
+                <Text style={styles.label}>Send feedback</Text>
+                <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
+              </View>
+            </View>
+          </View>
+
+          {DevToolsSection ? <DevToolsSection /> : null}
+        </ScrollView>
+
+        <CurrencyPickerSheet
+          onSelect={(code) => {
+            void handleCurrencySelect(code);
+          }}
+          ref={currencyPickerRef}
+          value={defaultCurrency}
+        />
+
+        <CurrencyConversionSheet
+          fromCurrency={defaultCurrency}
+          isSubmitting={changeCurrency.isPending}
+          onClose={handleConversionClose}
+          onConfirm={handleConversionConfirm}
+          ref={conversionSheetRef}
+          toCurrency={conversionTarget ?? defaultCurrency}
+          totalRemaining={totalRemaining}
+        />
+
+        {timePickerOpen ? (
+          <ReminderTimePickerModal
+            key={defaultReminderTime}
+            onClose={() => setTimePickerOpen(false)}
+            onSave={(time24) => {
+              void handleReminderTimeSave(time24);
+            }}
+            value={defaultReminderTime}
+            visible
+          />
+        ) : null}
+      </TabScreen>
+    </BottomSheetModalProvider>
   );
 }
 

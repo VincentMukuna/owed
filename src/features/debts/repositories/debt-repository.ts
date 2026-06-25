@@ -1,4 +1,5 @@
 import { APP_CONFIG } from "@/constants/config";
+import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { getDb } from "@/lib/db/client";
 import {
   type DebtSummary,
@@ -127,6 +128,32 @@ async function hydrateDebtRow(row: DebtPersonRow): Promise<DebtWithRelations> {
 }
 
 export const debtRepository = {
+  async hasAnyDebts(): Promise<boolean> {
+    const db = await getDb();
+    const row = await db.getFirstAsync<{ has_debt: number }>(
+      "SELECT EXISTS(SELECT 1 FROM debts LIMIT 1) AS has_debt",
+    );
+
+    return Boolean(row?.has_debt);
+  },
+
+  async getTotalRemaining(): Promise<number> {
+    const db = await getDb();
+    const row = await db.getFirstAsync<{ total: number | null }>(
+      `SELECT COALESCE(SUM(d.original_amount - COALESCE(pay_totals.paid_total, 0)), 0) AS total
+       FROM debts d
+       LEFT JOIN (
+         SELECT debt_id, SUM(amount) AS paid_total
+         FROM payments
+         GROUP BY debt_id
+       ) pay_totals ON pay_totals.debt_id = d.id
+       WHERE d.archived_at IS NULL
+         AND (d.original_amount - COALESCE(pay_totals.paid_total, 0)) > 0`,
+    );
+
+    return row?.total ?? 0;
+  },
+
   async listSummaries(): Promise<DebtSummary[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<DebtSummaryRow>(
@@ -171,7 +198,8 @@ export const debtRepository = {
     const db = await getDb();
     const now = new Date().toISOString();
     const id = createId();
-    const currency = input.currency ?? APP_CONFIG.defaultCurrency;
+    const currency =
+      input.currency ?? useSettingsStore.getState().defaultCurrency ?? APP_CONFIG.defaultCurrency;
     const reminderTime = input.reminderEnabled
       ? (input.reminderTime ?? APP_CONFIG.defaultReminderTime)
       : null;

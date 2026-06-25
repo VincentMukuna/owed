@@ -18,9 +18,13 @@ import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { completeOnboarding } from "@/features/onboarding/lib/onboarding-storage";
+import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { HOME_ROUTE } from "@/lib/navigation/routes";
+import { formatCurrency } from "@/lib/utils/formatters";
 
 function PreviewDebtCard() {
+  const defaultCurrency = useSettingsStore((state) => state.defaultCurrency);
+
   return (
     <View style={styles.previewCard}>
       <View style={styles.previewRow}>
@@ -31,7 +35,7 @@ function PreviewDebtCard() {
               <Text style={styles.previewName}>Brian Mwangi</Text>
               <Text style={styles.previewReason}>Transport + drinks</Text>
             </View>
-            <Text style={styles.previewAmount}>KES 3,000</Text>
+            <Text style={styles.previewAmount}>{formatCurrency(3000, defaultCurrency)}</Text>
           </View>
           <View style={styles.previewFooter}>
             <Badge status="due-soon" />

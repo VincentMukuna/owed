@@ -24,9 +24,10 @@ import {
   openOsNotificationSettings,
 } from "@/features/reminders/lib/notification-permissions";
 import { requestReminderPermissionOnToggle } from "@/features/reminders/lib/request-reminder-permissions";
+import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { selectionChange } from "@/lib/haptics";
 import { HOME_ROUTE } from "@/lib/navigation/routes";
-import { getInitials } from "@/lib/utils/formatters";
+import { formatCurrencyPrefix, getInitials } from "@/lib/utils/formatters";
 
 const QUICK_DATES = ["Today", "Tomorrow", "Friday", "Next week"];
 
@@ -52,6 +53,7 @@ export function AddDebtScreen() {
   const fromOnboarding = from === "onboarding";
   const addDebt = useAddDebt();
   const { data: people = [] } = usePeople();
+  const defaultCurrency = useSettingsStore((state) => state.defaultCurrency);
 
   const pickerRef = useRef<PersonPickerSheetRef>(null);
   const amountRef = useRef<TextInput>(null);
@@ -175,7 +177,7 @@ export function AddDebtScreen() {
 
         <Field label="Amount">
           <View>
-            <Text style={styles.prefix}>KES</Text>
+            <Text style={styles.prefix}>{formatCurrencyPrefix(defaultCurrency)}</Text>
             <TextInput
               ref={amountRef}
               keyboardType="number-pad"
