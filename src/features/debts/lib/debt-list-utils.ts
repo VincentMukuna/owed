@@ -56,26 +56,66 @@ export function computeDebtTabCounts(debts: DebtCardView[]): DebtTabCounts {
   };
 }
 
+function matchesDebtFilter(debt: DebtCardView, filter: DebtFilterKey): boolean {
+  if (filter === "all") {
+    return true;
+  }
+
+  if (filter === "active") {
+    return ACTIVE_STATUSES.has(debt.status);
+  }
+
+  if (filter === "overdue") {
+    return debt.status === "overdue";
+  }
+
+  if (filter === "paid") {
+    return debt.status === "paid";
+  }
+
+  return true;
+}
+
+function matchesDebtSearch(debt: DebtCardView, normalizedQuery: string): boolean {
+  if (normalizedQuery.length === 0) {
+    return true;
+  }
+
+  return (
+    debt.name.toLowerCase().includes(normalizedQuery) ||
+    debt.reason.toLowerCase().includes(normalizedQuery)
+  );
+}
+
 export function filterDebts(debts: DebtCardView[], filter: DebtFilterKey): DebtCardView[] {
   if (filter === "all") {
     return debts;
   }
 
-  return debts.filter((debt) => {
-    if (filter === "active") {
-      return ACTIVE_STATUSES.has(debt.status);
+  return debts.filter((debt) => matchesDebtFilter(debt, filter));
+}
+
+export function filterSearchAndSortDebts(
+  debts: DebtCardView[],
+  filter: DebtFilterKey,
+  searchQuery: string,
+): DebtCardView[] {
+  const normalizedQuery = searchQuery.trim().toLowerCase();
+  const result: DebtCardView[] = [];
+
+  for (const debt of debts) {
+    if (!matchesDebtFilter(debt, filter)) {
+      continue;
     }
 
-    if (filter === "overdue") {
-      return debt.status === "overdue";
+    if (!matchesDebtSearch(debt, normalizedQuery)) {
+      continue;
     }
 
-    if (filter === "paid") {
-      return debt.status === "paid";
-    }
+    result.push(debt);
+  }
 
-    return true;
-  });
+  return sortDebts(result);
 }
 
 export function sortDebts(debts: DebtCardView[]): DebtCardView[] {
