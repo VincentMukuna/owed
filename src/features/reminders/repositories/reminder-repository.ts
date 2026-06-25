@@ -123,6 +123,48 @@ export const reminderRepository = {
     return rows.map(rowToReminder);
   },
 
+  async listScheduledBeforeOrAt(iso: string): Promise<Reminder[]> {
+    const db = await getDb();
+    const rows = await db.getAllAsync<RemindersRow>(
+      `SELECT * FROM reminders
+       WHERE status = 'scheduled' AND remind_at <= ?
+       ORDER BY remind_at ASC`,
+      iso,
+    );
+    return rows.map(rowToReminder);
+  },
+
+  async listScheduledByType(type: ReminderType): Promise<Reminder[]> {
+    const db = await getDb();
+    const rows = await db.getAllAsync<RemindersRow>(
+      `SELECT * FROM reminders
+       WHERE status = 'scheduled' AND type = ?
+       ORDER BY remind_at ASC`,
+      type,
+    );
+    return rows.map(rowToReminder);
+  },
+
+  async listIneligibleScheduled(): Promise<Reminder[]> {
+    const db = await getDb();
+    const rows = await db.getAllAsync<RemindersRow>(
+      `SELECT r.* FROM reminders r
+       INNER JOIN debts d ON d.id = r.debt_id
+       LEFT JOIN (
+         SELECT debt_id, SUM(amount) AS paid_total
+         FROM payments
+         GROUP BY debt_id
+       ) pay ON pay.debt_id = d.id
+       WHERE r.status = 'scheduled'
+         AND (
+           d.reminder_enabled = 0
+           OR d.archived_at IS NOT NULL
+           OR (d.original_amount - COALESCE(pay.paid_total, 0)) <= 0
+         )`,
+    );
+    return rows.map(rowToReminder);
+  },
+
   async listInbox(): Promise<ReminderInboxItem[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<ReminderInboxRow>(

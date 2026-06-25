@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-import { StyleSheet } from "react-native";
+import { AppState, StyleSheet } from "react-native";
 
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -13,6 +13,7 @@ import { activityKeys, debtKeys } from "@/features/debts/hooks/query-keys";
 import { fetchActivityViews } from "@/features/debts/lib/fetch-activities";
 import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
+import { reconcileReminders } from "@/features/reminders/lib/reconcile-reminders";
 import { registerNotificationHandlers } from "@/features/reminders/lib/register-notification-handlers";
 import { hydrateReminderSettings } from "@/features/reminders/lib/reminder-storage";
 import { queryClient } from "@/lib/api/query-client";
@@ -53,12 +54,20 @@ export default function RootLayout() {
 
     let cleanup: (() => void) | undefined;
 
-    void registerNotificationHandlers().then((unregister) => {
-      cleanup = unregister;
+    void (async () => {
+      cleanup = await registerNotificationHandlers();
+      await reconcileReminders();
+    })();
+
+    const appStateSubscription = AppState.addEventListener("change", (state) => {
+      if (state === "active") {
+        void reconcileReminders();
+      }
     });
 
     return () => {
       cleanup?.();
+      appStateSubscription.remove();
     };
   }, [dbReady]);
 
