@@ -1,7 +1,8 @@
-import { StyleSheet, Text, View } from "react-native";
+import { Alert, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "@/components/ui/button";
 
+import { useResetDatabase } from "../hooks/use-reset-database";
 import { useSeedDebts } from "../hooks/use-seed-debts";
 import { useSeedReminderTest } from "../hooks/use-seed-reminder-test";
 import { SEED_DEBT_COUNT, SEED_PAYMENT_ACTIVITY_COUNT, SEED_PEOPLE_COUNT } from "./seed-debts";
@@ -10,6 +11,24 @@ import { SEED_REMINDER_TEST_COUNT } from "./seed-reminder-test";
 export function DevToolsSection() {
   const seedDebts = useSeedDebts();
   const seedReminderTest = useSeedReminderTest();
+  const resetDatabase = useResetDatabase();
+
+  const confirmReset = () => {
+    Alert.alert(
+      "Reset database?",
+      "Deletes all debts, activity, reminders, and saved settings. OS notification permission is unchanged.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Reset",
+          style: "destructive",
+          onPress: () => {
+            resetDatabase.mutate();
+          },
+        },
+      ],
+    );
+  };
 
   return (
     <View style={styles.section}>
@@ -35,8 +54,9 @@ export function DevToolsSection() {
         <View style={styles.content}>
           <Text style={styles.description}>
             Set the reminder time a few minutes ahead, then seed {SEED_REMINDER_TEST_COUNT}{" "}
-            reminder-enabled debts due today. They share one bucket, so the next run fires a single
-            grouped notification.
+            due-today and {SEED_REMINDER_TEST_COUNT} overdue debts (due yesterday). Each bucket
+            collapses to one grouped notification at that time. Overdue reminders are turned on if
+            needed.
           </Text>
           <Button
             disabled={seedReminderTest.isPending}
@@ -45,6 +65,23 @@ export function DevToolsSection() {
             variant="secondary"
           >
             {seedReminderTest.isPending ? "Seeding…" : "Seed grouped reminder test"}
+          </Button>
+        </View>
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.content}>
+          <Text style={styles.description}>
+            Wipe all local data — debts, activity, reminders, and settings — and cancel pending
+            notifications. Same as a fresh install without reinstalling the app.
+          </Text>
+          <Button
+            disabled={resetDatabase.isPending}
+            fullWidth
+            onPress={confirmReset}
+            variant="secondary"
+          >
+            {resetDatabase.isPending ? "Resetting…" : "Reset database"}
           </Button>
         </View>
       </View>

@@ -17,8 +17,9 @@ export function useSeedReminderTest() {
       await runReminderSync();
       await queryClient.invalidateQueries({ queryKey: debtKeys.all });
       await queryClient.invalidateQueries({ queryKey: activityKeys.all });
+      const time = formatReminderTimeDisplay(result.reminderTime);
       showToast(
-        `Seeded ${result.debts} debts due today at ${formatReminderTimeDisplay(result.reminderTime)}.`,
+        `Seeded ${result.dueDebts} due + ${result.overdueDebts} overdue debts for ${time}.`,
       );
     },
     onError: (error) => {
