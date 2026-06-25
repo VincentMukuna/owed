@@ -9,6 +9,9 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { Toast } from "@/components/shared/toast";
+import { activityKeys, debtKeys } from "@/features/debts/hooks/query-keys";
+import { fetchActivityViews } from "@/features/debts/lib/fetch-activities";
+import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
@@ -22,7 +25,20 @@ export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
 
   useEffect(() => {
-    void Promise.all([getDb(), hydrateOnboardingState()]).then(() => {
+    void Promise.all([
+      getDb(),
+      hydrateOnboardingState(),
+      queryClient.prefetchQuery({
+        queryKey: debtKeys.all,
+        queryFn: fetchDebtCardViews,
+        staleTime: Number.POSITIVE_INFINITY,
+      }),
+      queryClient.prefetchQuery({
+        queryKey: activityKeys.all,
+        queryFn: fetchActivityViews,
+        staleTime: Number.POSITIVE_INFINITY,
+      }),
+    ]).then(() => {
       setDbReady(true);
     });
   }, []);

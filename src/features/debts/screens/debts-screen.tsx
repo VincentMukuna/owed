@@ -1,67 +1,72 @@
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { router } from "expo-router";
 
+import type { FlashListRef } from "@shopify/flash-list";
 import { List } from "lucide-react-native";
 
-import { DebtCard } from "@/components/debts/debt-card";
+import { DebtList } from "@/components/debts/debt-list";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { useDebts } from "@/features/debts/hooks/use-debts";
-import type { CardDebtStatus } from "@/features/debts/view-models";
+import {
+  type DebtFilterKey,
+  computeDebtTabCounts,
+  filterDebts,
+  sortDebts,
+} from "@/features/debts/lib/debt-list-utils";
+import type { DebtCardView } from "@/features/debts/view-models";
 import { selectionChange } from "@/lib/haptics";
-
-type FilterKey = "all" | "active" | "overdue" | "paid";
-
-const SORT_ORDER: Record<CardDebtStatus, number> = {
-  overdue: 0,
-  "due-soon": 1,
-  partial: 2,
-  active: 3,
-  paid: 4,
-};
 
 export function DebtsScreen() {
   const { data: debts = [], isPending } = useDebts();
-  const [filter, setFilter] = useState<FilterKey>("all");
+  const [filter, setFilter] = useState<DebtFilterKey>("all");
+  const listRef = useRef<FlashListRef<DebtCardView>>(null);
+
+  const tabCounts = useMemo(() => computeDebtTabCounts(debts), [debts]);
 
   const tabs = useMemo(
     () => [
-      { key: "all" as const, label: "All", count: debts.length },
-      {
-        key: "active" as const,
-        label: "Active",
-        count: debts.filter((d) => ["active", "due-soon", "partial"].includes(d.status)).length,
-      },
-      {
-        key: "overdue" as const,
-        label: "Overdue",
-        count: debts.filter((d) => d.status === "overdue").length,
-      },
-      {
-        key: "paid" as const,
-        label: "Paid",
-        count: debts.filter((d) => d.status === "paid").length,
-      },
+      { key: "all" as const, label: "All", count: tabCounts.all },
+      { key: "active" as const, label: "Active", count: tabCounts.active },
+      { key: "overdue" as const, label: "Overdue", count: tabCounts.overdue },
+      { key: "paid" as const, label: "Paid", count: tabCounts.paid },
     ],
-    [debts],
+    [tabCounts],
+  );
+
+  const visibleDebts = useMemo(() => sortDebts(filterDebts(debts, filter)), [debts, filter]);
+
+  useEffect(() => {
+    listRef.current?.scrollToTop({ animated: false });
+  }, [filter]);
+
+  const openDebt = useCallback((debtId: string) => {
+    router.push(`/debt/${debtId}`);
+  }, []);
+
+  const openAdd = useCallback(() => {
+    router.push("/add-debt");
+  }, []);
+
+  const emptyState = useMemo(
+    () => (
+      <View style={styles.empty}>
+        <View style={styles.emptyIcon}>
+          <List color="#B8B8B0" size={20} strokeWidth={1.5} />
+        </View>
+        <Text style={styles.emptyTitle}>Nothing here</Text>
+        <Text style={styles.emptyCopy}>No debts in this category.</Text>
+      </View>
+    ),
+    [],
   );
 
   if (isPending) {
     return null;
   }
-
-  const filtered = debts.filter((debt) => {
-    if (filter === "all") return true;
-    if (filter === "active") return ["active", "due-soon", "partial"].includes(debt.status);
-    if (filter === "overdue") return debt.status === "overdue";
-    if (filter === "paid") return debt.status === "paid";
-    return true;
-  });
-
-  const sorted = [...filtered].sort((a, b) => SORT_ORDER[a.status] - SORT_ORDER[b.status]);
 
   return (
     <TabScreen>
@@ -94,28 +99,15 @@ export function DebtsScreen() {
         </View>
       </View>
 
-      <ScrollView
-        contentContainerStyle={[styles.scroll, styles.scrollWithFab]}
-        showsVerticalScrollIndicator={false}
-      >
-        {sorted.length === 0 ? (
-          <View style={styles.empty}>
-            <View style={styles.emptyIcon}>
-              <List color="#B8B8B0" size={20} strokeWidth={1.5} />
-            </View>
-            <Text style={styles.emptyTitle}>Nothing here</Text>
-            <Text style={styles.emptyCopy}>No debts in this category.</Text>
-          </View>
-        ) : (
-          <View style={styles.list}>
-            {sorted.map((debt) => (
-              <DebtCard key={debt.id} debt={debt} onPress={() => router.push(`/debt/${debt.id}`)} />
-            ))}
-          </View>
-        )}
-      </ScrollView>
+      <DebtList
+        ref={listRef}
+        contentContainerStyle={styles.scroll}
+        debts={visibleDebts}
+        ListEmptyComponent={emptyState}
+        onDebtPress={openDebt}
+      />
 
-      <FabButton onPress={() => router.push("/add-debt")} />
+      <FabButton onPress={openAdd} />
     </TabScreen>
   );
 }
@@ -171,13 +163,7 @@ const styles = StyleSheet.create({
   scroll: {
     paddingHorizontal: 20,
     paddingTop: 4,
-    paddingBottom: 24,
-  },
-  scrollWithFab: {
     paddingBottom: FAB_SCROLL_PADDING,
-  },
-  list: {
-    gap: 10,
   },
   empty: {
     alignItems: "center",

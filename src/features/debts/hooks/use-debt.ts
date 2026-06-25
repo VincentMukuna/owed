@@ -22,5 +22,6 @@ export function useDebt(id: string | undefined) {
       return toDebtDetailView(debt);
     },
     enabled: Boolean(id),
+    staleTime: Number.POSITIVE_INFINITY,
   });
 }

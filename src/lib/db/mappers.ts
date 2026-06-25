@@ -44,18 +44,14 @@ export type DebtWithRelations = {
   payments: Payment[];
 };
 
-export function toDebtWithRelations(
-  debt: DebtsRow,
-  person: PeopleRow,
-  payments: PaymentsRow[],
-): DebtWithRelations {
-  const paidTotal = payments.reduce((sum, payment) => sum + payment.amount, 0);
+export type DebtSummary = Omit<DebtWithRelations, "payments">;
 
+function mapDebtFields(debt: DebtsRow, person: PeopleRow, remainingAmount: number): DebtSummary {
   return {
     id: debt.id,
     person: rowToPerson(person),
     originalAmount: debt.original_amount,
-    remainingAmount: debt.original_amount - paidTotal,
+    remainingAmount,
     currency: debt.currency,
     reason: debt.reason ?? undefined,
     dueDate: debt.due_date,
@@ -65,6 +61,22 @@ export function toDebtWithRelations(
     archivedAt: debt.archived_at ?? undefined,
     createdAt: debt.created_at,
     updatedAt: debt.updated_at,
+  };
+}
+
+export function toDebtSummary(debt: DebtsRow, person: PeopleRow, paidTotal: number): DebtSummary {
+  return mapDebtFields(debt, person, debt.original_amount - paidTotal);
+}
+
+export function toDebtWithRelations(
+  debt: DebtsRow,
+  person: PeopleRow,
+  payments: PaymentsRow[],
+): DebtWithRelations {
+  const paidTotal = payments.reduce((sum, payment) => sum + payment.amount, 0);
+
+  return {
+    ...mapDebtFields(debt, person, debt.original_amount - paidTotal),
     payments: payments.map(rowToPayment),
   };
 }

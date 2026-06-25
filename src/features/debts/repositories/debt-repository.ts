@@ -1,6 +1,11 @@
 import { APP_CONFIG } from "@/constants/config";
 import { getDb } from "@/lib/db/client";
-import { type DebtWithRelations, toDebtWithRelations } from "@/lib/db/mappers";
+import {
+  type DebtSummary,
+  type DebtWithRelations,
+  toDebtSummary,
+  toDebtWithRelations,
+} from "@/lib/db/mappers";
 import type { DebtsRow, PaymentsRow, PeopleRow } from "@/lib/db/row-types";
 import { createId } from "@/lib/id";
 
@@ -14,6 +19,10 @@ type DebtPersonRow = DebtsRow & {
   person_notes: string | null;
   person_created_at: string;
   person_updated_at: string;
+};
+
+type DebtSummaryRow = DebtPersonRow & {
+  paid_total: number;
 };
 
 function toPersonRow(debtRow: DebtPersonRow): PeopleRow {
@@ -56,6 +65,24 @@ const DEBT_SELECT = `
   INNER JOIN people p ON p.id = d.person_id
 `;
 
+const DEBT_SUMMARY_SELECT = `
+  SELECT
+    d.*,
+    p.name AS person_name,
+    p.phone_number AS person_phone_number,
+    p.notes AS person_notes,
+    p.created_at AS person_created_at,
+    p.updated_at AS person_updated_at,
+    COALESCE(pay_totals.paid_total, 0) AS paid_total
+  FROM debts d
+  INNER JOIN people p ON p.id = d.person_id
+  LEFT JOIN (
+    SELECT debt_id, SUM(amount) AS paid_total
+    FROM payments
+    GROUP BY debt_id
+  ) pay_totals ON pay_totals.debt_id = d.id
+`;
+
 async function fetchPaymentsByDebtIds(debtIds: string[]): Promise<Map<string, PaymentsRow[]>> {
   const paymentsByDebtId = new Map<string, PaymentsRow[]>();
 
@@ -87,19 +114,19 @@ async function hydrateDebtRow(row: DebtPersonRow): Promise<DebtWithRelations> {
 }
 
 export const debtRepository = {
-  async list(): Promise<DebtWithRelations[]> {
+  async listSummaries(): Promise<DebtSummary[]> {
     const db = await getDb();
-    const rows = await db.getAllAsync<DebtPersonRow>(
-      `${DEBT_SELECT}
+    const rows = await db.getAllAsync<DebtSummaryRow>(
+      `${DEBT_SUMMARY_SELECT}
        WHERE d.archived_at IS NULL
        ORDER BY d.due_date ASC`,
     );
 
-    const paymentsByDebtId = await fetchPaymentsByDebtIds(rows.map((row) => row.id));
+    return rows.map((row) => toDebtSummary(toDebtRow(row), toPersonRow(row), row.paid_total));
+  },
 
-    return rows.map((row) =>
-      toDebtWithRelations(toDebtRow(row), toPersonRow(row), paymentsByDebtId.get(row.id) ?? []),
-    );
+  async list(): Promise<DebtSummary[]> {
+    return this.listSummaries();
   },
 
   async getById(id: string): Promise<DebtWithRelations | undefined> {
