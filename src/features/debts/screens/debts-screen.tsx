@@ -1,21 +1,22 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useDeferredValue, useEffect, useMemo, useRef, useState } from "react";
 
 import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { router } from "expo-router";
 
 import type { FlashListRef } from "@shopify/flash-list";
-import { List } from "lucide-react-native";
+import { List, Search } from "lucide-react-native";
 
 import { DebtList } from "@/components/debts/debt-list";
+import { DebtSearchBar, type DebtSearchBarRef } from "@/components/debts/debt-search-bar";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
+import { IconButton } from "@/components/shared/icon-button";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import {
   type DebtFilterKey,
   computeDebtTabCounts,
-  filterDebts,
-  sortDebts,
+  filterSearchAndSortDebts,
 } from "@/features/debts/lib/debt-list-utils";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { selectionChange } from "@/lib/haptics";
@@ -23,7 +24,11 @@ import { selectionChange } from "@/lib/haptics";
 export function DebtsScreen() {
   const { data: debts = [], isPending } = useDebts();
   const [filter, setFilter] = useState<DebtFilterKey>("all");
+  const [searchOpen, setSearchOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const deferredSearchQuery = useDeferredValue(searchQuery);
   const listRef = useRef<FlashListRef<DebtCardView>>(null);
+  const searchRef = useRef<DebtSearchBarRef>(null);
 
   const tabCounts = useMemo(() => computeDebtTabCounts(debts), [debts]);
 
@@ -37,11 +42,38 @@ export function DebtsScreen() {
     [tabCounts],
   );
 
-  const visibleDebts = useMemo(() => sortDebts(filterDebts(debts, filter)), [debts, filter]);
+  const visibleDebts = useMemo(
+    () => filterSearchAndSortDebts(debts, filter, deferredSearchQuery),
+    [debts, filter, deferredSearchQuery],
+  );
 
   useEffect(() => {
     listRef.current?.scrollToTop({ animated: false });
-  }, [filter]);
+  }, [filter, deferredSearchQuery]);
+
+  useEffect(() => {
+    if (!searchOpen) {
+      return;
+    }
+
+    const frame = requestAnimationFrame(() => {
+      searchRef.current?.focus();
+    });
+
+    return () => {
+      cancelAnimationFrame(frame);
+    };
+  }, [searchOpen]);
+
+  const openSearch = useCallback(() => {
+    selectionChange();
+    setSearchOpen(true);
+  }, []);
+
+  const closeSearch = useCallback(() => {
+    setSearchQuery("");
+    setSearchOpen(false);
+  }, []);
 
   const openDebt = useCallback((debtId: string) => {
     router.push(`/debt/${debtId}`);
@@ -51,17 +83,25 @@ export function DebtsScreen() {
     router.push("/add-debt");
   }, []);
 
+  const isSearching = searchQuery.trim().length > 0;
+
   const emptyState = useMemo(
     () => (
       <View style={styles.empty}>
         <View style={styles.emptyIcon}>
-          <List color="#B8B8B0" size={20} strokeWidth={1.5} />
+          {isSearching ? (
+            <Search color="#B8B8B0" size={20} strokeWidth={1.5} />
+          ) : (
+            <List color="#B8B8B0" size={20} strokeWidth={1.5} />
+          )}
         </View>
-        <Text style={styles.emptyTitle}>Nothing here</Text>
-        <Text style={styles.emptyCopy}>No debts in this category.</Text>
+        <Text style={styles.emptyTitle}>{isSearching ? "No matches" : "Nothing here"}</Text>
+        <Text style={styles.emptyCopy}>
+          {isSearching ? "Try a different name or reason." : "No debts in this category."}
+        </Text>
       </View>
     ),
-    [],
+    [isSearching],
   );
 
   if (isPending) {
@@ -71,7 +111,26 @@ export function DebtsScreen() {
   return (
     <TabScreen>
       <View style={styles.header}>
-        <Text style={styles.title}>Debts</Text>
+        {searchOpen ? (
+          <>
+            <DebtSearchBar
+              ref={searchRef}
+              onChangeText={setSearchQuery}
+              value={searchQuery}
+              variant="header"
+            />
+            <Pressable hitSlop={8} onPress={closeSearch} style={styles.cancel}>
+              <Text style={styles.cancelText}>Cancel</Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <Text style={styles.title}>Debts</Text>
+            <IconButton onPress={openSearch}>
+              <Search color="#4A4A42" size={16} strokeWidth={1.5} />
+            </IconButton>
+          </>
+        )}
       </View>
 
       <View style={styles.tabsWrap}>
@@ -117,11 +176,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingTop: 16,
     paddingBottom: 12,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
   },
   title: {
     fontSize: 28,
     fontWeight: "700",
     color: "#1A1A18",
+  },
+  cancel: {
+    flexShrink: 0,
+  },
+  cancelText: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#4A4A42",
   },
   tabsWrap: {
     paddingHorizontal: 20,
