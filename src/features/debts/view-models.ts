@@ -17,6 +17,7 @@ export type DebtCardView = {
   initials: string;
   amount: number;
   remaining: number;
+  currency: string;
   dueDate: string;
   /** Raw ISO due date (YYYY-MM-DD) for filtering; `dueDate` is the display string. */
   dueDateISO: string;

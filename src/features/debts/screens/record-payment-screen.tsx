@@ -7,7 +7,7 @@ import { Stack, router, useLocalSearchParams, useNavigation } from "expo-router"
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 import { useDebt } from "@/features/debts/hooks/use-debt";
 import { useRecordPayment } from "@/features/debts/hooks/use-record-payment";
-import { formatCurrency } from "@/lib/utils/formatters";
+import { formatCurrency, formatCurrencyPrefix } from "@/lib/utils/formatters";
 
 export function RecordPaymentScreen() {
   const navigation = useNavigation();
@@ -77,7 +77,7 @@ export function RecordPaymentScreen() {
       <View style={styles.field}>
         <Text style={styles.label}>Amount paid</Text>
         <View>
-          <Text style={styles.prefix}>KES</Text>
+          <Text style={styles.prefix}>{formatCurrencyPrefix(debt.currency)}</Text>
           <TextInput
             autoFocus
             keyboardType="number-pad"
@@ -90,7 +90,7 @@ export function RecordPaymentScreen() {
         </View>
         <Pressable onPress={() => setPayAmount(String(debt.remaining))}>
           <Text style={styles.fullAmountLink}>
-            Mark full remaining ({formatCurrency(debt.remaining)})
+            Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
           </Text>
         </Pressable>
       </View>

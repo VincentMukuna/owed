@@ -21,6 +21,7 @@ import { fetchUnreadReminderCount } from "@/features/reminders/lib/fetch-reminde
 import { registerNotificationHandlers } from "@/features/reminders/lib/register-notification-handlers";
 import { hydrateReminderSettings } from "@/features/reminders/lib/reminder-storage";
 import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
+import { bootstrapCurrency } from "@/features/settings/lib/bootstrap-currency";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
 import {
@@ -35,8 +36,8 @@ export default function RootLayout() {
   useEffect(() => {
     void Promise.all([
       getDb(),
+      bootstrapCurrency().then(() => hydrateReminderSettings()),
       hydrateOnboardingState(),
-      hydrateReminderSettings(),
       queryClient.prefetchQuery({
         queryKey: debtKeys.all,
         queryFn: fetchDebtCardViews,

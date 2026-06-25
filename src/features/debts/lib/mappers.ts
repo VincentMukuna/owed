@@ -40,6 +40,7 @@ export function toDebtCardView(debt: DebtSummary | DebtWithRelations, now?: Date
     initials: getInitials(debt.person.name),
     amount: debt.originalAmount,
     remaining: debt.remainingAmount,
+    currency: debt.currency,
     dueDate: formatDueDate(debt.dueDate),
     dueDateISO: debt.dueDate,
     reason: debt.reason?.trim() || "",
