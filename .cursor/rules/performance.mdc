@@ -1,0 +1,23 @@
+---
+description: Performance and scaling guidelines for lists, queries, and SQLite at hundreds of rows
+globs: src/**/*.{ts,tsx}
+alwaysApply: true
+---
+
+# Performance guidelines (mandatory)
+
+Read `docs/performance.md` before changing list screens, repositories, query hooks, or mappers.
+
+## Non-negotiables
+
+- **Lists:** `FlashList` (via `DebtList` / `ActivityList`) — never `ScrollView` + `.map()` for debts or activity feeds.
+- **DB lists:** `debtRepository.listSummaries()` — never load all payment rows for list views. Use `getById()` only for single-debt detail.
+- **Remaining balance:** aggregate with SQL `SUM(amount)`, not JS over `payments[]`.
+- **Mappers:** do not map `payments[]` in `toDebtCardView` for list paths; one shared `now` per batch in `fetch-*.ts`.
+- **React Query:** `staleTime: Infinity` on local SQLite queries; shared `queryFn` in `fetch-debts.ts` / `fetch-activities.ts`; invalidate only in mutations.
+- **Derivations:** single-pass helpers in `debt-list-utils.ts` + `useMemo` — no chained `.filter()` in screen render.
+- **New root-tab queries:** prefetch in `src/app/_layout.tsx` with the same `queryFn` as the hook.
+
+## Before merging list/data changes
+
+Seed sample data (Settings → Developer, dev only) and verify Home, Debts tabs, Activity scroll, and debt detail payment history.
