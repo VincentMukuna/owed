@@ -3,6 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
 import type { RecordPaymentInput } from "@/features/debts/view-models";
+import { cancelRemindersForDebt } from "@/features/reminders/lib/reminder-sync";
 
 import { activityKeys, debtKeys } from "./query-keys";
 
@@ -19,7 +20,11 @@ export function useRecordPayment() {
   return useMutation({
     mutationFn: ({ debtId, input }: RecordPaymentVariables) =>
       debtRepository.recordPayment(debtId, input),
-    onSuccess: async (_debt, variables) => {
+    onSuccess: async (debt, variables) => {
+      if (debt.remainingAmount <= 0) {
+        await cancelRemindersForDebt(variables.debtId);
+      }
+
       await queryClient.invalidateQueries({ queryKey: debtKeys.all });
       await queryClient.invalidateQueries({ queryKey: debtKeys.detail(variables.debtId) });
       await queryClient.invalidateQueries({ queryKey: activityKeys.all });
