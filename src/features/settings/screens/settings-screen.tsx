@@ -1,8 +1,18 @@
+import type { ComponentType } from "react";
+
 import { ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { ChevronRight } from "lucide-react-native";
 
 import { TabScreen } from "@/components/navigation/tab-screen";
+
+let DevToolsSection: ComponentType | null = null;
+
+if (__DEV__) {
+  // Dev-only require keeps @faker-js/faker out of production bundles.
+  // eslint-disable-next-line @typescript-eslint/no-require-imports
+  DevToolsSection = require("@/features/settings/dev/dev-tools-section").DevToolsSection;
+}
 
 const SECTIONS = [
   {
@@ -54,6 +64,7 @@ export function SettingsScreen() {
             </View>
           </View>
         ))}
+        {DevToolsSection ? <DevToolsSection /> : null}
       </ScrollView>
     </TabScreen>
   );
