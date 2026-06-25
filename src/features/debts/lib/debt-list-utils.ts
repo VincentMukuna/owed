@@ -26,7 +26,7 @@ export type HomeDebtBuckets = {
   activePartial: DebtCardView[];
 };
 
-export type DebtFilterKey = "all" | "active" | "overdue" | "paid";
+export type DebtFilterKey = "all" | "active" | "overdue" | "paid" | "due-soon";
 
 export function computeDebtTabCounts(debts: DebtCardView[]): DebtTabCounts {
   let active = 0;
@@ -71,6 +71,10 @@ function matchesDebtFilter(debt: DebtCardView, filter: DebtFilterKey): boolean {
 
   if (filter === "paid") {
     return debt.status === "paid";
+  }
+
+  if (filter === "due-soon") {
+    return debt.status === "due-soon";
   }
 
   return true;

@@ -7,58 +7,45 @@ import { type Href, router } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
 import { Wallet } from "lucide-react-native";
 
-import { DebtCard } from "@/components/debts/debt-card";
 import { SummaryStatCard } from "@/components/debts/summary-stat-card";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
+import { HomeDebtSection } from "@/features/dashboard/components/home-debt-section";
 import { useDebts } from "@/features/debts/hooks/use-debts";
-import { bucketHomeDebts } from "@/features/debts/lib/debt-list-utils";
+import { type DebtFilterKey, bucketHomeDebts } from "@/features/debts/lib/debt-list-utils";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { BellBadgeButton } from "@/features/reminders/components/bell-badge-button";
 import { formatCurrency } from "@/lib/utils/formatters";
 
-type HomeListRow =
-  | { type: "section"; key: string; title: string; titleColor?: string }
-  | { type: "debt"; key: string; debt: DebtCardView };
+type HomeSectionRow = {
+  key: string;
+  title: string;
+  titleColor?: string;
+  debts: DebtCardView[];
+  filter: DebtFilterKey;
+};
 
-function buildHomeListRows(buckets: ReturnType<typeof bucketHomeDebts>): HomeListRow[] {
-  const sections = [
-    { title: "Due soon", debts: buckets.dueSoon },
-    { title: "Overdue", debts: buckets.overdue, titleColor: "#F87171" },
-    { title: "Active", debts: buckets.activePartial },
+function buildHomeSections(buckets: ReturnType<typeof bucketHomeDebts>): HomeSectionRow[] {
+  const sections: HomeSectionRow[] = [
+    { key: "due-soon", title: "Due soon", debts: buckets.dueSoon, filter: "due-soon" },
+    {
+      key: "overdue",
+      title: "Overdue",
+      debts: buckets.overdue,
+      titleColor: "#F87171",
+      filter: "overdue",
+    },
+    { key: "active", title: "Active", debts: buckets.activePartial, filter: "active" },
   ];
 
-  const rows: HomeListRow[] = [];
-
-  for (const section of sections) {
-    if (section.debts.length === 0) {
-      continue;
-    }
-
-    rows.push({
-      type: "section",
-      key: `section-${section.title}`,
-      title: section.title,
-      titleColor: section.titleColor,
-    });
-
-    for (const debt of section.debts) {
-      rows.push({
-        type: "debt",
-        key: debt.id,
-        debt,
-      });
-    }
-  }
-
-  return rows;
+  return sections.filter((section) => section.debts.length > 0);
 }
 
 export function HomeScreen() {
   const { data: debts = [], isPending } = useDebts();
 
   const buckets = useMemo(() => bucketHomeDebts(debts), [debts]);
-  const listRows = useMemo(() => buildHomeListRows(buckets), [buckets]);
+  const sections = useMemo(() => buildHomeSections(buckets), [buckets]);
 
   const openDebt = useCallback((debtId: string) => {
     router.push(`/debt/${debtId}`);
@@ -72,22 +59,28 @@ export function HomeScreen() {
     router.push("/notifications" as Href);
   }, []);
 
-  const renderItem = useCallback(
-    ({ item }: { item: HomeListRow }) => {
-      if (item.type === "section") {
-        return (
-          <Text style={[styles.sectionTitle, item.titleColor ? { color: item.titleColor } : null]}>
-            {item.title}
-          </Text>
-        );
-      }
+  const openDebtsFilter = useCallback((filter: DebtFilterKey) => {
+    router.push({
+      pathname: "/debts",
+      params: { filter, focusDate: "", focusType: "" },
+    });
+  }, []);
 
-      return <DebtCard debt={item.debt} onPress={() => openDebt(item.debt.id)} />;
-    },
-    [openDebt],
+  const renderItem = useCallback(
+    ({ item }: { item: HomeSectionRow }) => (
+      <HomeDebtSection
+        debts={item.debts}
+        filter={item.filter}
+        onDebtPress={openDebt}
+        onTitlePress={openDebtsFilter}
+        title={item.title}
+        titleColor={item.titleColor}
+      />
+    ),
+    [openDebt, openDebtsFilter],
   );
 
-  const keyExtractor = useCallback((item: HomeListRow) => item.key, []);
+  const keyExtractor = useCallback((item: HomeSectionRow) => item.key, []);
 
   const listHeader = useMemo(
     () => (
@@ -177,8 +170,8 @@ export function HomeScreen() {
 
       <FlashList
         contentContainerStyle={styles.scroll}
-        data={listRows}
-        ItemSeparatorComponent={HomeRowSeparator}
+        data={sections}
+        ItemSeparatorComponent={HomeSectionSeparator}
         keyExtractor={keyExtractor}
         ListHeaderComponent={listHeader}
         renderItem={renderItem}
@@ -190,8 +183,8 @@ export function HomeScreen() {
   );
 }
 
-function HomeRowSeparator() {
-  return <View style={styles.rowSeparator} />;
+function HomeSectionSeparator() {
+  return <View style={styles.sectionSeparator} />;
 }
 
 const styles = StyleSheet.create({
@@ -283,16 +276,8 @@ const styles = StyleSheet.create({
     width: "48%",
     flexGrow: 1,
   },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: "#8A8A82",
-    textTransform: "uppercase",
-    letterSpacing: 1.6,
-    marginTop: 4,
-  },
-  rowSeparator: {
-    height: 10,
+  sectionSeparator: {
+    height: 20,
   },
   emptyBody: {
     flex: 1,

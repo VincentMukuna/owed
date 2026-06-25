@@ -27,10 +27,34 @@ import type { ReminderType } from "@/types";
 
 type ReminderFocus = { date: string; type: ReminderType };
 
+function parseFilterParam(value: string | string[] | undefined): DebtFilterKey | null {
+  if (typeof value !== "string" || value.length === 0) {
+    return null;
+  }
+
+  if (
+    value === "all" ||
+    value === "active" ||
+    value === "overdue" ||
+    value === "paid" ||
+    value === "due-soon"
+  ) {
+    return value;
+  }
+
+  return null;
+}
+
 export function DebtsScreen() {
   const { data: debts = [], isPending } = useDebts();
-  const params = useLocalSearchParams<{ focusDate?: string; focusType?: string }>();
-  const [filter, setFilter] = useState<DebtFilterKey>("all");
+  const params = useLocalSearchParams<{
+    focusDate?: string;
+    focusType?: string;
+    filter?: string;
+  }>();
+  const paramFilter = useMemo(() => parseFilterParam(params.filter), [params.filter]);
+  const [userFilter, setUserFilter] = useState<DebtFilterKey>("all");
+  const filter = paramFilter ?? userFilter;
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const deferredSearchQuery = useDeferredValue(searchQuery);
@@ -97,7 +121,8 @@ export function DebtsScreen() {
     (key: DebtFilterKey) => {
       selectionChange();
       clearFocus();
-      setFilter(key);
+      setUserFilter(key);
+      router.setParams({ filter: "" });
     },
     [clearFocus],
   );
