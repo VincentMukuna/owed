@@ -7,9 +7,9 @@ import {
 } from "@/features/reminders/lib/notification-permissions";
 import { saveNotificationsPermissionAsked } from "@/features/reminders/lib/reminder-storage";
 
-const EXPLAINER_TITLE = "Get a nudge on promised dates";
+const EXPLAINER_TITLE = "Get notifications on promised dates?";
 const EXPLAINER_MESSAGE =
-  "Owed can remind you on the day someone promised to pay. You will still see reminders in the app if notifications are off.";
+  "Owed can notify you when someone was due to pay. We never contact the person who owes. Notifications stay on your device and in the app.";
 
 /**
  * Called when the user turns a reminder on. Primes + requests OS permission

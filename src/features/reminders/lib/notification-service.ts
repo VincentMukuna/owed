@@ -33,7 +33,7 @@ export async function initNotifications(): Promise<void> {
 
   if (Platform.OS === "android") {
     await setNotificationChannelAsync(REMINDER_NOTIFICATION_CHANNEL_ID, {
-      name: "Payment reminders",
+      name: "Payment notifications",
       importance: AndroidImportance.DEFAULT,
       vibrationPattern: [0, 250, 250, 250],
     });

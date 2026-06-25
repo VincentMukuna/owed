@@ -16,7 +16,7 @@ export function DevToolsSection() {
   const confirmReset = () => {
     Alert.alert(
       "Clear all records?",
-      "Deletes all debts, people, payments, activity, and reminders. Your preferences stay unchanged. OS notification permission is unchanged.",
+      "Deletes all debts, people, payments, activity, and notifications. Your preferences stay unchanged. OS notification permission is unchanged.",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -53,10 +53,10 @@ export function DevToolsSection() {
       <View style={styles.card}>
         <View style={styles.content}>
           <Text style={styles.description}>
-            Set the reminder time a few minutes ahead, then seed {SEED_REMINDER_TEST_COUNT}{" "}
+            Set the notification time a few minutes ahead, then seed {SEED_REMINDER_TEST_COUNT}{" "}
             due-today and {SEED_REMINDER_TEST_COUNT} overdue debts (due yesterday). Each bucket
-            collapses to one grouped notification at that time. Overdue reminders are turned on if
-            needed.
+            collapses to one grouped notification at that time. Overdue notifications are turned on
+            if needed.
           </Text>
           <Button
             disabled={seedReminderTest.isPending}
@@ -64,7 +64,7 @@ export function DevToolsSection() {
             onPress={() => seedReminderTest.mutate()}
             variant="secondary"
           >
-            {seedReminderTest.isPending ? "Seeding…" : "Seed grouped reminder test"}
+            {seedReminderTest.isPending ? "Seeding…" : "Seed grouped notification test"}
           </Button>
         </View>
       </View>
@@ -72,8 +72,9 @@ export function DevToolsSection() {
       <View style={styles.card}>
         <View style={styles.content}>
           <Text style={styles.description}>
-            Delete all debts, people, payments, activity, and reminders, and cancel pending
-            notifications. Your preferences (currency, reminders, onboarding) stay unchanged.
+            Delete all debts, people, payments, activity, and notifications, and cancel pending
+            notifications. Your preferences (currency, notification settings, onboarding) stay
+            unchanged.
           </Text>
           <Button
             disabled={resetDatabase.isPending}

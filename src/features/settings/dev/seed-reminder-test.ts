@@ -106,11 +106,11 @@ export async function seedReminderTestDebts(): Promise<SeedReminderTestResult> {
     await saveOverdueReminderEnabled(true);
   }
 
-  const dueDebts = buildDebtRows(SEED_REMINDER_TEST_COUNT, dueDate, "Reminder test (due)");
+  const dueDebts = buildDebtRows(SEED_REMINDER_TEST_COUNT, dueDate, "Notification test (due)");
   const overdueDebts = buildDebtRows(
     SEED_REMINDER_TEST_COUNT,
     overdueDueDate,
-    "Reminder test (overdue)",
+    "Notification test (overdue)",
   );
 
   const db = await getDb();

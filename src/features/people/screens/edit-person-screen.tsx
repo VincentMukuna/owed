@@ -108,7 +108,7 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
         <TextInput
           multiline
           onChangeText={setNotes}
-          placeholder="Optional — what this is about, context, etc."
+          placeholder="Optional. What this is about, context, etc."
           placeholderTextColor="#C8C8C0"
           style={[styles.input, styles.notesInput]}
           value={notesValue}

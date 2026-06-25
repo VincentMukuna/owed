@@ -207,16 +207,27 @@ export function SettingsScreen() {
                   <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
                 </View>
               </PressableScale>
+            </View>
+          </View>
 
+          <View style={styles.section}>
+            <Text style={styles.sectionTitle}>Notifications</Text>
+            <Text style={styles.sectionHint}>
+              For you only. Never sent to the person who owes.
+            </Text>
+            <View style={styles.card}>
               <PressableScale
                 onPress={() => {
                   selectionChange();
                   setTimePickerOpen(true);
                 }}
-                style={[styles.row, styles.rowBorder]}
+                style={styles.row}
               >
                 <Text style={styles.icon}>⏰</Text>
-                <Text style={styles.label}>Default reminder time</Text>
+                <View style={styles.toggleCopy}>
+                  <Text style={styles.label}>Notification time</Text>
+                  <Text style={styles.subLabel}>When to notify you on promised dates</Text>
+                </View>
                 <View style={styles.valueWrap}>
                   <Text style={styles.value}>{formatReminderTimeDisplay(defaultReminderTime)}</Text>
                   <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
@@ -226,8 +237,8 @@ export function SettingsScreen() {
               <View style={[styles.row, styles.rowBorder]}>
                 <Text style={styles.icon}>📣</Text>
                 <View style={styles.toggleCopy}>
-                  <Text style={styles.label}>Overdue reminders</Text>
-                  <Text style={styles.subLabel}>One gentle nudge the day after</Text>
+                  <Text style={styles.label}>Overdue notifications</Text>
+                  <Text style={styles.subLabel}>Notify you again the day after a missed date</Text>
                 </View>
                 <Switch
                   onValueChange={(value) => {
@@ -246,7 +257,10 @@ export function SettingsScreen() {
                 style={[styles.row, styles.rowBorder]}
               >
                 <Text style={styles.icon}>🔔</Text>
-                <Text style={styles.label}>Notifications</Text>
+                <View style={styles.toggleCopy}>
+                  <Text style={styles.label}>Push notifications</Text>
+                  <Text style={styles.subLabel}>Alerts on your phone</Text>
+                </View>
                 <View style={styles.valueWrap}>
                   <Text style={styles.value}>{permissionLabel(permissionState)}</Text>
                   <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
@@ -259,14 +273,6 @@ export function SettingsScreen() {
             <Text style={styles.sectionTitle}>Privacy</Text>
             <View style={styles.card}>
               <View style={styles.row}>
-                <Text style={styles.icon}>🔒</Text>
-                <Text style={styles.label}>App lock</Text>
-                <View style={styles.valueWrap}>
-                  <Text style={styles.value}>Off</Text>
-                  <ChevronRight color="#D8D8D0" size={16} strokeWidth={2} />
-                </View>
-              </View>
-              <View style={[styles.row, styles.rowBorder]}>
                 <Text style={styles.icon}>📤</Text>
                 <Text style={styles.label}>Export data</Text>
                 <View style={styles.valueWrap}>
@@ -354,6 +360,12 @@ const styles = StyleSheet.create({
     color: "#8A8A82",
     textTransform: "uppercase",
     letterSpacing: 1.6,
+  },
+  sectionHint: {
+    fontSize: 12,
+    lineHeight: 18,
+    color: "#8A8A82",
+    marginTop: -4,
   },
   card: {
     backgroundColor: "#FFFFFF",

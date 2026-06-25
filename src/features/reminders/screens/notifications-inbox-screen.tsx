@@ -43,8 +43,10 @@ export function NotificationsInboxScreen() {
         <View style={styles.emptyIcon}>
           <Bell color="#B8B8B0" size={20} strokeWidth={1.5} />
         </View>
-        <Text style={styles.emptyTitle}>No reminders yet</Text>
-        <Text style={styles.emptyCopy}>When someone is due to pay, you will see a nudge here.</Text>
+        <Text style={styles.emptyTitle}>No notifications yet</Text>
+        <Text style={styles.emptyCopy}>
+          When a promised date arrives, you&apos;ll see a notification here, only on your device.
+        </Text>
       </View>
     );
   }
