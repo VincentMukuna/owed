@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 import { View } from "react-native";
 
 import { StyleSheet } from "react-native-unistyles";
@@ -14,7 +16,7 @@ type DebtCardProps = {
   onPress: () => void;
 };
 
-export function DebtCard({ debt, onPress }: DebtCardProps) {
+export const DebtCard = memo(({ debt, onPress }: DebtCardProps) => {
   const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
 
   return (
@@ -50,7 +52,9 @@ export function DebtCard({ debt, onPress }: DebtCardProps) {
       </View>
     </PressableScale>
   );
-}
+});
+
+DebtCard.displayName = "DebtCard";
 
 const styles = StyleSheet.create((theme) => ({
   card: {

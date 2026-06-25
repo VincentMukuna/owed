@@ -10,7 +10,7 @@ import type {
   DebtDetailView,
   PaymentView,
 } from "@/features/debts/view-models";
-import type { DebtWithRelations } from "@/lib/db/mappers";
+import type { DebtSummary, DebtWithRelations } from "@/lib/db/mappers";
 import { getInitials } from "@/lib/utils/formatters";
 
 function toPaymentView(payment: DebtWithRelations["payments"][number], now?: Date): PaymentView {
@@ -22,7 +22,7 @@ function toPaymentView(payment: DebtWithRelations["payments"][number], now?: Dat
   };
 }
 
-export function toDebtCardView(debt: DebtWithRelations, now?: Date): DebtCardView {
+export function toDebtCardView(debt: DebtSummary | DebtWithRelations, now?: Date): DebtCardView {
   const status = computeDebtStatus({
     originalAmount: debt.originalAmount,
     remainingAmount: debt.remainingAmount,
@@ -30,6 +30,9 @@ export function toDebtCardView(debt: DebtWithRelations, now?: Date): DebtCardVie
     archivedAt: debt.archivedAt,
     now,
   }) as CardDebtStatus;
+
+  const payments =
+    "payments" in debt ? debt.payments.map((payment) => toPaymentView(payment, now)) : [];
 
   return {
     id: debt.id,
@@ -41,7 +44,7 @@ export function toDebtCardView(debt: DebtWithRelations, now?: Date): DebtCardVie
     reason: debt.reason?.trim() || "—",
     status,
     addedDate: formatAddedDate(debt.createdAt),
-    payments: debt.payments.map((payment) => toPaymentView(payment, now)),
+    payments,
     reminder: debt.reminderEnabled,
   };
 }
