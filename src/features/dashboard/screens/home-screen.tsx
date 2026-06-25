@@ -7,15 +7,20 @@ import { type Href, router } from "expo-router";
 import { FlashList } from "@shopify/flash-list";
 import { Wallet } from "lucide-react-native";
 
+import { ActivityRow } from "@/components/activity/activity-list";
 import { SummaryStatCard } from "@/components/debts/summary-stat-card";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
+import { PressableScale } from "@/components/shared/pressable-scale";
 import { HomeDebtSection } from "@/features/dashboard/components/home-debt-section";
+import { useActivities } from "@/features/debts/hooks/use-activities";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import { type DebtFilterKey, bucketHomeDebts } from "@/features/debts/lib/debt-list-utils";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { BellBadgeButton } from "@/features/reminders/components/bell-badge-button";
 import { formatCurrency } from "@/lib/utils/formatters";
+
+const RECENT_ACTIVITY_LIMIT = 5;
 
 type HomeSectionRow = {
   key: string;
@@ -43,9 +48,11 @@ function buildHomeSections(buckets: ReturnType<typeof bucketHomeDebts>): HomeSec
 
 export function HomeScreen() {
   const { data: debts = [], isPending } = useDebts();
+  const { data: activities = [] } = useActivities();
 
   const buckets = useMemo(() => bucketHomeDebts(debts), [debts]);
   const sections = useMemo(() => buildHomeSections(buckets), [buckets]);
+  const recentActivity = useMemo(() => activities.slice(0, RECENT_ACTIVITY_LIMIT), [activities]);
 
   const openDebt = useCallback((debtId: string) => {
     router.push(`/debt/${debtId}`);
@@ -53,6 +60,10 @@ export function HomeScreen() {
 
   const openAdd = useCallback(() => {
     router.push("/add-debt");
+  }, []);
+
+  const openActivity = useCallback(() => {
+    router.push("/activity" as Href);
   }, []);
 
   const openNotifications = useCallback(() => {
@@ -126,6 +137,25 @@ export function HomeScreen() {
     [buckets],
   );
 
+  const listFooter = useMemo(() => {
+    if (recentActivity.length === 0) {
+      return null;
+    }
+    return (
+      <View style={styles.activitySection}>
+        <PressableScale hitSlop={8} onPress={openActivity} style={styles.activityHeader}>
+          <Text style={styles.sectionTitle}>Recent activity</Text>
+          <Text style={styles.seeAll}>See all</Text>
+        </PressableScale>
+        <View>
+          {recentActivity.map((activity) => (
+            <ActivityRow key={activity.id} activity={activity} />
+          ))}
+        </View>
+      </View>
+    );
+  }, [recentActivity, openActivity]);
+
   if (isPending) {
     return null;
   }
@@ -173,6 +203,7 @@ export function HomeScreen() {
         data={sections}
         ItemSeparatorComponent={HomeSectionSeparator}
         keyExtractor={keyExtractor}
+        ListFooterComponent={listFooter}
         ListHeaderComponent={listHeader}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
@@ -278,6 +309,28 @@ const styles = StyleSheet.create({
   },
   sectionSeparator: {
     height: 20,
+  },
+  activitySection: {
+    marginTop: 24,
+    gap: 4,
+  },
+  activityHeader: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    marginBottom: 4,
+  },
+  sectionTitle: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#8A8A82",
+    textTransform: "uppercase",
+    letterSpacing: 1.6,
+  },
+  seeAll: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#1A3A2A",
   },
   emptyBody: {
     flex: 1,

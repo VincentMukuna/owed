@@ -9,4 +9,6 @@ export const activityKeys = {
 
 export const peopleKeys = {
   all: ["people"] as const,
+  list: ["people", "list"] as const,
+  detail: (id: string) => ["people", "detail", id] as const,
 };

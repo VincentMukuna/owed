@@ -142,6 +142,19 @@ export const debtRepository = {
     return this.listSummaries();
   },
 
+  /** Non-archived debts for a single person, soonest due first. SQL-aggregated. */
+  async listSummariesForPerson(personId: string): Promise<DebtSummary[]> {
+    const db = await getDb();
+    const rows = await db.getAllAsync<DebtSummaryRow>(
+      `${DEBT_SUMMARY_SELECT}
+       WHERE d.archived_at IS NULL AND d.person_id = ?
+       ORDER BY d.due_date ASC`,
+      [personId],
+    );
+
+    return rows.map((row) => toDebtSummary(toDebtRow(row), toPersonRow(row), row.paid_total));
+  },
+
   async getById(id: string): Promise<DebtWithRelations | undefined> {
     const db = await getDb();
     const row = await db.getFirstAsync<DebtPersonRow>(`${DEBT_SELECT} WHERE d.id = ?`, [id]);

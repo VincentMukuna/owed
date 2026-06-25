@@ -1,0 +1,40 @@
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
+import { personRepository } from "@/features/debts/repositories/person-repository";
+import { useUiStore } from "@/features/debts/store/ui-store";
+
+type UpdatePersonInput = {
+  id: string;
+  name: string;
+  phoneNumber?: string;
+  notes?: string;
+};
+
+export function useUpdatePerson() {
+  const queryClient = useQueryClient();
+  const showToast = useUiStore((state) => state.showToast);
+
+  return useMutation({
+    mutationFn: (input: UpdatePersonInput) =>
+      personRepository.update(input.id, {
+        name: input.name,
+        phoneNumber: input.phoneNumber,
+        notes: input.notes,
+      }),
+    onSuccess: async () => {
+      // A rename flows into debt cards and activity copy (both JOIN people at
+      // fetch time), so refresh those alongside the people queries.
+      await queryClient.invalidateQueries({ queryKey: peopleKeys.all });
+      await queryClient.invalidateQueries({ queryKey: debtKeys.all });
+      await queryClient.invalidateQueries({ queryKey: activityKeys.all });
+      showToast("Changes saved.");
+    },
+    onError: (error) => {
+      if (__DEV__) {
+        console.error("[useUpdatePerson] failed to update person", error);
+      }
+      showToast("Could not save changes. Try again.");
+    },
+  });
+}

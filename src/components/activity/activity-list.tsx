@@ -17,7 +17,7 @@ type ActivityListProps = {
   contentContainerStyle?: object;
 };
 
-const ActivityRow = memo(({ activity }: { activity: ActivityView }) => {
+export const ActivityRow = memo(({ activity }: { activity: ActivityView }) => {
   const config = TYPE_CONFIG[activity.type];
 
   return (

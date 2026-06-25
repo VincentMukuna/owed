@@ -40,7 +40,15 @@ function exitAddDebt() {
 
 export function AddDebtScreen() {
   const navigation = useNavigation();
-  const { from } = useLocalSearchParams<{ from?: string }>();
+  const {
+    from,
+    personId,
+    personName: presetPersonName,
+  } = useLocalSearchParams<{
+    from?: string;
+    personId?: string;
+    personName?: string;
+  }>();
   const fromOnboarding = from === "onboarding";
   const addDebt = useAddDebt();
   const { data: people = [] } = usePeople();
@@ -48,8 +56,10 @@ export function AddDebtScreen() {
   const pickerRef = useRef<PersonPickerSheetRef>(null);
   const amountRef = useRef<TextInput>(null);
 
-  const [person, setPerson] = useState<PersonRef | null>(null);
-  const [personName, setPersonName] = useState("");
+  const [person, setPerson] = useState<PersonRef | null>(() =>
+    personId ? { kind: "existing", id: personId } : null,
+  );
+  const [personName, setPersonName] = useState(() => presetPersonName ?? "");
   const [amount, setAmount] = useState("");
   const [dueDateIso, setDueDateIso] = useState(() => resolveQuickDate("Today"));
   const [reason, setReason] = useState("");

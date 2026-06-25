@@ -38,11 +38,11 @@ export default function TabLayout() {
           sf={{ default: "list.bullet", selected: "list.bullet" }}
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger contentStyle={{ backgroundColor: TAB_BACKGROUND }} name="activity">
-        <NativeTabs.Trigger.Label>Activity</NativeTabs.Trigger.Label>
+      <NativeTabs.Trigger contentStyle={{ backgroundColor: TAB_BACKGROUND }} name="people">
+        <NativeTabs.Trigger.Label>People</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
-          md={{ default: "history", selected: "history" }}
-          sf={{ default: "clock", selected: "clock.fill" }}
+          md={{ default: "group", selected: "group" }}
+          sf={{ default: "person.2", selected: "person.2.fill" }}
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger contentStyle={{ backgroundColor: TAB_BACKGROUND }} name="settings">
