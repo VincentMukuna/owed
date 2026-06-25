@@ -1,5 +1,7 @@
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 
+import { selectionChange } from "@/lib/haptics";
+
 const TAB_BACKGROUND = "#F7F5F1";
 
 export default function TabLayout() {
@@ -12,6 +14,13 @@ export default function TabLayout() {
         selected: { color: "#1A3A2A", fontSize: 10, fontWeight: "700" },
       }}
       minimizeBehavior="onScrollDown"
+      screenListeners={{
+        tabPress: (event) => {
+          if (!event.data.isPrevented) {
+            selectionChange();
+          }
+        },
+      }}
       tabBarRespectsIMEInsets
       tintColor="#1A3A2A"
     >
