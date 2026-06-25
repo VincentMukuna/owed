@@ -1,8 +1,9 @@
 import type { SQLiteDatabase } from "expo-sqlite";
 
 import { migration as migration001 } from "./001-initial";
+import { migration as migration002 } from "./002-reminders";
 
-const migrations = [migration001];
+const migrations = [migration001, migration002];
 
 async function getCurrentVersion(db: SQLiteDatabase): Promise<number> {
   const table = await db.getFirstAsync<{ name: string }>(

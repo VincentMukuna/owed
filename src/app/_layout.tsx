@@ -13,6 +13,7 @@ import { activityKeys, debtKeys } from "@/features/debts/hooks/query-keys";
 import { fetchActivityViews } from "@/features/debts/lib/fetch-activities";
 import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
+import { hydrateReminderSettings } from "@/features/reminders/lib/reminder-storage";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
 import {
@@ -28,6 +29,7 @@ export default function RootLayout() {
     void Promise.all([
       getDb(),
       hydrateOnboardingState(),
+      hydrateReminderSettings(),
       queryClient.prefetchQuery({
         queryKey: debtKeys.all,
         queryFn: fetchDebtCardViews,

@@ -45,3 +45,15 @@ export interface ActivityEventsRow {
 export interface SchemaMigrationsRow {
   version: number;
 }
+
+export interface RemindersRow {
+  id: string;
+  debt_id: string;
+  type: string;
+  remind_at: string;
+  status: string;
+  notification_id: string | null;
+  read_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
