@@ -42,7 +42,6 @@ const styles = StyleSheet.create((theme) => ({
   value: {
     fontSize: 16,
     fontWeight: "700",
-    color: theme.colors.text,
     marginTop: 4,
     fontVariant: ["tabular-nums"],
   },

@@ -1,6 +1,6 @@
 import { View } from "react-native";
 
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import type { CardDebtStatus } from "@/features/debts/view-models";
 
@@ -19,12 +19,13 @@ type BadgeProps = {
 };
 
 export function Badge({ status }: BadgeProps) {
-  styles.useVariants({ status });
+  const { theme } = useUnistyles();
+  const colors = theme.colors.status[status];
 
   return (
-    <View style={styles.badge}>
-      <View style={styles.dot} />
-      <Text style={styles.label}>{STATUS_LABELS[status]}</Text>
+    <View style={[styles.badge, { backgroundColor: colors.bg }]}>
+      <View style={[styles.dot, { backgroundColor: colors.dot }]} />
+      <Text style={[styles.label, { color: colors.text }]}>{STATUS_LABELS[status]}</Text>
     </View>
   );
 }
@@ -38,54 +39,14 @@ const styles = StyleSheet.create((theme) => ({
     paddingHorizontal: 10,
     paddingVertical: 4,
     borderRadius: theme.radius.full,
-
-    variants: {
-      status: {
-        active: {
-          backgroundColor: theme.colors.status.active.bg,
-        },
-        "due-soon": {
-          backgroundColor: theme.colors.status["due-soon"].bg,
-        },
-        overdue: {
-          backgroundColor: theme.colors.status.overdue.bg,
-        },
-        partial: {
-          backgroundColor: theme.colors.status.partial.bg,
-        },
-        paid: {
-          backgroundColor: theme.colors.status.paid.bg,
-        },
-      },
-    },
   },
   dot: {
     width: 6,
     height: 6,
     borderRadius: theme.radius.full,
-
-    variants: {
-      status: {
-        active: { backgroundColor: theme.colors.status.active.dot },
-        "due-soon": { backgroundColor: theme.colors.status["due-soon"].dot },
-        overdue: { backgroundColor: theme.colors.status.overdue.dot },
-        partial: { backgroundColor: theme.colors.status.partial.dot },
-        paid: { backgroundColor: theme.colors.status.paid.dot },
-      },
-    },
   },
   label: {
     fontSize: 11,
     fontWeight: "600",
-
-    variants: {
-      status: {
-        active: { color: theme.colors.status.active.text },
-        "due-soon": { color: theme.colors.status["due-soon"].text },
-        overdue: { color: theme.colors.status.overdue.text },
-        partial: { color: theme.colors.status.partial.text },
-        paid: { color: theme.colors.status.paid.text },
-      },
-    },
   },
 }));

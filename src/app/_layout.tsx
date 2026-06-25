@@ -8,7 +8,7 @@ import { StatusBar } from "expo-status-bar";
 
 import { QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { useUnistyles } from "react-native-unistyles";
+import { UnistylesRuntime, useUnistyles } from "react-native-unistyles";
 
 import { Toast } from "@/components/shared/toast";
 import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
@@ -22,7 +22,6 @@ import { fetchUnreadReminderCount } from "@/features/reminders/lib/fetch-reminde
 import { registerNotificationHandlers } from "@/features/reminders/lib/register-notification-handlers";
 import { hydratePersistedSettings } from "@/features/reminders/lib/reminder-storage";
 import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
-import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { bootstrapCurrency } from "@/features/settings/lib/bootstrap-currency";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
@@ -30,7 +29,6 @@ import { getModalScreenOptions, getStackScreenOptions } from "@/lib/navigation/s
 
 export default function RootLayout() {
   const { theme } = useUnistyles();
-  const themePreference = useSettingsStore((state) => state.themePreference);
   const [dbReady, setDbReady] = useState(false);
   const stackOptions = getStackScreenOptions(theme);
   const modalOptions = getModalScreenOptions(theme);
@@ -106,10 +104,14 @@ export default function RootLayout() {
     };
   }, [dbReady]);
 
+  useEffect(() => {
+    UnistylesRuntime.setRootViewBackgroundColor(theme.colors.background);
+  }, [theme.colors.background]);
+
   return (
     <GestureHandlerRootView style={[styles.root, { backgroundColor: theme.colors.background }]}>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style={dbReady && themePreference === "dark" ? "light" : "dark"} />
+        <StatusBar style={dbReady && theme.name === "dark" ? "light" : "dark"} />
         {dbReady ? (
           <Stack
             screenOptions={{

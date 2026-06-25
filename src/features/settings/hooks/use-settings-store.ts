@@ -1,17 +1,17 @@
 import { create } from "zustand";
 
 import { APP_CONFIG } from "@/constants/config";
-import type { AppThemeName } from "@/styles/themes";
+import type { ThemePreference } from "@/styles/themes";
 
 type SettingsState = {
   defaultCurrency: string;
-  themePreference: AppThemeName;
+  themePreference: ThemePreference;
   defaultReminderTime: string;
   overdueReminderEnabled: boolean;
   notificationsPermissionAsked: boolean;
   onboardingComplete: boolean;
   setDefaultCurrency: (currency: string) => void;
-  setThemePreference: (themePreference: AppThemeName) => void;
+  setThemePreference: (themePreference: ThemePreference) => void;
   setDefaultReminderTime: (time: string) => void;
   setOverdueReminderEnabled: (enabled: boolean) => void;
   setNotificationsPermissionAsked: (asked: boolean) => void;

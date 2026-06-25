@@ -1,6 +1,6 @@
 import { View } from "react-native";
 
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import type { CardDebtStatus } from "@/features/debts/view-models";
 
@@ -13,11 +13,14 @@ type AvatarProps = {
 };
 
 export function Avatar({ initials, status, size = "md" }: AvatarProps) {
-  styles.useVariants({ status, size });
+  const { theme } = useUnistyles();
+  const colors = theme.colors.status[status];
+
+  styles.useVariants({ size });
 
   return (
-    <View style={styles.avatar}>
-      <Text style={styles.initials}>{initials}</Text>
+    <View style={[styles.avatar, { backgroundColor: colors.avatarBg }]}>
+      <Text style={[styles.initials, { color: colors.avatarText }]}>{initials}</Text>
     </View>
   );
 }
@@ -34,23 +37,6 @@ const styles = StyleSheet.create((theme) => ({
         md: { width: 40, height: 40 },
         lg: { width: 56, height: 56 },
       },
-      status: {
-        active: {
-          backgroundColor: theme.colors.status.active.avatarBg,
-        },
-        "due-soon": {
-          backgroundColor: theme.colors.status["due-soon"].avatarBg,
-        },
-        overdue: {
-          backgroundColor: theme.colors.status.overdue.avatarBg,
-        },
-        partial: {
-          backgroundColor: theme.colors.status.partial.avatarBg,
-        },
-        paid: {
-          backgroundColor: theme.colors.status.paid.avatarBg,
-        },
-      },
     },
   },
   initials: {
@@ -61,13 +47,6 @@ const styles = StyleSheet.create((theme) => ({
         sm: { fontSize: 12 },
         md: { fontSize: 14 },
         lg: { fontSize: 18 },
-      },
-      status: {
-        active: { color: theme.colors.status.active.avatarText },
-        "due-soon": { color: theme.colors.status["due-soon"].avatarText },
-        overdue: { color: theme.colors.status.overdue.avatarText },
-        partial: { color: theme.colors.status.partial.avatarText },
-        paid: { color: theme.colors.status.paid.avatarText },
       },
     },
   },

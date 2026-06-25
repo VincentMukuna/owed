@@ -27,13 +27,15 @@ export const DebtCard = memo(({ debt, onPress }: DebtCardProps) => {
           <View style={styles.topRow}>
             <View style={styles.meta}>
               <Text style={styles.name}>{debt.name}</Text>
-              <Text style={styles.reason} numberOfLines={1}>
+              <Text muted style={styles.reason} numberOfLines={1}>
                 {debt.reason}
               </Text>
             </View>
             <View style={styles.amountCol}>
               <Text style={styles.amount}>{formatCurrency(debt.remaining)}</Text>
-              <Text style={styles.dueDate}>{debt.dueDate}</Text>
+              <Text muted style={styles.dueDate}>
+                {debt.dueDate}
+              </Text>
             </View>
           </View>
 
@@ -44,7 +46,9 @@ export const DebtCard = memo(({ debt, onPress }: DebtCardProps) => {
                 <View style={styles.progressTrack}>
                   <View style={[styles.progressFill, { width: `${pct}%` }]} />
                 </View>
-                <Text style={styles.progressLabel}>{Math.round(pct)}%</Text>
+                <Text muted style={styles.progressLabel}>
+                  {Math.round(pct)}%
+                </Text>
               </View>
             ) : null}
           </View>
@@ -90,12 +94,10 @@ const styles = StyleSheet.create((theme) => ({
   name: {
     fontSize: 14,
     fontWeight: "600",
-    color: theme.colors.text,
     lineHeight: 18,
   },
   reason: {
     fontSize: 12,
-    color: theme.colors.muted,
     marginTop: 2,
   },
   amountCol: {
@@ -105,12 +107,10 @@ const styles = StyleSheet.create((theme) => ({
   amount: {
     fontSize: 14,
     fontWeight: "700",
-    color: theme.colors.text,
     fontVariant: ["tabular-nums"],
   },
   dueDate: {
     fontSize: 12,
-    color: theme.colors.muted,
     marginTop: 2,
   },
   footer: {
@@ -139,6 +139,5 @@ const styles = StyleSheet.create((theme) => ({
   progressLabel: {
     fontSize: 10,
     fontWeight: "500",
-    color: theme.colors.muted,
   },
 }));

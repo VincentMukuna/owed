@@ -3,11 +3,11 @@ import { UnistylesRuntime } from "react-native-unistyles";
 import { APP_CONFIG } from "@/constants/config";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { getItem, setItem, storageKeys } from "@/lib/storage/local-storage";
-import { type AppThemeName, appThemes } from "@/styles/themes";
+import { type AppThemeName, type ThemePreference, appThemes } from "@/styles/themes";
 
 export type PersistedSettings = {
   defaultCurrency?: string;
-  themePreference?: AppThemeName;
+  themePreference?: ThemePreference;
   defaultReminderTime?: string;
   overdueReminderEnabled?: boolean;
   notificationsPermissionAsked?: boolean;
@@ -22,8 +22,22 @@ export async function persistSettings(partial: PersistedSettings): Promise<void>
   await setItem(storageKeys.settings, { ...current, ...partial });
 }
 
-function applyThemePreference(themePreference: AppThemeName): void {
+function resolveCurrentThemeName(): AppThemeName {
+  return UnistylesRuntime.themeName === "dark" ? "dark" : "light";
+}
+
+function applyThemePreference(themePreference: ThemePreference): void {
   useSettingsStore.getState().setThemePreference(themePreference);
+
+  if (themePreference === "auto") {
+    UnistylesRuntime.setAdaptiveThemes(true);
+    UnistylesRuntime.setRootViewBackgroundColor(
+      appThemes[resolveCurrentThemeName()].colors.background,
+    );
+    return;
+  }
+
+  UnistylesRuntime.setAdaptiveThemes(false);
   UnistylesRuntime.setTheme(themePreference);
   UnistylesRuntime.setRootViewBackgroundColor(appThemes[themePreference].colors.background);
 }
@@ -42,7 +56,7 @@ export async function hydratePersistedSettings(): Promise<void> {
 
 export const hydrateReminderSettings = hydratePersistedSettings;
 
-export async function saveThemePreference(themePreference: AppThemeName): Promise<void> {
+export async function saveThemePreference(themePreference: ThemePreference): Promise<void> {
   applyThemePreference(themePreference);
   await persistSettings({ themePreference });
 }

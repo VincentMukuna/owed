@@ -215,3 +215,4 @@ export const appThemes = {
 } as const;
 
 export type AppThemeName = keyof typeof appThemes;
+export type ThemePreference = AppThemeName | "auto";

@@ -40,6 +40,13 @@ import {
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { formatReminderTimeDisplay } from "@/features/settings/lib/format-reminder-time";
 import { selectionChange } from "@/lib/haptics";
+import type { ThemePreference } from "@/styles/themes";
+
+const THEME_OPTIONS: { label: string; value: ThemePreference }[] = [
+  { label: "Light", value: "light" },
+  { label: "Auto", value: "auto" },
+  { label: "Dark", value: "dark" },
+];
 
 let DevToolsSection: ComponentType | null = null;
 
@@ -109,9 +116,9 @@ export function SettingsScreen() {
     await runReminderSync();
   }, []);
 
-  const handleThemeToggle = useCallback(async (enabled: boolean) => {
+  const handleThemeSelect = useCallback(async (preference: ThemePreference) => {
     selectionChange();
-    await saveThemePreference(enabled ? "dark" : "light");
+    await saveThemePreference(preference);
   }, []);
 
   const handleNotificationsPress = useCallback(async () => {
@@ -204,15 +211,25 @@ export function SettingsScreen() {
             <View style={styles.card}>
               <View style={styles.row}>
                 <Text style={styles.icon}>◐</Text>
-                <Text style={styles.label}>Dark mode</Text>
-                <Switch
-                  onValueChange={(value) => {
-                    void handleThemeToggle(value);
-                  }}
-                  thumbColor={theme.colors.primaryForeground}
-                  trackColor={{ false: theme.colors.switchTrackOff, true: theme.colors.primary }}
-                  value={themePreference === "dark"}
-                />
+                <Text style={styles.label}>Theme</Text>
+                <View style={styles.segmented}>
+                  {THEME_OPTIONS.map((option) => {
+                    const selected = themePreference === option.value;
+                    return (
+                      <PressableScale
+                        key={option.value}
+                        onPress={() => {
+                          void handleThemeSelect(option.value);
+                        }}
+                        style={[styles.segment, selected && styles.segmentSelected]}
+                      >
+                        <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
+                          {option.label}
+                        </Text>
+                      </PressableScale>
+                    );
+                  })}
+                </View>
               </View>
 
               <PressableScale
@@ -435,5 +452,33 @@ const styles = StyleSheet.create((theme) => ({
   value: {
     fontSize: 14,
     color: theme.colors.muted,
+  },
+  segmented: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 2,
+    padding: 3,
+    borderRadius: 12,
+    backgroundColor: theme.colors.surface,
+  },
+  segment: {
+    minWidth: 54,
+    alignItems: "center",
+    borderRadius: 9,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+  },
+  segmentSelected: {
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  segmentText: {
+    fontSize: 12,
+    fontWeight: "700",
+    color: theme.colors.muted,
+  },
+  segmentTextSelected: {
+    color: theme.colors.text,
   },
 }));
