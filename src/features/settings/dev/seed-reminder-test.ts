@@ -34,7 +34,7 @@ function buildDebtRows(count: number, dueDate: string, reason: string): SeedDebt
     id: createId(),
     personId: createId(),
     name: faker.person.fullName(),
-    amount: faker.number.int({ min: 100, max: 2_000 }),
+    amount: faker.number.int({ min: 10, max: 500 }),
     dueDate,
     reason,
   }));

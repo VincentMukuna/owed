@@ -11,6 +11,58 @@ export const SEED_PAYMENT_ACTIVITY_COUNT = 300;
 
 const USAGE_WINDOW_MONTHS = 18;
 
+/** Round amounts typical of informal IOUs — biased toward smaller values. */
+const SEED_DEBT_AMOUNTS = [
+  10, 15, 20, 25, 30, 35, 40, 45, 50, 55, 60, 65, 70, 75, 80, 85, 90, 95, 100, 110, 120, 125, 130,
+  140, 150, 160, 175, 180, 200, 220, 240, 250, 275, 300, 325, 350, 400, 450, 500,
+] as const;
+
+function randomSeedDebtAmount(): number {
+  return faker.helpers.weightedArrayElement([
+    { weight: 40, value: faker.helpers.arrayElement(SEED_DEBT_AMOUNTS.slice(0, 18)) },
+    { weight: 35, value: faker.helpers.arrayElement(SEED_DEBT_AMOUNTS.slice(18, 28)) },
+    { weight: 20, value: faker.helpers.arrayElement(SEED_DEBT_AMOUNTS.slice(28, 35)) },
+    { weight: 5, value: faker.helpers.arrayElement(SEED_DEBT_AMOUNTS.slice(35)) },
+  ]);
+}
+
+function randomSeedPaymentAmount(remaining: number, isFullPayment: boolean): number {
+  if (isFullPayment || remaining <= 5) {
+    return remaining;
+  }
+
+  const maxPartial = Math.max(5, Math.floor(remaining * 0.85));
+  const candidates = SEED_DEBT_AMOUNTS.filter((amount) => amount >= 5 && amount <= maxPartial);
+
+  if (candidates.length > 0) {
+    return faker.helpers.arrayElement(candidates);
+  }
+
+  return Math.max(5, Math.round(faker.number.int({ min: 5, max: maxPartial }) / 5) * 5);
+}
+
+const SEED_DEBT_REASONS = [
+  "Dinner split",
+  "Concert tickets",
+  "Birthday gift",
+  "Groceries",
+  "Rent share",
+  "Coffee run",
+  "Weekend trip",
+  "Uber ride",
+  "Lunch",
+  "Gas money",
+  "Hotel share",
+  "Movie night",
+  "Group gift",
+  "Sports tickets",
+  "Phone bill",
+] as const;
+
+function randomSeedDebtReason(): string {
+  return faker.helpers.arrayElement(SEED_DEBT_REASONS);
+}
+
 export type SeedResult = {
   people: number;
   debts: number;
@@ -31,7 +83,7 @@ type SeedDebt = {
   id: string;
   personId: string;
   originalAmount: number;
-  reason: string | null;
+  reason: string;
   dueDate: string;
   lentDate: string | null;
   reminderEnabled: number;
@@ -96,8 +148,8 @@ function buildDebts(people: SeedPerson[], now: Date): SeedDebt[] {
     return {
       id: createId(),
       personId: person.id,
-      originalAmount: faker.number.int({ min: 50, max: 3_000 }),
-      reason: faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.55 }) ?? null,
+      originalAmount: randomSeedDebtAmount(),
+      reason: randomSeedDebtReason(),
       dueDate: toISODate(dueDate),
       lentDate:
         faker.helpers.maybe(() => toISODate(randomBetween(personCreatedAt, createdAt)), {
@@ -153,9 +205,7 @@ function buildPayments(
 
     const remainingBefore = debt.remaining;
     const isFullPayment = faker.datatype.boolean({ probability: 0.22 });
-    const amount = isFullPayment
-      ? remainingBefore
-      : faker.number.int({ min: 1, max: Math.max(1, Math.floor(remainingBefore * 0.85)) });
+    const amount = randomSeedPaymentAmount(remainingBefore, isFullPayment);
 
     debt.remaining = Math.max(0, remainingBefore - amount);
     const eventType = debt.remaining <= 0 ? "debt_paid" : "payment_recorded";

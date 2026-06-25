@@ -36,8 +36,9 @@ export function DevToolsSection() {
       <View style={styles.card}>
         <View style={styles.content}>
           <Text style={styles.description}>
-            Simulate ~18 months of usage: {SEED_PEOPLE_COUNT} people, {SEED_DEBT_COUNT} debts, and{" "}
-            {SEED_PAYMENT_ACTIVITY_COUNT} payment activities spread over time.
+            Populate sample IOUs for testing and screenshots: {SEED_PEOPLE_COUNT} people,{" "}
+            {SEED_DEBT_COUNT} debts, and {SEED_PAYMENT_ACTIVITY_COUNT} payments spread over ~18
+            months. Amounts are small round values; every debt includes a short description.
           </Text>
           <Button
             disabled={seedDebts.isPending}
@@ -53,10 +54,10 @@ export function DevToolsSection() {
       <View style={styles.card}>
         <View style={styles.content}>
           <Text style={styles.description}>
-            Set the notification time a few minutes ahead, then seed {SEED_REMINDER_TEST_COUNT}{" "}
-            due-today and {SEED_REMINDER_TEST_COUNT} overdue debts (due yesterday). Each bucket
-            collapses to one grouped notification at that time. Overdue notifications are turned on
-            if needed.
+            Notification QA: set your reminder time a few minutes ahead, then seed{" "}
+            {SEED_REMINDER_TEST_COUNT} debts due today and {SEED_REMINDER_TEST_COUNT} due yesterday.
+            Each bucket collapses into one grouped notification at that time. Overdue reminders are
+            turned on if needed.
           </Text>
           <Button
             disabled={seedReminderTest.isPending}
