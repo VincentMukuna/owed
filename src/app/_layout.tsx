@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { AppState, StyleSheet } from "react-native";
 
 import { Stack } from "expo-router";
+import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 
 import { QueryClientProvider } from "@tanstack/react-query";
@@ -59,6 +60,18 @@ export default function RootLayout() {
       return;
     }
 
+    const frame = requestAnimationFrame(() => {
+      void SplashScreen.hideAsync();
+    });
+
+    return () => cancelAnimationFrame(frame);
+  }, [dbReady]);
+
+  useEffect(() => {
+    if (!dbReady) {
+      return;
+    }
+
     let cleanup: (() => void) | undefined;
 
     void (async () => {
@@ -81,7 +94,7 @@ export default function RootLayout() {
   return (
     <GestureHandlerRootView style={styles.root}>
       <QueryClientProvider client={queryClient}>
-        <StatusBar style="dark" />
+        <StatusBar style={dbReady ? "dark" : "light"} />
         {dbReady ? (
           <Stack
             screenOptions={{
