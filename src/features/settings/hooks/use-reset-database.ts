@@ -12,13 +12,13 @@ export function useResetDatabase() {
     mutationFn: () => resetDatabase(),
     onSuccess: async () => {
       await queryClient.invalidateQueries();
-      showToast("Database reset.");
+      showToast("All records cleared.");
     },
     onError: (error) => {
       if (__DEV__) {
         console.error("[useResetDatabase] failed to reset database", error);
       }
-      showToast("Could not reset database. Try again.");
+      showToast("Could not clear records. Try again.");
     },
   });
 }

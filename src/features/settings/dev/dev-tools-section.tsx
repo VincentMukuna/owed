@@ -15,8 +15,8 @@ export function DevToolsSection() {
 
   const confirmReset = () => {
     Alert.alert(
-      "Reset database?",
-      "Deletes all debts, activity, reminders, and saved settings. OS notification permission is unchanged.",
+      "Clear all records?",
+      "Deletes all debts, people, payments, activity, and reminders. Your preferences stay unchanged. OS notification permission is unchanged.",
       [
         { text: "Cancel", style: "cancel" },
         {
@@ -72,8 +72,8 @@ export function DevToolsSection() {
       <View style={styles.card}>
         <View style={styles.content}>
           <Text style={styles.description}>
-            Wipe all local data (debts, activity, reminders, and settings) and cancel pending
-            notifications. Same as a fresh install without reinstalling the app.
+            Delete all debts, people, payments, activity, and reminders, and cancel pending
+            notifications. Your preferences (currency, reminders, onboarding) stay unchanged.
           </Text>
           <Button
             disabled={resetDatabase.isPending}
@@ -81,7 +81,7 @@ export function DevToolsSection() {
             onPress={confirmReset}
             variant="secondary"
           >
-            {resetDatabase.isPending ? "Resetting…" : "Reset database"}
+            {resetDatabase.isPending ? "Clearing…" : "Clear all records"}
           </Button>
         </View>
       </View>
