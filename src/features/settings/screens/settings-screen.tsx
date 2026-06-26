@@ -240,7 +240,7 @@ export function SettingsScreen() {
                 style={[styles.row, styles.rowBorder]}
               >
                 <Text style={styles.icon}>💱</Text>
-                <Text style={styles.label}>Default currency</Text>
+                <Text style={styles.label}>Currency</Text>
                 <View style={styles.valueWrap}>
                   <Text style={styles.value}>{defaultCurrency}</Text>
                   <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />

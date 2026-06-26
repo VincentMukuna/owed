@@ -167,7 +167,7 @@ export const CurrencyPickerSheet = forwardRef<CurrencyPickerSheetRef, CurrencyPi
         backgroundStyle={styles.sheetBackground}
       >
         <View style={styles.headerRow}>
-          <Text style={styles.title}>Default currency</Text>
+          <Text style={styles.title}>Currency</Text>
         </View>
         <View style={styles.searchWrap}>
           <Search color={theme.colors.muted} size={18} strokeWidth={1.75} />
