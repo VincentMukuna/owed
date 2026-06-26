@@ -11,8 +11,8 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { UnistylesRuntime, useUnistyles } from "react-native-unistyles";
 
 import { Toast } from "@/components/shared/toast";
+import { fetchActivityViews } from "@/features/activity/lib/fetch-activities";
 import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
-import { fetchActivityViews } from "@/features/debts/lib/fetch-activities";
 import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
 import { fetchPeoplePickerViews } from "@/features/debts/lib/fetch-people";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";

@@ -1,8 +1,8 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchActivityViews } from "@/features/debts/lib/fetch-activities";
+import { fetchActivityViews } from "@/features/activity/lib/fetch-activities";
 
-import { activityKeys } from "./query-keys";
+import { activityKeys } from "../../debts/hooks/query-keys";
 
 export function useActivities() {
   return useQuery({
