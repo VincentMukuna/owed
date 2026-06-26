@@ -79,34 +79,38 @@ export function RecordPaymentScreen() {
     >
       <View style={styles.field}>
         <Text style={styles.label}>Amount paid</Text>
-        <View>
-          <Text style={styles.prefix}>{formatCurrencyPrefix(debt.currency)}</Text>
-          <TextInput
-            autoFocus
-            keyboardType="number-pad"
-            onChangeText={setPayAmount}
-            placeholder="0"
-            placeholderTextColor={theme.colors.sheetHandle}
-            style={[styles.input, styles.amountInput]}
-            value={payAmount}
-          />
+        <View style={styles.inputCard}>
+          <View>
+            <Text style={styles.prefix}>{formatCurrencyPrefix(debt.currency)}</Text>
+            <TextInput
+              autoFocus
+              keyboardType="number-pad"
+              onChangeText={setPayAmount}
+              placeholder="0"
+              placeholderTextColor={theme.colors.sheetHandle}
+              style={[styles.input, styles.amountInput]}
+              value={payAmount}
+            />
+          </View>
+          <Pressable onPress={() => setPayAmount(String(debt.remaining))}>
+            <Text style={styles.fullAmountLink}>
+              Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
+            </Text>
+          </Pressable>
         </View>
-        <Pressable onPress={() => setPayAmount(String(debt.remaining))}>
-          <Text style={styles.fullAmountLink}>
-            Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
-          </Text>
-        </Pressable>
       </View>
 
       <View style={styles.field}>
         <Text style={styles.label}>Note (optional)</Text>
-        <TextInput
-          onChangeText={setPayNote}
-          placeholder="e.g. M-Pesa, cash, bank transfer"
-          placeholderTextColor={theme.colors.placeholder}
-          style={styles.input}
-          value={payNote}
-        />
+        <View style={styles.inputCard}>
+          <TextInput
+            onChangeText={setPayNote}
+            placeholder="e.g. M-Pesa, cash, bank transfer"
+            placeholderTextColor={theme.colors.placeholder}
+            style={styles.input}
+            value={payNote}
+          />
+        </View>
       </View>
     </ScrollView>
   );
@@ -125,12 +129,25 @@ const styles = StyleSheet.create((theme) => ({
   },
   form: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 10,
     paddingBottom: 32,
-    gap: 16,
+    gap: 18,
   },
   field: {
     gap: 8,
+  },
+  inputCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 16,
+    gap: 8,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
+    shadowRadius: theme.name === "light" ? 1.5 : 2,
+    elevation: theme.name === "light" ? 0 : 1,
   },
   label: {
     fontSize: 11,
@@ -141,25 +158,21 @@ const styles = StyleSheet.create((theme) => ({
   },
   prefix: {
     position: "absolute",
-    left: 16,
-    top: 18,
+    left: 0,
+    top: 8,
     fontSize: 14,
     fontWeight: "700",
     color: theme.colors.muted,
     zIndex: 1,
   },
   input: {
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingHorizontal: 0,
+    paddingVertical: 4,
     fontSize: 14,
     color: theme.colors.text,
   },
   amountInput: {
-    paddingLeft: 60,
+    paddingLeft: 48,
     fontSize: 20,
     fontWeight: "700",
     fontVariant: ["tabular-nums"],

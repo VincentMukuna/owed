@@ -1,56 +1,82 @@
 import { memo } from "react";
 
-import { View } from "react-native";
+import { type StyleProp, View, type ViewStyle } from "react-native";
 
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Text } from "@/components/ui/text";
-import type { DebtCardView } from "@/features/debts/view-models";
+import type { CardDebtStatus, DebtCardView } from "@/features/debts/view-models";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 type DebtCardProps = {
   debt: DebtCardView;
   onPress: () => void;
+  showStatusCue?: boolean;
+  style?: StyleProp<ViewStyle>;
 };
 
-export const DebtCard = memo(({ debt, onPress }: DebtCardProps) => {
+const STATUS_LABELS: Record<CardDebtStatus, string> = {
+  active: "Active",
+  "due-soon": "Due soon",
+  overdue: "Overdue",
+  partial: "Partial",
+  paid: "Paid",
+};
+
+export const DebtCard = memo(({ debt, onPress, showStatusCue = true, style }: DebtCardProps) => {
+  const { theme } = useUnistyles();
   const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
+  const statusColors = theme.colors.status[debt.status];
 
   return (
-    <PressableScale onPress={onPress} style={styles.card}>
+    <PressableScale onPress={onPress} style={[styles.card, style]}>
       <View style={styles.row}>
         <Avatar initials={debt.initials} status={debt.status} />
         <View style={styles.body}>
           <View style={styles.topRow}>
             <View style={styles.meta}>
-              <Text style={styles.name}>{debt.name}</Text>
+              <Text numberOfLines={1} style={styles.name}>
+                {debt.name}
+              </Text>
               <Text muted style={styles.reason} numberOfLines={1}>
                 {debt.reason}
               </Text>
+              {debt.status === "partial" ? (
+                <View style={styles.progressRow}>
+                  <View style={styles.progressTrack}>
+                    <View style={[styles.progressFill, { width: `${pct}%` }]} />
+                  </View>
+                  <Text muted style={styles.progressText}>
+                    {Math.round(pct)}%
+                  </Text>
+                </View>
+              ) : null}
             </View>
             <View style={styles.amountCol}>
-              <Text style={styles.amount}>{formatCurrency(debt.remaining)}</Text>
-              <Text muted style={styles.dueDate}>
-                {debt.dueDate}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.footer}>
-            <Badge status={debt.status} />
-            {debt.status === "partial" ? (
-              <View style={styles.progressRow}>
-                <View style={styles.progressTrack}>
-                  <View style={[styles.progressFill, { width: `${pct}%` }]} />
+              {showStatusCue ? (
+                <View style={styles.statusRow}>
+                  <View style={[styles.statusDot, { backgroundColor: statusColors.dot }]} />
+                  <Text style={[styles.statusText, { color: statusColors.text }]} numberOfLines={1}>
+                    {STATUS_LABELS[debt.status]}
+                  </Text>
                 </View>
-                <Text muted style={styles.progressLabel}>
-                  {Math.round(pct)}%
+              ) : null}
+              <Text
+                adjustsFontSizeToFit
+                minimumFontScale={0.78}
+                numberOfLines={1}
+                style={styles.amount}
+              >
+                {formatCurrency(debt.remaining)}
+              </Text>
+              <View style={styles.dueRow}>
+                <Text style={styles.dueDate} numberOfLines={1}>
+                  {debt.dueDate}
                 </Text>
               </View>
-            ) : null}
+            </View>
           </View>
         </View>
       </View>
@@ -62,20 +88,13 @@ DebtCard.displayName = "DebtCard";
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.md,
-    borderWidth: 1,
+    paddingVertical: 12,
     borderColor: theme.colors.border,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderBottomWidth: 1,
   },
   row: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 12,
   },
   body: {
@@ -85,49 +104,71 @@ const styles = StyleSheet.create((theme) => ({
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 8,
+    alignItems: "center",
+    gap: 10,
   },
   meta: {
     flex: 1,
     minWidth: 0,
   },
   name: {
-    fontSize: 14,
-    fontWeight: "600",
-    lineHeight: 18,
+    fontSize: 15,
+    fontWeight: "500",
+    lineHeight: 20,
   },
   reason: {
     fontSize: 12,
-    marginTop: 2,
+    lineHeight: 17,
   },
   amountCol: {
     alignItems: "flex-end",
     flexShrink: 0,
+    maxWidth: "45%",
+  },
+  statusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 5,
+    marginBottom: 1,
+  },
+  statusText: {
+    fontSize: 10,
+    fontWeight: "600",
+    lineHeight: 13,
+    textTransform: "uppercase",
+    letterSpacing: 0.8,
   },
   amount: {
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: 16,
+    fontWeight: "500",
+    lineHeight: 21,
     fontVariant: ["tabular-nums"],
+  },
+  dueRow: {
+    alignItems: "flex-end",
+  },
+  statusDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 999,
   },
   dueDate: {
     fontSize: 12,
-    marginTop: 2,
-  },
-  footer: {
-    marginTop: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+    fontWeight: "500",
+    color: theme.colors.muted,
+    lineHeight: 17,
   },
   progressRow: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 8,
+    gap: 7,
+    marginTop: 7,
   },
   progressTrack: {
-    width: 64,
+    width: 68,
     height: 4,
-    backgroundColor: theme.colors.progressTrack,
+    backgroundColor: theme.colors.surfaceMuted,
     borderRadius: 999,
     overflow: "hidden",
   },
@@ -136,8 +177,10 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.progressFill,
     borderRadius: 999,
   },
-  progressLabel: {
+  progressText: {
     fontSize: 10,
     fontWeight: "500",
+    lineHeight: 12,
+    fontVariant: ["tabular-nums"],
   },
 }));

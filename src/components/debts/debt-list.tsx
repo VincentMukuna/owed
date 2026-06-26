@@ -1,13 +1,11 @@
 import { forwardRef, memo, useCallback } from "react";
 
-import { RefreshControl, type RefreshControlProps, StyleSheet, View } from "react-native";
+import { RefreshControl, type RefreshControlProps } from "react-native";
 
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 
 import { DebtCard } from "@/components/debts/debt-card";
 import type { DebtCardView } from "@/features/debts/view-models";
-
-const ITEM_SEPARATOR_HEIGHT = 10;
 
 type DebtListProps = {
   debts: DebtCardView[];
@@ -17,10 +15,6 @@ type DebtListProps = {
   ListHeaderComponent?: React.ReactElement | null;
   refreshControlProps?: RefreshControlProps;
 };
-
-function ItemSeparator() {
-  return <View style={styles.separator} />;
-}
 
 const DebtListInner = forwardRef<FlashListRef<DebtCardView>, DebtListProps>(
   (
@@ -48,7 +42,6 @@ const DebtListInner = forwardRef<FlashListRef<DebtCardView>, DebtListProps>(
         ref={ref}
         contentContainerStyle={contentContainerStyle}
         data={debts}
-        ItemSeparatorComponent={ItemSeparator}
         keyExtractor={keyExtractor}
         keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
@@ -69,9 +62,3 @@ DebtListInner.displayName = "DebtList";
 export const DebtList = memo(DebtListInner);
 
 DebtList.displayName = "DebtList";
-
-const styles = StyleSheet.create({
-  separator: {
-    height: ITEM_SEPARATOR_HEIGHT,
-  },
-});

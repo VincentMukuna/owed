@@ -287,7 +287,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return (
     <View style={styles.field}>
       <Text style={styles.sectionTitle}>{label}</Text>
-      {children}
+      <View style={styles.inputCard}>{children}</View>
     </View>
   );
 }
@@ -296,7 +296,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      {children}
+      <View style={styles.inputCard}>{children}</View>
     </View>
   );
 }
@@ -304,16 +304,28 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 const styles = StyleSheet.create((theme) => ({
   form: {
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 32,
-    gap: 16,
+    paddingTop: 10,
+    paddingBottom: 40,
+    gap: 18,
   },
   field: {
     gap: 8,
   },
   section: {
-    gap: 10,
-    marginTop: 4,
+    gap: 8,
+  },
+  inputCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 16,
+    gap: 12,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
+    shadowRadius: theme.name === "light" ? 1.5 : 2,
+    elevation: theme.name === "light" ? 0 : 1,
   },
   sectionTitle: {
     fontSize: 11,
@@ -323,22 +335,13 @@ const styles = StyleSheet.create((theme) => ({
     letterSpacing: 1.6,
   },
   input: {
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 0,
+    paddingVertical: 4,
     fontSize: 14,
     color: theme.colors.text,
   },
   personField: {
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
+    paddingVertical: 4,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -348,13 +351,7 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.placeholder,
   },
   personChip: {
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    borderRadius: 12,
-    paddingLeft: 10,
-    paddingRight: 8,
-    paddingVertical: 8,
+    paddingVertical: 2,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -393,16 +390,16 @@ const styles = StyleSheet.create((theme) => ({
   },
   prefix: {
     position: "absolute",
-    left: 16,
-    top: 18,
+    left: 0,
+    top: 10,
     fontSize: 14,
     fontWeight: "700",
     color: theme.colors.muted,
     zIndex: 1,
   },
   amountInput: {
-    paddingLeft: 60,
-    paddingVertical: 16,
+    paddingLeft: 48,
+    paddingVertical: 2,
     fontSize: 24,
     fontWeight: "700",
     fontVariant: ["tabular-nums"],
@@ -411,7 +408,7 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   chip: {
     paddingHorizontal: 14,
@@ -419,7 +416,7 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: 999,
     borderWidth: 1,
     borderColor: theme.colors.borderStrong,
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.surface,
   },
   chipSelected: {
     backgroundColor: theme.colors.primary,
@@ -434,12 +431,10 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.primaryForeground,
   },
   dateField: {
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.borderStrong,
+    backgroundColor: theme.colors.surface,
     borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,

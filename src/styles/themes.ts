@@ -56,7 +56,7 @@ export const lightTheme = {
     card: "#FFFFFF",
     text: "#1A1A18",
     muted: "#8A8A82",
-    mutedLight: "#B8B8B0",
+    mutedLight: "#96968E",
     placeholder: "#C8C8C0",
     primary: "#1A3A2A",
     primaryForeground: "#FFFFFF",
