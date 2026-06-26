@@ -5,6 +5,7 @@ import { Pressable, Text, View } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 
 import type { FlashListRef } from "@shopify/flash-list";
+import { useQueryClient } from "@tanstack/react-query";
 import { List, Search, X } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
@@ -23,7 +24,9 @@ import {
 } from "@/features/debts/lib/debt-list-utils";
 import { formatDueDate } from "@/features/debts/lib/format-dates";
 import type { DebtCardView } from "@/features/debts/view-models";
+import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { selectionChange } from "@/lib/haptics";
+import { invalidateDebtQueries } from "@/lib/query/invalidate-queries";
 import type { ReminderType } from "@/types";
 
 type ReminderFocus = { date: string; type: ReminderType };
@@ -48,6 +51,7 @@ function parseFilterParam(value: string | string[] | undefined): DebtFilterKey |
 
 export function DebtsScreen() {
   const { theme } = useUnistyles();
+  const queryClient = useQueryClient();
   const { data: debts = [], isPending } = useDebts();
   const params = useLocalSearchParams<{
     focusDate?: string;
@@ -142,6 +146,9 @@ export function DebtsScreen() {
     router.push("/add-debt");
   }, []);
 
+  const handleRefresh = useCallback(() => invalidateDebtQueries(queryClient), [queryClient]);
+  const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
+
   const isSearching = searchQuery.trim().length > 0;
 
   const emptyState = useMemo(
@@ -234,6 +241,7 @@ export function DebtsScreen() {
         debts={visibleDebts}
         ListEmptyComponent={emptyState}
         onDebtPress={openDebt}
+        refreshControlProps={refreshControlProps}
       />
 
       <FabButton onPress={openAdd} />

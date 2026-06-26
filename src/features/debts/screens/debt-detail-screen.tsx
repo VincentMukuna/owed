@@ -1,19 +1,22 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 
-import { Pressable, ScrollView, Text, View } from "react-native";
+import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 
 import * as Clipboard from "expo-clipboard";
 import { LinearGradient } from "expo-linear-gradient";
 import { Stack, router } from "expo-router";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { Check, Copy } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Badge } from "@/components/ui/badge";
+import { debtKeys } from "@/features/debts/hooks/query-keys";
 import { useDebt } from "@/features/debts/hooks/use-debt";
 import type { DebtDetailView } from "@/features/debts/view-models";
+import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
 type DebtDetailScreenProps = {
@@ -23,8 +26,15 @@ type DebtDetailScreenProps = {
 export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const { data: debt, isPending } = useDebt(debtId);
   const [copied, setCopied] = useState(false);
+
+  const handleRefresh = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: debtKeys.detail(debtId) }),
+    [debtId, queryClient],
+  );
+  const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
   if (isPending) {
     return null;
@@ -69,6 +79,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
             styles.content,
             { paddingBottom: debt.status === "paid" ? 24 : 120 + insets.bottom },
           ]}
+          refreshControl={<RefreshControl {...refreshControlProps} />}
           showsVerticalScrollIndicator={false}
         >
           {debt.status === "paid" ? (
