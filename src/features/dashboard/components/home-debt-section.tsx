@@ -36,14 +36,19 @@ export function HomeDebtSection({
         </Text>
       </PressableScale>
       <View style={styles.cards}>
-        {preview.map((debt) => (
-          <DebtCard
-            key={debt.id}
-            debt={debt}
-            onPress={() => onDebtPress(debt.id)}
-            showStatusCue={false}
-          />
-        ))}
+        {preview.map((debt) => {
+          const needsBreathingRoom = debt.status === "due-soon" || debt.status === "overdue";
+
+          return (
+            <DebtCard
+              key={debt.id}
+              debt={debt}
+              onPress={() => onDebtPress(debt.id)}
+              showStatusCue={false}
+              style={needsBreathingRoom ? styles.statusDebtCard : null}
+            />
+          );
+        })}
       </View>
     </View>
   );
@@ -63,5 +68,8 @@ const styles = StyleSheet.create((theme) => ({
   },
   cards: {
     gap: 0,
+  },
+  statusDebtCard: {
+    paddingVertical: 14,
   },
 }));

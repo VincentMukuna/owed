@@ -1,6 +1,6 @@
 import { memo } from "react";
 
-import { View } from "react-native";
+import { type StyleProp, View, type ViewStyle } from "react-native";
 
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
@@ -14,6 +14,7 @@ type DebtCardProps = {
   debt: DebtCardView;
   onPress: () => void;
   showStatusCue?: boolean;
+  style?: StyleProp<ViewStyle>;
 };
 
 const STATUS_LABELS: Record<CardDebtStatus, string> = {
@@ -24,13 +25,13 @@ const STATUS_LABELS: Record<CardDebtStatus, string> = {
   paid: "Paid",
 };
 
-export const DebtCard = memo(({ debt, onPress, showStatusCue = true }: DebtCardProps) => {
+export const DebtCard = memo(({ debt, onPress, showStatusCue = true, style }: DebtCardProps) => {
   const { theme } = useUnistyles();
   const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
   const statusColors = theme.colors.status[debt.status];
 
   return (
-    <PressableScale onPress={onPress} style={styles.card}>
+    <PressableScale onPress={onPress} style={[styles.card, style]}>
       <View style={styles.row}>
         <Avatar initials={debt.initials} status={debt.status} />
         <View style={styles.body}>
