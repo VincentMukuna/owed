@@ -117,19 +117,21 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
           ) : null}
 
           {debt.status !== "paid" ? (
-            <View style={styles.card}>
+            <View style={styles.followUpSection}>
               <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Follow-up message</Text>
-              <Text style={styles.messageBox}>{followUpMsg}</Text>
-              <Pressable onPress={handleCopy} style={styles.copyBtn}>
-                {copied ? (
-                  <Check color={theme.colors.success} size={14} strokeWidth={2.5} />
-                ) : (
-                  <Copy color={theme.colors.primary} size={14} strokeWidth={2.5} />
-                )}
-                <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
-                  {copied ? "Copied!" : "Copy message"}
-                </Text>
-              </Pressable>
+              <View style={styles.messageCard}>
+                <Text style={styles.messageBox}>{followUpMsg}</Text>
+                <Pressable onPress={handleCopy} style={styles.copyBtn}>
+                  {copied ? (
+                    <Check color={theme.colors.success} size={14} strokeWidth={2.5} />
+                  ) : (
+                    <Copy color={theme.colors.primary} size={14} strokeWidth={2.5} />
+                  )}
+                  <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
+                    {copied ? "Copied!" : "Copy message"}
+                  </Text>
+                </Pressable>
+              </View>
             </View>
           ) : null}
         </ScrollView>
@@ -223,9 +225,9 @@ const styles = StyleSheet.create((theme) => ({
     borderColor: theme.colors.border,
     shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: theme.name === "light" ? 0 : 0.05,
+    shadowRadius: theme.name === "light" ? 0 : 2,
+    elevation: theme.name === "light" ? 0 : 1,
   },
   summaryHint: {
     fontSize: 11,
@@ -295,9 +297,9 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    shadowOpacity: theme.name === "light" ? 0 : 0.05,
+    shadowRadius: theme.name === "light" ? 0 : 2,
+    elevation: theme.name === "light" ? 0 : 1,
   },
   paidIcon: {
     width: 48,
@@ -396,21 +398,31 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.muted,
     marginTop: 2,
   },
+  followUpSection: {
+    paddingBottom: 4,
+  },
+  messageCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 16,
+    gap: 14,
+  },
   messageBox: {
     fontSize: 14,
-    color: theme.colors.icon,
-    lineHeight: 22,
-    marginTop: 10,
+    color: theme.colors.text,
+    lineHeight: 23,
   },
   copyBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    marginTop: 12,
+    alignSelf: "flex-start",
   },
   copyText: {
     fontSize: 12,
-    fontWeight: "700",
+    fontWeight: "600",
     color: theme.colors.primary,
   },
   copyTextSuccess: {
