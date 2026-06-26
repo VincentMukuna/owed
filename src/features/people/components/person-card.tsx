@@ -52,7 +52,14 @@ export const PersonCard = memo(({ person, onPress }: PersonCardProps) => {
             </View>
             <View style={styles.amountCol}>
               {person.status !== "none" ? (
-                <Text style={styles.amount}>{formatCurrency(person.outstanding)}</Text>
+                <Text
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.78}
+                  numberOfLines={1}
+                  style={styles.amount}
+                >
+                  {formatCurrency(person.outstanding)}
+                </Text>
               ) : null}
               <Text style={styles.lastActivity}>Updated {person.lastActivity}</Text>
             </View>
@@ -73,20 +80,13 @@ PersonCard.displayName = "PersonCard";
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
+    paddingVertical: 14,
     borderColor: theme.colors.border,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderBottomWidth: 1,
   },
   row: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 12,
   },
   avatar: {
@@ -109,39 +109,42 @@ const styles = StyleSheet.create((theme) => ({
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 8,
+    alignItems: "flex-start",
+    gap: 10,
   },
   meta: {
     flex: 1,
     minWidth: 0,
   },
   name: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
     color: theme.colors.text,
-    lineHeight: 18,
+    lineHeight: 20,
   },
   sub: {
-    fontSize: 12,
+    fontSize: 13,
     color: theme.colors.muted,
-    marginTop: 2,
+    lineHeight: 18,
   },
   amountCol: {
     alignItems: "flex-end",
     flexShrink: 0,
+    maxWidth: "45%",
   },
   amount: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "700",
     color: theme.colors.text,
+    lineHeight: 20,
     fontVariant: ["tabular-nums"],
   },
   lastActivity: {
-    fontSize: 11,
+    fontSize: 12,
     color: theme.colors.mutedLight,
-    marginTop: 2,
+    lineHeight: 18,
   },
   footer: {
-    marginTop: 12,
+    marginTop: 8,
   },
 }));

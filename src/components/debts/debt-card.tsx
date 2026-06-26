@@ -2,11 +2,10 @@ import { memo } from "react";
 
 import { View } from "react-native";
 
-import { StyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
 import { Text } from "@/components/ui/text";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -17,7 +16,9 @@ type DebtCardProps = {
 };
 
 export const DebtCard = memo(({ debt, onPress }: DebtCardProps) => {
+  const { theme } = useUnistyles();
   const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
+  const statusColor = theme.colors.status[debt.status].text;
 
   return (
     <PressableScale onPress={onPress} style={styles.card}>
@@ -26,31 +27,31 @@ export const DebtCard = memo(({ debt, onPress }: DebtCardProps) => {
         <View style={styles.body}>
           <View style={styles.topRow}>
             <View style={styles.meta}>
-              <Text style={styles.name}>{debt.name}</Text>
+              <Text numberOfLines={1} style={styles.name}>
+                {debt.name}
+              </Text>
               <Text muted style={styles.reason} numberOfLines={1}>
                 {debt.reason}
               </Text>
-            </View>
-            <View style={styles.amountCol}>
-              <Text style={styles.amount}>{formatCurrency(debt.remaining)}</Text>
-              <Text muted style={styles.dueDate}>
-                {debt.dueDate}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.footer}>
-            <Badge status={debt.status} />
-            {debt.status === "partial" ? (
-              <View style={styles.progressRow}>
+              {debt.status === "partial" ? (
                 <View style={styles.progressTrack}>
                   <View style={[styles.progressFill, { width: `${pct}%` }]} />
                 </View>
-                <Text muted style={styles.progressLabel}>
-                  {Math.round(pct)}%
-                </Text>
-              </View>
-            ) : null}
+              ) : null}
+            </View>
+            <View style={styles.amountCol}>
+              <Text
+                adjustsFontSizeToFit
+                minimumFontScale={0.78}
+                numberOfLines={1}
+                style={styles.amount}
+              >
+                {formatCurrency(debt.remaining, debt.currency)}
+              </Text>
+              <Text style={[styles.dueDate, { color: statusColor }]} numberOfLines={1}>
+                {debt.dueDate}
+              </Text>
+            </View>
           </View>
         </View>
       </View>
@@ -62,20 +63,13 @@ DebtCard.displayName = "DebtCard";
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    backgroundColor: theme.colors.card,
-    borderRadius: theme.radius.lg,
-    padding: theme.spacing.md,
-    borderWidth: 1,
+    paddingVertical: 14,
     borderColor: theme.colors.border,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderBottomWidth: 1,
   },
   row: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 12,
   },
   body: {
@@ -85,59 +79,48 @@ const styles = StyleSheet.create((theme) => ({
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    gap: 8,
+    alignItems: "flex-start",
+    gap: 10,
   },
   meta: {
     flex: 1,
     minWidth: 0,
   },
   name: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
-    lineHeight: 18,
+    lineHeight: 20,
   },
   reason: {
-    fontSize: 12,
-    marginTop: 2,
+    fontSize: 13,
+    lineHeight: 18,
   },
   amountCol: {
     alignItems: "flex-end",
     flexShrink: 0,
+    maxWidth: "45%",
   },
   amount: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "700",
+    lineHeight: 20,
     fontVariant: ["tabular-nums"],
   },
   dueDate: {
     fontSize: 12,
-    marginTop: 2,
-  },
-  footer: {
-    marginTop: 12,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  progressRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
+    lineHeight: 17,
   },
   progressTrack: {
-    width: 64,
+    width: 68,
     height: 4,
-    backgroundColor: theme.colors.progressTrack,
+    backgroundColor: theme.colors.surfaceMuted,
     borderRadius: 999,
     overflow: "hidden",
+    marginTop: 7,
   },
   progressFill: {
     height: "100%",
     backgroundColor: theme.colors.progressFill,
     borderRadius: 999,
-  },
-  progressLabel: {
-    fontSize: 10,
-    fontWeight: "500",
   },
 }));

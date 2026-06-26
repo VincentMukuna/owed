@@ -122,11 +122,9 @@ const styles = StyleSheet.create((theme) => ({
     letterSpacing: 1.6,
   },
   input: {
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
+    borderBottomWidth: 1,
     borderColor: theme.colors.borderStrong,
-    borderRadius: 12,
-    paddingHorizontal: 16,
+    paddingHorizontal: 0,
     paddingVertical: 14,
     fontSize: 14,
     color: theme.colors.text,
