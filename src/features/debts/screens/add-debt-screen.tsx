@@ -287,7 +287,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return (
     <View style={styles.field}>
       <Text style={styles.sectionTitle}>{label}</Text>
-      {children}
+      <View style={styles.inputCard}>{children}</View>
     </View>
   );
 }
@@ -296,7 +296,7 @@ function Section({ title, children }: { title: string; children: React.ReactNode
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>{title}</Text>
-      {children}
+      <View style={styles.inputCard}>{children}</View>
     </View>
   );
 }
@@ -304,16 +304,28 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 const styles = StyleSheet.create((theme) => ({
   form: {
     paddingHorizontal: 20,
-    paddingTop: 12,
+    paddingTop: 10,
     paddingBottom: 40,
-    gap: 24,
+    gap: 18,
   },
   field: {
-    gap: 12,
+    gap: 8,
   },
   section: {
-    gap: 14,
-    marginTop: 2,
+    gap: 8,
+  },
+  inputCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 16,
+    gap: 12,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
+    shadowRadius: theme.name === "light" ? 1.5 : 2,
+    elevation: theme.name === "light" ? 0 : 1,
   },
   sectionTitle: {
     fontSize: 11,
@@ -323,17 +335,13 @@ const styles = StyleSheet.create((theme) => ({
     letterSpacing: 1.6,
   },
   input: {
-    borderBottomWidth: 1,
-    borderColor: theme.colors.borderStrong,
     paddingHorizontal: 0,
-    paddingVertical: 17,
+    paddingVertical: 4,
     fontSize: 14,
     color: theme.colors.text,
   },
   personField: {
-    borderBottomWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    paddingVertical: 18,
+    paddingVertical: 4,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -343,9 +351,7 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.placeholder,
   },
   personChip: {
-    borderBottomWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    paddingVertical: 12,
+    paddingVertical: 2,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -385,7 +391,7 @@ const styles = StyleSheet.create((theme) => ({
   prefix: {
     position: "absolute",
     left: 0,
-    top: 21,
+    top: 10,
     fontSize: 14,
     fontWeight: "700",
     color: theme.colors.muted,
@@ -393,7 +399,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   amountInput: {
     paddingLeft: 48,
-    paddingVertical: 18,
+    paddingVertical: 2,
     fontSize: 24,
     fontWeight: "700",
     fontVariant: ["tabular-nums"],
@@ -410,7 +416,7 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: 999,
     borderWidth: 1,
     borderColor: theme.colors.borderStrong,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.surface,
   },
   chipSelected: {
     backgroundColor: theme.colors.primary,
@@ -425,9 +431,10 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.primaryForeground,
   },
   dateField: {
-    borderBottomWidth: 1,
-    borderColor: theme.colors.borderStrong,
-    paddingVertical: 17,
+    backgroundColor: theme.colors.surface,
+    borderRadius: 12,
+    paddingHorizontal: 12,
+    paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,

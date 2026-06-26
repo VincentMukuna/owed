@@ -125,7 +125,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
   return (
     <View style={styles.field}>
       <Text style={styles.label}>{label}</Text>
-      {children}
+      <View style={styles.inputCard}>{children}</View>
     </View>
   );
 }
@@ -133,12 +133,24 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 const styles = StyleSheet.create((theme) => ({
   form: {
     paddingHorizontal: 20,
-    paddingTop: 8,
+    paddingTop: 10,
     paddingBottom: 32,
-    gap: 16,
+    gap: 18,
   },
   field: {
     gap: 8,
+  },
+  inputCard: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+    padding: 16,
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
+    shadowRadius: theme.name === "light" ? 1.5 : 2,
+    elevation: theme.name === "light" ? 0 : 1,
   },
   label: {
     fontSize: 11,
@@ -148,10 +160,8 @@ const styles = StyleSheet.create((theme) => ({
     letterSpacing: 1.6,
   },
   input: {
-    borderBottomWidth: 1,
-    borderColor: theme.colors.borderStrong,
     paddingHorizontal: 0,
-    paddingVertical: 14,
+    paddingVertical: 4,
     fontSize: 14,
     color: theme.colors.text,
   },
