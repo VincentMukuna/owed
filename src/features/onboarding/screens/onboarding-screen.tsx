@@ -17,14 +17,16 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
-import { Badge } from "@/components/ui/badge";
+import { useHasDebts } from "@/features/debts/hooks/use-has-debts";
 import { completeOnboarding } from "@/features/onboarding/lib/onboarding-storage";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { HOME_ROUTE } from "@/lib/navigation/routes";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 function PreviewDebtCard() {
+  const { theme } = useUnistyles();
   const defaultCurrency = useSettingsStore((state) => state.defaultCurrency);
+  const statusColors = theme.colors.status["due-soon"];
 
   return (
     <View style={styles.previewCard}>
@@ -32,15 +34,20 @@ function PreviewDebtCard() {
         <Avatar initials="BM" status="due-soon" />
         <View style={styles.previewBody}>
           <View style={styles.previewTop}>
-            <View>
+            <View style={styles.previewMeta}>
               <Text style={styles.previewName}>Brian Mwangi</Text>
               <Text style={styles.previewReason}>Transport + drinks</Text>
             </View>
-            <Text style={styles.previewAmount}>{formatCurrency(3000, defaultCurrency)}</Text>
-          </View>
-          <View style={styles.previewFooter}>
-            <Badge status="due-soon" />
-            <Text style={styles.previewDue}>Due Friday</Text>
+            <View style={styles.previewAmountCol}>
+              <View style={styles.previewStatusRow}>
+                <View style={[styles.previewStatusDot, { backgroundColor: statusColors.dot }]} />
+                <Text style={[styles.previewStatusText, { color: statusColors.text }]}>
+                  Due soon
+                </Text>
+              </View>
+              <Text style={styles.previewAmount}>{formatCurrency(3000, defaultCurrency)}</Text>
+              <Text style={styles.previewDue}>Due Friday</Text>
+            </View>
           </View>
         </View>
       </View>
@@ -51,8 +58,10 @@ function PreviewDebtCard() {
 export function OnboardingScreen() {
   const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
+  const { data: hasDebts = false } = useHasDebts();
   const heroScale = useSharedValue(0.85);
   const heroOpacity = useSharedValue(0);
+  const primaryCtaLabel = hasDebts ? "Add debt" : "Add first debt";
 
   useEffect(() => {
     heroScale.value = withTiming(1, { duration: 400 });
@@ -98,7 +107,7 @@ export function OnboardingScreen() {
           scaleTo={0.97}
           style={styles.primaryBtn}
         >
-          <Text style={styles.primaryBtnText}>Add first debt</Text>
+          <Text style={styles.primaryBtnText}>{primaryCtaLabel}</Text>
         </PressableScale>
         <PressableScale
           onPress={async () => {
@@ -178,6 +187,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   previewRow: {
     flexDirection: "row",
+    alignItems: "center",
     gap: 12,
   },
   previewBody: {
@@ -186,33 +196,59 @@ const styles = StyleSheet.create((theme) => ({
   previewTop: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
+    gap: 10,
+  },
+  previewMeta: {
+    flex: 1,
+    minWidth: 0,
   },
   previewName: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "500",
     color: theme.colors.text,
+    lineHeight: 19,
   },
   previewReason: {
     fontSize: 12,
     color: theme.colors.muted,
-    marginTop: 2,
+    lineHeight: 17,
+  },
+  previewAmountCol: {
+    alignItems: "flex-end",
+    flexShrink: 0,
+    maxWidth: "45%",
+  },
+  previewStatusRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "flex-end",
+    gap: 5,
+    marginBottom: 1,
+  },
+  previewStatusDot: {
+    width: 4,
+    height: 4,
+    borderRadius: 999,
+  },
+  previewStatusText: {
+    fontSize: 10,
+    fontWeight: "600",
+    lineHeight: 13,
+    letterSpacing: 0.8,
+    textTransform: "uppercase",
   },
   previewAmount: {
-    fontSize: 14,
-    fontWeight: "700",
+    fontSize: 16,
+    fontWeight: "500",
     color: theme.colors.text,
+    lineHeight: 21,
     fontVariant: ["tabular-nums"],
-  },
-  previewFooter: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginTop: 12,
   },
   previewDue: {
     fontSize: 12,
     color: theme.colors.muted,
+    lineHeight: 17,
   },
   privacy: {
     fontSize: 11,
