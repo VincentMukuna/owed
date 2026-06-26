@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { activityKeys, debtKeys } from "@/features/debts/hooks/query-keys";
+import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
 import { useUiStore } from "@/features/debts/store/ui-store";
 import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 import { formatReminderTimeDisplay } from "@/features/settings/lib/format-reminder-time";
@@ -17,6 +17,7 @@ export function useSeedReminderTest() {
       await runReminderSync();
       await queryClient.invalidateQueries({ queryKey: debtKeys.all });
       await queryClient.invalidateQueries({ queryKey: activityKeys.all });
+      await queryClient.invalidateQueries({ queryKey: peopleKeys.all });
       const time = formatReminderTimeDisplay(result.reminderTime);
       showToast(
         `Seeded ${result.dueDebts} due + ${result.overdueDebts} overdue debts for ${time}.`,
