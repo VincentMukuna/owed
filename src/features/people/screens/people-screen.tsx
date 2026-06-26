@@ -5,6 +5,7 @@ import { Pressable, Text, View } from "react-native";
 import { type Href, router } from "expo-router";
 
 import type { FlashListRef } from "@shopify/flash-list";
+import { useQueryClient } from "@tanstack/react-query";
 import { Search, Users } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
@@ -13,7 +14,9 @@ import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { IconButton } from "@/components/shared/icon-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { selectionChange } from "@/lib/haptics";
+import { invalidatePeopleQueries } from "@/lib/query/invalidate-queries";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 import { PeopleList } from "../components/people-list";
@@ -22,6 +25,7 @@ import { filterAndSortPeople } from "../lib/people-list-utils";
 
 export function PeopleScreen() {
   const { theme } = useUnistyles();
+  const queryClient = useQueryClient();
   const { data: people = [], isPending } = usePeopleList();
   const [searchOpen, setSearchOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -68,6 +72,9 @@ export function PeopleScreen() {
   const openAddPerson = useCallback(() => {
     router.push("/add-person" as Href);
   }, []);
+
+  const handleRefresh = useCallback(() => invalidatePeopleQueries(queryClient), [queryClient]);
+  const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
   const isSearching = searchQuery.trim().length > 0;
 
@@ -150,6 +157,7 @@ export function PeopleScreen() {
         ListHeaderComponent={listHeader}
         onPersonPress={openPerson}
         people={visiblePeople}
+        refreshControlProps={refreshControlProps}
       />
 
       <FabButton accessibilityLabel="Add person" onPress={openAddPerson} />

@@ -1,10 +1,11 @@
 import { useCallback, useMemo } from "react";
 
-import { Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
 import { FlashList } from "@shopify/flash-list";
+import { useQueryClient } from "@tanstack/react-query";
 import { Wallet } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
@@ -19,6 +20,8 @@ import { useDebts } from "@/features/debts/hooks/use-debts";
 import { type DebtFilterKey, bucketHomeDebts } from "@/features/debts/lib/debt-list-utils";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { BellBadgeButton } from "@/features/reminders/components/bell-badge-button";
+import { useRefreshControl } from "@/hooks/use-refresh-control";
+import { invalidateHomeQueries } from "@/lib/query/invalidate-queries";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 const RECENT_ACTIVITY_LIMIT = 5;
@@ -52,8 +55,12 @@ function buildHomeSections(
 
 export function HomeScreen() {
   const { theme } = useUnistyles();
+  const queryClient = useQueryClient();
   const { data: debts = [], isPending } = useDebts();
   const { data: activities = [] } = useActivities();
+
+  const handleRefresh = useCallback(() => invalidateHomeQueries(queryClient), [queryClient]);
+  const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
   const buckets = useMemo(() => bucketHomeDebts(debts), [debts]);
   const sections = useMemo(() => buildHomeSections(buckets, theme.colors.danger), [buckets, theme]);
@@ -172,27 +179,33 @@ export function HomeScreen() {
   if (debts.length === 0) {
     return (
       <TabScreen>
-        <View style={styles.emptyBody}>
-          <View style={styles.emptyHeader}>
-            <View style={styles.emptyHeaderRow}>
-              <View>
-                <Text style={styles.kicker}>Owed</Text>
-                <Text style={styles.pageTitle}>Home</Text>
+        <ScrollView
+          contentContainerStyle={styles.emptyScroll}
+          refreshControl={<RefreshControl {...refreshControlProps} />}
+          showsVerticalScrollIndicator={false}
+        >
+          <View style={styles.emptyBody}>
+            <View style={styles.emptyHeader}>
+              <View style={styles.emptyHeaderRow}>
+                <View>
+                  <Text style={styles.kicker}>Owed</Text>
+                  <Text style={styles.pageTitle}>Home</Text>
+                </View>
+                <BellBadgeButton onPress={openNotifications} />
               </View>
-              <BellBadgeButton onPress={openNotifications} />
+            </View>
+            <View style={styles.emptyContent}>
+              <View style={styles.emptyIcon}>
+                <Wallet color={theme.colors.mutedLight} size={24} strokeWidth={1.5} />
+              </View>
+              <Text style={styles.emptyTitle}>No money tracked yet.</Text>
+              <Text style={styles.emptyCopy}>
+                {"Add the first amount someone owes you and we'll help you remember the details."}
+              </Text>
             </View>
           </View>
-          <View style={styles.emptyContent}>
-            <View style={styles.emptyIcon}>
-              <Wallet color={theme.colors.mutedLight} size={24} strokeWidth={1.5} />
-            </View>
-            <Text style={styles.emptyTitle}>No money tracked yet.</Text>
-            <Text style={styles.emptyCopy}>
-              {"Add the first amount someone owes you and we'll help you remember the details."}
-            </Text>
-          </View>
-          <FabButton onPress={openAdd} />
-        </View>
+        </ScrollView>
+        <FabButton onPress={openAdd} />
       </TabScreen>
     );
   }
@@ -214,6 +227,7 @@ export function HomeScreen() {
         keyExtractor={keyExtractor}
         ListFooterComponent={listFooter}
         ListHeaderComponent={listHeader}
+        refreshControl={<RefreshControl {...refreshControlProps} />}
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />
@@ -342,7 +356,10 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.primary,
   },
   emptyBody: {
-    flex: 1,
+    flexGrow: 1,
+  },
+  emptyScroll: {
+    flexGrow: 1,
   },
   emptyHeader: {
     paddingHorizontal: 20,

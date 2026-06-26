@@ -1,10 +1,11 @@
 import { useCallback } from "react";
 
-import { Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { router, useFocusEffect } from "expo-router";
 
 import { FlashList } from "@shopify/flash-list";
+import { useQueryClient } from "@tanstack/react-query";
 import { Bell } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
@@ -12,11 +13,17 @@ import { NotificationRow } from "@/features/reminders/components/notification-ro
 import { useMarkInboxRead } from "@/features/reminders/hooks/use-mark-inbox-read";
 import { useRemindersInbox } from "@/features/reminders/hooks/use-reminders-inbox";
 import type { ReminderInboxView } from "@/features/reminders/lib/fetch-reminders";
+import { useRefreshControl } from "@/hooks/use-refresh-control";
+import { invalidateReminderQueries } from "@/lib/query/invalidate-queries";
 
 export function NotificationsInboxScreen() {
   const { theme } = useUnistyles();
+  const queryClient = useQueryClient();
   const { data: items = [], isPending } = useRemindersInbox();
   const markInboxRead = useMarkInboxRead();
+
+  const handleRefresh = useCallback(() => invalidateReminderQueries(queryClient), [queryClient]);
+  const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
   useFocusEffect(
     useCallback(() => {
@@ -41,15 +48,21 @@ export function NotificationsInboxScreen() {
 
   if (items.length === 0) {
     return (
-      <View style={styles.empty}>
-        <View style={styles.emptyIcon}>
-          <Bell color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />
+      <ScrollView
+        contentContainerStyle={styles.emptyScroll}
+        refreshControl={<RefreshControl {...refreshControlProps} />}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.empty}>
+          <View style={styles.emptyIcon}>
+            <Bell color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />
+          </View>
+          <Text style={styles.emptyTitle}>No notifications yet</Text>
+          <Text style={styles.emptyCopy}>
+            When a promised date arrives, you&apos;ll see a notification here, only on your device.
+          </Text>
         </View>
-        <Text style={styles.emptyTitle}>No notifications yet</Text>
-        <Text style={styles.emptyCopy}>
-          When a promised date arrives, you&apos;ll see a notification here, only on your device.
-        </Text>
-      </View>
+      </ScrollView>
     );
   }
 
@@ -58,6 +71,7 @@ export function NotificationsInboxScreen() {
       contentContainerStyle={styles.list}
       data={items}
       keyExtractor={keyExtractor}
+      refreshControl={<RefreshControl {...refreshControlProps} />}
       renderItem={renderItem}
       showsVerticalScrollIndicator={false}
     />
@@ -68,6 +82,9 @@ const styles = StyleSheet.create((theme) => ({
   list: {
     paddingHorizontal: 20,
     paddingBottom: 24,
+  },
+  emptyScroll: {
+    flexGrow: 1,
   },
   empty: {
     flex: 1,

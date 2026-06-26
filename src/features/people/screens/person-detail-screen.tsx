@@ -1,9 +1,10 @@
-import { type ReactNode, useState } from "react";
+import { type ReactNode, useCallback, useState } from "react";
 
-import { ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { type Href, Stack, router } from "expo-router";
 
+import { useQueryClient } from "@tanstack/react-query";
 import { CheckCircle2, ChevronDown, ChevronUp, Receipt, Wallet } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
@@ -11,6 +12,8 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { ActivityRow } from "@/components/activity/activity-list";
 import { DebtCard } from "@/components/debts/debt-card";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import { peopleKeys } from "@/features/debts/hooks/query-keys";
+import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
 import { PersonStatusBadge } from "../components/person-status-badge";
@@ -24,10 +27,17 @@ type PersonDetailScreenProps = {
 export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
+  const queryClient = useQueryClient();
   const { data: person, isPending } = usePersonDetail(personId);
   const [activeExpanded, setActiveExpanded] = useState(true);
   const [settledExpanded, setSettledExpanded] = useState(false);
   const [paymentsExpanded, setPaymentsExpanded] = useState(true);
+
+  const handleRefresh = useCallback(
+    () => queryClient.invalidateQueries({ queryKey: peopleKeys.detail(personId) }),
+    [personId, queryClient],
+  );
+  const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
   if (isPending) {
     return null;
@@ -78,6 +88,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
       <View collapsable={false} style={styles.screen}>
         <ScrollView
           contentContainerStyle={[styles.content, { paddingBottom: 120 + insets.bottom }]}
+          refreshControl={<RefreshControl {...refreshControlProps} />}
           showsVerticalScrollIndicator={false}
         >
           <PersonSummary person={person} />

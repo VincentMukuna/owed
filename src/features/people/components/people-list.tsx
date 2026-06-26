@@ -1,6 +1,6 @@
 import { forwardRef, memo, useCallback } from "react";
 
-import { StyleSheet, View } from "react-native";
+import { RefreshControl, type RefreshControlProps, StyleSheet, View } from "react-native";
 
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 
@@ -15,6 +15,7 @@ type PeopleListProps = {
   contentContainerStyle?: object;
   ListEmptyComponent?: React.ReactElement | null;
   ListHeaderComponent?: React.ReactElement | null;
+  refreshControlProps?: RefreshControlProps;
 };
 
 function ItemSeparator() {
@@ -23,7 +24,14 @@ function ItemSeparator() {
 
 const PeopleListInner = forwardRef<FlashListRef<PersonListItemView>, PeopleListProps>(
   (
-    { people, onPersonPress, contentContainerStyle, ListEmptyComponent, ListHeaderComponent },
+    {
+      people,
+      onPersonPress,
+      contentContainerStyle,
+      ListEmptyComponent,
+      ListHeaderComponent,
+      refreshControlProps,
+    },
     ref,
   ) => {
     const renderItem = useCallback(
@@ -46,6 +54,9 @@ const PeopleListInner = forwardRef<FlashListRef<PersonListItemView>, PeopleListP
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={ListEmptyComponent}
         ListHeaderComponent={ListHeaderComponent}
+        refreshControl={
+          refreshControlProps ? <RefreshControl {...refreshControlProps} /> : undefined
+        }
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />

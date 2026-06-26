@@ -1,6 +1,6 @@
 import { memo, useCallback } from "react";
 
-import { Text, View } from "react-native";
+import { RefreshControl, type RefreshControlProps, Text, View } from "react-native";
 
 import { FlashList } from "@shopify/flash-list";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
@@ -16,6 +16,7 @@ const TYPE_SYMBOL: Record<ActivityView["type"], string> = {
 type ActivityListProps = {
   activities: ActivityView[];
   contentContainerStyle?: object;
+  refreshControlProps?: RefreshControlProps;
 };
 
 export const ActivityRow = memo(({ activity }: { activity: ActivityView }) => {
@@ -38,24 +39,29 @@ export const ActivityRow = memo(({ activity }: { activity: ActivityView }) => {
 
 ActivityRow.displayName = "ActivityRow";
 
-export const ActivityList = memo(({ activities, contentContainerStyle }: ActivityListProps) => {
-  const renderItem = useCallback(
-    ({ item }: { item: ActivityView }) => <ActivityRow activity={item} />,
-    [],
-  );
+export const ActivityList = memo(
+  ({ activities, contentContainerStyle, refreshControlProps }: ActivityListProps) => {
+    const renderItem = useCallback(
+      ({ item }: { item: ActivityView }) => <ActivityRow activity={item} />,
+      [],
+    );
 
-  const keyExtractor = useCallback((item: ActivityView) => item.id, []);
+    const keyExtractor = useCallback((item: ActivityView) => item.id, []);
 
-  return (
-    <FlashList
-      contentContainerStyle={contentContainerStyle}
-      data={activities}
-      keyExtractor={keyExtractor}
-      renderItem={renderItem}
-      showsVerticalScrollIndicator={false}
-    />
-  );
-});
+    return (
+      <FlashList
+        contentContainerStyle={contentContainerStyle}
+        data={activities}
+        keyExtractor={keyExtractor}
+        refreshControl={
+          refreshControlProps ? <RefreshControl {...refreshControlProps} /> : undefined
+        }
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+      />
+    );
+  },
+);
 
 ActivityList.displayName = "ActivityList";
 

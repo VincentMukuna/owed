@@ -1,6 +1,6 @@
 import { forwardRef, memo, useCallback } from "react";
 
-import { StyleSheet, View } from "react-native";
+import { RefreshControl, type RefreshControlProps, StyleSheet, View } from "react-native";
 
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 
@@ -15,6 +15,7 @@ type DebtListProps = {
   contentContainerStyle?: object;
   ListEmptyComponent?: React.ReactElement | null;
   ListHeaderComponent?: React.ReactElement | null;
+  refreshControlProps?: RefreshControlProps;
 };
 
 function ItemSeparator() {
@@ -22,7 +23,17 @@ function ItemSeparator() {
 }
 
 const DebtListInner = forwardRef<FlashListRef<DebtCardView>, DebtListProps>(
-  ({ debts, onDebtPress, contentContainerStyle, ListEmptyComponent, ListHeaderComponent }, ref) => {
+  (
+    {
+      debts,
+      onDebtPress,
+      contentContainerStyle,
+      ListEmptyComponent,
+      ListHeaderComponent,
+      refreshControlProps,
+    },
+    ref,
+  ) => {
     const renderItem = useCallback(
       ({ item }: { item: DebtCardView }) => (
         <DebtCard debt={item} onPress={() => onDebtPress(item.id)} />
@@ -43,6 +54,9 @@ const DebtListInner = forwardRef<FlashListRef<DebtCardView>, DebtListProps>(
         keyboardShouldPersistTaps="handled"
         ListEmptyComponent={ListEmptyComponent}
         ListHeaderComponent={ListHeaderComponent}
+        refreshControl={
+          refreshControlProps ? <RefreshControl {...refreshControlProps} /> : undefined
+        }
         renderItem={renderItem}
         showsVerticalScrollIndicator={false}
       />
