@@ -304,16 +304,16 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 const styles = StyleSheet.create((theme) => ({
   form: {
     paddingHorizontal: 20,
-    paddingTop: 8,
-    paddingBottom: 32,
-    gap: 16,
+    paddingTop: 12,
+    paddingBottom: 40,
+    gap: 24,
   },
   field: {
-    gap: 8,
+    gap: 12,
   },
   section: {
-    gap: 10,
-    marginTop: 4,
+    gap: 14,
+    marginTop: 2,
   },
   sectionTitle: {
     fontSize: 11,
@@ -326,14 +326,14 @@ const styles = StyleSheet.create((theme) => ({
     borderBottomWidth: 1,
     borderColor: theme.colors.borderStrong,
     paddingHorizontal: 0,
-    paddingVertical: 14,
+    paddingVertical: 17,
     fontSize: 14,
     color: theme.colors.text,
   },
   personField: {
     borderBottomWidth: 1,
     borderColor: theme.colors.borderStrong,
-    paddingVertical: 16,
+    paddingVertical: 18,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -345,7 +345,7 @@ const styles = StyleSheet.create((theme) => ({
   personChip: {
     borderBottomWidth: 1,
     borderColor: theme.colors.borderStrong,
-    paddingVertical: 10,
+    paddingVertical: 12,
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
@@ -385,7 +385,7 @@ const styles = StyleSheet.create((theme) => ({
   prefix: {
     position: "absolute",
     left: 0,
-    top: 18,
+    top: 21,
     fontSize: 14,
     fontWeight: "700",
     color: theme.colors.muted,
@@ -393,7 +393,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   amountInput: {
     paddingLeft: 48,
-    paddingVertical: 16,
+    paddingVertical: 18,
     fontSize: 24,
     fontWeight: "700",
     fontVariant: ["tabular-nums"],
@@ -402,7 +402,7 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginBottom: 12,
+    marginBottom: 16,
   },
   chip: {
     paddingHorizontal: 14,
@@ -427,7 +427,7 @@ const styles = StyleSheet.create((theme) => ({
   dateField: {
     borderBottomWidth: 1,
     borderColor: theme.colors.borderStrong,
-    paddingVertical: 14,
+    paddingVertical: 17,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,

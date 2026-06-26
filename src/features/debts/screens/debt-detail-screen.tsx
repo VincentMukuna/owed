@@ -154,17 +154,15 @@ function ActiveSummary({ debt, pct }: { debt: DebtDetailView; pct: number }) {
     <View style={styles.summaryCard}>
       <Text style={styles.summaryHint}>Amount remaining</Text>
       <Text style={styles.summaryAmount}>{formatCurrency(debt.remaining)}</Text>
-      {debt.status === "partial" ? (
-        <View style={styles.partialBlock}>
-          <View style={styles.partialMeta}>
-            <Text style={styles.partialMetaText}>Original: {formatCurrency(debt.amount)}</Text>
-            <Text style={styles.partialMetaText}>{Math.round(pct)}% paid</Text>
-          </View>
-          <View style={styles.progressTrackLg}>
-            <View style={[styles.progressFillLg, { width: `${pct}%` }]} />
-          </View>
+      <View style={styles.partialBlock}>
+        <View style={styles.partialMeta}>
+          <Text style={styles.partialMetaText}>Original: {formatCurrency(debt.amount)}</Text>
+          <Text style={styles.partialMetaText}>{Math.round(pct)}% paid</Text>
         </View>
-      ) : null}
+        <View style={styles.progressTrackLg}>
+          <View style={[styles.progressFillLg, { width: `${pct}%` }]} />
+        </View>
+      </View>
       <View style={styles.summaryFooter}>
         <View>
           <Text style={styles.summaryFooterLabel}>Due</Text>
@@ -214,7 +212,8 @@ const styles = StyleSheet.create((theme) => ({
   },
   content: {
     paddingHorizontal: 20,
-    gap: 14,
+    paddingTop: 8,
+    gap: 24,
   },
   summaryCard: {
     backgroundColor: theme.colors.card,
@@ -229,16 +228,18 @@ const styles = StyleSheet.create((theme) => ({
     elevation: 1,
   },
   summaryHint: {
-    fontSize: 12,
-    color: theme.colors.mutedLight,
-    fontWeight: "500",
+    fontSize: 11,
+    color: theme.colors.muted,
+    fontWeight: "700",
+    letterSpacing: 1.6,
+    textTransform: "uppercase",
   },
   summaryAmount: {
-    fontSize: 34,
-    fontWeight: "700",
+    fontSize: 40,
+    fontWeight: "600",
     color: theme.colors.text,
-    lineHeight: 36,
-    marginTop: 2,
+    lineHeight: 44,
+    marginTop: 8,
     fontVariant: ["tabular-nums"],
   },
   partialBlock: {
@@ -275,13 +276,15 @@ const styles = StyleSheet.create((theme) => ({
   summaryFooterLabel: {
     fontSize: 11,
     color: theme.colors.mutedLight,
-    fontWeight: "500",
+    fontWeight: "700",
+    letterSpacing: 1,
+    textTransform: "uppercase",
   },
   summaryFooterValue: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "500",
     color: theme.colors.text,
-    marginTop: 2,
+    marginTop: 4,
   },
   paidCard: {
     backgroundColor: theme.colors.paidSurface,
@@ -328,16 +331,9 @@ const styles = StyleSheet.create((theme) => ({
     marginTop: 4,
   },
   card: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 16,
-    padding: 16,
-    borderWidth: 1,
+    paddingBottom: 22,
+    borderBottomWidth: 1,
     borderColor: theme.colors.border,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
   },
   cardLabel: {
     fontSize: 11,
@@ -352,7 +348,8 @@ const styles = StyleSheet.create((theme) => ({
   cardBody: {
     fontSize: 14,
     color: theme.colors.text,
-    marginTop: 6,
+    lineHeight: 22,
+    marginTop: 10,
   },
   timelineRow: {
     flexDirection: "row",
@@ -403,10 +400,7 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 14,
     color: theme.colors.icon,
     lineHeight: 22,
-    backgroundColor: theme.colors.message,
-    borderRadius: 12,
-    padding: 14,
-    marginTop: 12,
+    marginTop: 10,
   },
   copyBtn: {
     flexDirection: "row",

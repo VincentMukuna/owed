@@ -119,11 +119,23 @@ export function filterSearchAndSortDebts(
     result.push(debt);
   }
 
-  return sortDebts(result);
+  return filter === "all" ? sortDebtsByDueDate(result) : sortDebts(result);
 }
 
 export function sortDebts(debts: DebtCardView[]): DebtCardView[] {
   return [...debts].sort((a, b) => DEBT_SORT_ORDER[a.status] - DEBT_SORT_ORDER[b.status]);
+}
+
+export function sortDebtsByDueDate(debts: DebtCardView[]): DebtCardView[] {
+  return [...debts].sort((a, b) => {
+    const byDate = a.dueDateISO.localeCompare(b.dueDateISO);
+
+    if (byDate !== 0) {
+      return byDate;
+    }
+
+    return a.name.localeCompare(b.name);
+  });
 }
 
 /**

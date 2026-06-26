@@ -80,7 +80,7 @@ PersonCard.displayName = "PersonCard";
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    paddingVertical: 14,
+    paddingVertical: 12,
     borderColor: theme.colors.border,
     borderBottomWidth: 1,
   },
@@ -109,7 +109,7 @@ const styles = StyleSheet.create((theme) => ({
   topRow: {
     flexDirection: "row",
     justifyContent: "space-between",
-    alignItems: "flex-start",
+    alignItems: "center",
     gap: 10,
   },
   meta: {

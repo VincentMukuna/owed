@@ -37,7 +37,12 @@ export function HomeDebtSection({
       </PressableScale>
       <View style={styles.cards}>
         {preview.map((debt) => (
-          <DebtCard key={debt.id} debt={debt} onPress={() => onDebtPress(debt.id)} />
+          <DebtCard
+            key={debt.id}
+            debt={debt}
+            onPress={() => onDebtPress(debt.id)}
+            showStatusCue={false}
+          />
         ))}
       </View>
     </View>
@@ -57,6 +62,6 @@ const styles = StyleSheet.create((theme) => ({
     marginTop: 4,
   },
   cards: {
-    gap: 10,
+    gap: 0,
   },
 }));
