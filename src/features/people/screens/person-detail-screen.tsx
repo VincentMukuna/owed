@@ -301,8 +301,8 @@ const styles = StyleSheet.create((theme) => ({
     borderColor: theme.colors.border,
     shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: theme.name === "light" ? 0 : 0.05,
-    shadowRadius: theme.name === "light" ? 0 : 2,
+    shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
+    shadowRadius: theme.name === "light" ? 1.5 : 2,
     elevation: theme.name === "light" ? 0 : 1,
   },
   summaryTop: {
