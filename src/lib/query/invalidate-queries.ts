@@ -3,6 +3,10 @@ import type { QueryClient } from "@tanstack/react-query";
 import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 
+export type DebtMutationInvalidationOptions = {
+  debtId?: string;
+};
+
 export function invalidateDebtQueries(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: debtKeys.all });
 }
@@ -17,6 +21,26 @@ export function invalidatePeopleQueries(queryClient: QueryClient) {
 
 export function invalidateReminderQueries(queryClient: QueryClient) {
   return queryClient.invalidateQueries({ queryKey: reminderKeys.all });
+}
+
+/** Invalidates list caches touched by debt/payment/currency mutations. Reminder inbox is refreshed by `runReminderSync`. */
+export function invalidateAfterDebtMutation(
+  queryClient: QueryClient,
+  options: DebtMutationInvalidationOptions = {},
+) {
+  const invalidations = [
+    invalidateDebtQueries(queryClient),
+    invalidateActivityQueries(queryClient),
+    invalidatePeopleQueries(queryClient),
+  ];
+
+  if (options.debtId) {
+    invalidations.push(
+      queryClient.invalidateQueries({ queryKey: debtKeys.detail(options.debtId) }),
+    );
+  }
+
+  return Promise.all(invalidations);
 }
 
 export function invalidateHomeQueries(queryClient: QueryClient) {

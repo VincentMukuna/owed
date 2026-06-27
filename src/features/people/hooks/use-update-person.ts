@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
 import { personRepository } from "@/features/debts/repositories/person-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
+import { invalidateAfterDebtMutation } from "@/lib/query/invalidate-queries";
 
 type UpdatePersonInput = {
   id: string;
@@ -25,9 +25,7 @@ export function useUpdatePerson() {
     onSuccess: async () => {
       // A rename flows into debt cards and activity copy (both JOIN people at
       // fetch time), so refresh those alongside the people queries.
-      await queryClient.invalidateQueries({ queryKey: peopleKeys.all });
-      await queryClient.invalidateQueries({ queryKey: debtKeys.all });
-      await queryClient.invalidateQueries({ queryKey: activityKeys.all });
+      await invalidateAfterDebtMutation(queryClient);
       showToast("Changes saved.");
     },
     onError: (error) => {
