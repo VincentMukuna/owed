@@ -1,6 +1,5 @@
 import { APP_CONFIG } from "@/constants/config";
 import type { CreateDebtInput, PersonRef, RecordPaymentInput } from "@/features/debts/view-models";
-import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { getDb } from "@/lib/db/client";
 import {
   type DebtSummary,
@@ -154,6 +153,46 @@ export const debtRepository = {
     return row?.total ?? 0;
   },
 
+  async sumPaymentsInMonth(now: Date = new Date()): Promise<number> {
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+
+    const db = await getDb();
+    const row = await db.getFirstAsync<{ total: number | null }>(
+      `SELECT COALESCE(SUM(amount), 0) AS total
+       FROM payments
+       WHERE paid_at >= ? AND paid_at < ?`,
+      [monthStart.toISOString(), nextMonthStart.toISOString()],
+    );
+
+    return row?.total ?? 0;
+  },
+
+  async convertAllAmountsToCurrency(input: { rate: number; toCurrency: string }): Promise<void> {
+    const db = await getDb();
+    const { rate, toCurrency } = input;
+
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(
+        `UPDATE debts
+         SET original_amount = CAST(ROUND(original_amount * ?) AS INTEGER),
+             currency = ?`,
+        [rate, toCurrency],
+      );
+      await db.runAsync(
+        `UPDATE payments
+         SET amount = CAST(ROUND(amount * ?) AS INTEGER)`,
+        [rate],
+      );
+      await db.runAsync(
+        `UPDATE activity_events
+         SET amount = CAST(ROUND(amount * ?) AS INTEGER)
+         WHERE amount IS NOT NULL`,
+        [rate],
+      );
+    });
+  },
+
   async listSummaries(): Promise<DebtSummary[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<DebtSummaryRow>(
@@ -198,8 +237,7 @@ export const debtRepository = {
     const db = await getDb();
     const now = new Date().toISOString();
     const id = createId();
-    const currency =
-      input.currency ?? useSettingsStore.getState().defaultCurrency ?? APP_CONFIG.defaultCurrency;
+    const currency = input.currency;
     const reminderTime = input.reminderEnabled
       ? (input.reminderTime ?? APP_CONFIG.defaultReminderTime)
       : null;

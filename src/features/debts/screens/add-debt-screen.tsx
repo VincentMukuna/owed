@@ -117,6 +117,7 @@ export function AddDebtScreen() {
       dueDate: dueDateIso,
       reason: reason.trim() || undefined,
       reminderEnabled: reminder,
+      currency: defaultCurrency,
     };
 
     addDebt.mutate(payload, {
@@ -129,7 +130,7 @@ export function AddDebtScreen() {
         exitAddDebt();
       },
     });
-  }, [addDebt, canSave, dueDateIso, fromOnboarding, person, parsedAmount, reason, reminder]);
+  }, [addDebt, canSave, defaultCurrency, dueDateIso, fromOnboarding, person, parsedAmount, reason, reminder]);
 
   useLayoutEffect(() => {
     navigation.setOptions({

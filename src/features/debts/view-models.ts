@@ -44,7 +44,7 @@ export type CreateDebtInput = {
   reason?: string;
   reminderEnabled: boolean;
   reminderTime?: string;
-  currency?: string;
+  currency: string;
 };
 
 export type PersonPickerView = {
