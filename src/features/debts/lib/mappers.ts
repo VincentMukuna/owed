@@ -1,9 +1,9 @@
-import { computeDebtStatus } from "@/features/debts/lib/compute-debt-status";
 import {
   formatAddedDate,
   formatDueDate,
   formatPaymentDate,
 } from "@/features/debts/lib/format-dates";
+import { computeDebtStatus } from "@/features/debts/lib/status-engine";
 import type {
   CardDebtStatus,
   DebtCardView,

@@ -3,16 +3,9 @@ import { View } from "react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import type { CardDebtStatus } from "@/features/debts/view-models";
+import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
 
 import { Text } from "./text";
-
-const STATUS_LABELS: Record<CardDebtStatus, string> = {
-  active: "Active",
-  "due-soon": "Due soon",
-  overdue: "Overdue",
-  partial: "Partial",
-  paid: "Paid",
-};
 
 type BadgeProps = {
   status: CardDebtStatus;
@@ -25,7 +18,7 @@ export function Badge({ status }: BadgeProps) {
   return (
     <View style={[styles.badge, { backgroundColor: colors.bg }]}>
       <View style={[styles.dot, { backgroundColor: colors.dot }]} />
-      <Text style={[styles.label, { color: colors.text }]}>{STATUS_LABELS[status]}</Text>
+      <Text style={[styles.label, { color: colors.text }]}>{DEBT_STATUS_LABELS[status]}</Text>
     </View>
   );
 }

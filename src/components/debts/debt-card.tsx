@@ -7,7 +7,8 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
 import { Text } from "@/components/ui/text";
-import type { CardDebtStatus, DebtCardView } from "@/features/debts/view-models";
+import type { DebtCardView } from "@/features/debts/view-models";
+import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 type DebtCardProps = {
@@ -15,14 +16,6 @@ type DebtCardProps = {
   onPress: () => void;
   showStatusCue?: boolean;
   style?: StyleProp<ViewStyle>;
-};
-
-const STATUS_LABELS: Record<CardDebtStatus, string> = {
-  active: "Active",
-  "due-soon": "Due soon",
-  overdue: "Overdue",
-  partial: "Partial",
-  paid: "Paid",
 };
 
 export const DebtCard = memo(({ debt, onPress, showStatusCue = true, style }: DebtCardProps) => {
@@ -59,7 +52,7 @@ export const DebtCard = memo(({ debt, onPress, showStatusCue = true, style }: De
                 <View style={styles.statusRow}>
                   <View style={[styles.statusDot, { backgroundColor: statusColors.dot }]} />
                   <Text style={[styles.statusText, { color: statusColors.text }]} numberOfLines={1}>
-                    {STATUS_LABELS[debt.status]}
+                    {DEBT_STATUS_LABELS[debt.status]}
                   </Text>
                 </View>
               ) : null}

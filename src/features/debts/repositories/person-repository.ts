@@ -1,6 +1,5 @@
-import { APP_CONFIG } from "@/constants/config";
-import { toISODate } from "@/features/debts/lib/format-dates";
 import type { ActivityEventWithRelations } from "@/features/debts/repositories/activity-repository";
+import { statusDateParams } from "@/features/debts/lib/status-engine";
 import { getDb } from "@/lib/db/client";
 import { type DebtSummary, type PersonSummary, rowToPerson } from "@/lib/db/mappers";
 import type { PeopleRow } from "@/lib/db/row-types";
@@ -84,15 +83,6 @@ function rowToPersonSummary(row: PersonSummaryRow): PersonSummary {
     totalDebtCount: row.total_debt_count,
     lastActivityAt: row.last_activity_at,
   };
-}
-
-function statusDateParams(): [string, string, string] {
-  const now = new Date();
-  const today = toISODate(now);
-  const soon = toISODate(
-    new Date(now.getFullYear(), now.getMonth(), now.getDate() + APP_CONFIG.dueSoonDays),
-  );
-  return [today, today, soon];
 }
 
 export const personRepository = {
