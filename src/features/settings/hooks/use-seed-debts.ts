@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useUiStore } from "@/features/debts/store/ui-store";
-import { invalidateAfterDebtMutation } from "@/lib/query/invalidate-queries";
+import { afterDebtDomainChange } from "@/lib/mutations/after-debt-domain-change";
 
 import { seedDebts } from "../dev/seed-debts";
 
@@ -12,7 +12,7 @@ export function useSeedDebts() {
   return useMutation({
     mutationFn: () => seedDebts(),
     onSuccess: async (result) => {
-      await invalidateAfterDebtMutation(queryClient);
+      await afterDebtDomainChange(queryClient, { syncReminders: false });
       showToast(
         `Seeded ${result.people} people, ${result.debts} debts, ${result.activities} activities.`,
       );

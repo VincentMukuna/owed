@@ -1,9 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useUiStore } from "@/features/debts/store/ui-store";
-import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 import { formatReminderTimeDisplay } from "@/features/settings/lib/format-reminder-time";
-import { invalidateAfterDebtMutation } from "@/lib/query/invalidate-queries";
+import { afterDebtDomainChange } from "@/lib/mutations/after-debt-domain-change";
 
 import { seedReminderTestDebts } from "../dev/seed-reminder-test";
 
@@ -14,8 +13,7 @@ export function useSeedReminderTest() {
   return useMutation({
     mutationFn: () => seedReminderTestDebts(),
     onSuccess: async (result) => {
-      await runReminderSync();
-      await invalidateAfterDebtMutation(queryClient);
+      await afterDebtDomainChange(queryClient);
       const time = formatReminderTimeDisplay(result.reminderTime);
       showToast(
         `Seeded ${result.dueDebts} due + ${result.overdueDebts} overdue debts for ${time}.`,

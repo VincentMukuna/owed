@@ -1,8 +1,8 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
-import { peopleKeys } from "@/features/debts/hooks/query-keys";
 import { personRepository } from "@/features/debts/repositories/person-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
+import { afterPersonListChange } from "@/lib/mutations/after-person-list-change";
 import type { Person } from "@/types";
 
 type AddPersonInput = {
@@ -22,8 +22,7 @@ export function useAddPerson() {
         notes: input.notes,
       }),
     onSuccess: async () => {
-      // A debt-less person only affects the people lists/picker.
-      await queryClient.invalidateQueries({ queryKey: peopleKeys.all });
+      await afterPersonListChange(queryClient);
       showToast("Person added.");
     },
     onError: (error) => {

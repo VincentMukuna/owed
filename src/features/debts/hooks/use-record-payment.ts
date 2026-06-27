@@ -3,8 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
 import type { RecordPaymentInput } from "@/features/debts/view-models";
-import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
-import { invalidateAfterDebtMutation } from "@/lib/query/invalidate-queries";
+import { afterDebtDomainChange } from "@/lib/mutations/after-debt-domain-change";
 
 type RecordPaymentVariables = {
   debtId: string;
@@ -20,8 +19,7 @@ export function useRecordPayment() {
     mutationFn: ({ debtId, input }: RecordPaymentVariables) =>
       debtRepository.recordPayment(debtId, input),
     onSuccess: async (_debt, variables) => {
-      await runReminderSync();
-      await invalidateAfterDebtMutation(queryClient, { debtId: variables.debtId });
+      await afterDebtDomainChange(queryClient, { debtId: variables.debtId });
 
       const isFullPayment = variables.input.amount >= variables.remainingBeforePayment;
       showToast(isFullPayment ? "Debt marked as paid." : "Payment recorded.");

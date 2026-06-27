@@ -3,10 +3,9 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
 import { saveDefaultCurrency } from "@/features/reminders/lib/reminder-storage";
-import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { convertAllAmountsToCurrency } from "@/features/settings/lib/convert-currency";
-import { invalidateAfterDebtMutation } from "@/lib/query/invalidate-queries";
+import { afterDebtDomainChange } from "@/lib/mutations/after-debt-domain-change";
 
 type ChangeCurrencyInput = {
   fromCurrency: string;
@@ -43,8 +42,7 @@ export function useChangeCurrency() {
         return;
       }
 
-      await runReminderSync();
-      await invalidateAfterDebtMutation(queryClient);
+      await afterDebtDomainChange(queryClient);
       showToast(`Switched to ${toCurrency}`);
     },
     onError: (error) => {

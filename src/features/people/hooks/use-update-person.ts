@@ -2,7 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { personRepository } from "@/features/debts/repositories/person-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
-import { invalidateAfterDebtMutation } from "@/lib/query/invalidate-queries";
+import { afterDebtDomainChange } from "@/lib/mutations/after-debt-domain-change";
 
 type UpdatePersonInput = {
   id: string;
@@ -23,9 +23,7 @@ export function useUpdatePerson() {
         notes: input.notes,
       }),
     onSuccess: async () => {
-      // A rename flows into debt cards and activity copy (both JOIN people at
-      // fetch time), so refresh those alongside the people queries.
-      await invalidateAfterDebtMutation(queryClient);
+      await afterDebtDomainChange(queryClient);
       showToast("Changes saved.");
     },
     onError: (error) => {

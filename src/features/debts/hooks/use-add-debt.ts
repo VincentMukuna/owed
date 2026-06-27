@@ -3,8 +3,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
 import type { CreateDebtInput } from "@/features/debts/view-models";
-import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
-import { invalidateAfterDebtMutation } from "@/lib/query/invalidate-queries";
+import { afterDebtDomainChange } from "@/lib/mutations/after-debt-domain-change";
 
 export function useAddDebt() {
   const queryClient = useQueryClient();
@@ -13,8 +12,7 @@ export function useAddDebt() {
   return useMutation({
     mutationFn: (input: CreateDebtInput) => debtRepository.create(input),
     onSuccess: async () => {
-      await runReminderSync();
-      await invalidateAfterDebtMutation(queryClient);
+      await afterDebtDomainChange(queryClient);
       showToast("Debt saved.");
     },
     onError: (error) => {
