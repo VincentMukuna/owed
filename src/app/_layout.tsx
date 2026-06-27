@@ -11,7 +11,11 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { UnistylesRuntime, useUnistyles } from "react-native-unistyles";
 
 import { Toast } from "@/components/shared/toast";
-import { fetchActivityViews } from "@/features/activity/lib/fetch-activities";
+import {
+  HOME_RECENT_ACTIVITY_LIMIT,
+  fetchActivityViews,
+  fetchRecentActivityViews,
+} from "@/features/activity/lib/fetch-activities";
 import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
 import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
 import { fetchPeoplePickerViews } from "@/features/debts/lib/fetch-people";
@@ -46,6 +50,11 @@ export default function RootLayout() {
       queryClient.prefetchQuery({
         queryKey: activityKeys.all,
         queryFn: fetchActivityViews,
+        staleTime: Number.POSITIVE_INFINITY,
+      }),
+      queryClient.prefetchQuery({
+        queryKey: activityKeys.recent(HOME_RECENT_ACTIVITY_LIMIT),
+        queryFn: () => fetchRecentActivityViews(HOME_RECENT_ACTIVITY_LIMIT),
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({
