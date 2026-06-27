@@ -228,39 +228,41 @@ export const debtRepository = {
       updated_at: person.updatedAt,
     };
 
-    await db.runAsync(
-      `INSERT INTO debts (
-        id,
-        person_id,
-        original_amount,
-        currency,
-        reason,
-        due_date,
-        lent_date,
-        reminder_enabled,
-        reminder_time,
-        archived_at,
-        created_at,
-        updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?, NULL, ?, ?)`,
-      debtRow.id,
-      debtRow.person_id,
-      debtRow.original_amount,
-      debtRow.currency,
-      debtRow.reason,
-      debtRow.due_date,
-      debtRow.reminder_enabled,
-      debtRow.reminder_time,
-      debtRow.created_at,
-      debtRow.updated_at,
-    );
+    await db.withTransactionAsync(async () => {
+      await db.runAsync(
+        `INSERT INTO debts (
+          id,
+          person_id,
+          original_amount,
+          currency,
+          reason,
+          due_date,
+          lent_date,
+          reminder_enabled,
+          reminder_time,
+          archived_at,
+          created_at,
+          updated_at
+        ) VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?, NULL, ?, ?)`,
+        debtRow.id,
+        debtRow.person_id,
+        debtRow.original_amount,
+        debtRow.currency,
+        debtRow.reason,
+        debtRow.due_date,
+        debtRow.reminder_enabled,
+        debtRow.reminder_time,
+        debtRow.created_at,
+        debtRow.updated_at,
+      );
 
-    await activityRepository.create({
-      type: "debt_created",
-      debtId: id,
-      personId: person.id,
-      amount: input.originalAmount,
-      occurredAt: now,
+      await activityRepository.createWithDb(db, {
+        type: "debt_created",
+        debtId: id,
+        personId: person.id,
+        amount: input.originalAmount,
+        occurredAt: now,
+      });
     });
 
     return toDebtWithRelations(debtRow, personRow, []);
@@ -272,28 +274,44 @@ export const debtRepository = {
     const paymentId = createId();
     const paidAt = input.paidAt ?? now;
 
-    await db.runAsync(
-      `INSERT INTO payments (id, debt_id, amount, paid_at, note, created_at)
-       VALUES (?, ?, ?, ?, ?, ?)`,
-      [paymentId, debtId, input.amount, paidAt, input.note?.trim() || null, now],
-    );
+    await db.withTransactionAsync(async () => {
+      const debtRow = await db.getFirstAsync<{ person_id: string; original_amount: number }>(
+        `SELECT person_id, original_amount FROM debts WHERE id = ?`,
+        [debtId],
+      );
+
+      if (!debtRow) {
+        throw new Error(`Debt not found: ${debtId}`);
+      }
+
+      await db.runAsync(
+        `INSERT INTO payments (id, debt_id, amount, paid_at, note, created_at)
+         VALUES (?, ?, ?, ?, ?, ?)`,
+        [paymentId, debtId, input.amount, paidAt, input.note?.trim() || null, now],
+      );
+
+      const paidTotalRow = await db.getFirstAsync<{ paid_total: number }>(
+        `SELECT COALESCE(SUM(amount), 0) AS paid_total FROM payments WHERE debt_id = ?`,
+        [debtId],
+      );
+      const remaining = debtRow.original_amount - (paidTotalRow?.paid_total ?? 0);
+      const eventType = remaining <= 0 ? "debt_paid" : "payment_recorded";
+
+      await activityRepository.createWithDb(db, {
+        type: eventType,
+        debtId,
+        personId: debtRow.person_id,
+        paymentId,
+        amount: input.amount,
+        occurredAt: paidAt,
+      });
+    });
 
     const updated = await this.getById(debtId);
 
     if (!updated) {
       throw new Error("Debt not found after recording payment");
     }
-
-    const eventType = updated.remainingAmount <= 0 ? "debt_paid" : "payment_recorded";
-
-    await activityRepository.create({
-      type: eventType,
-      debtId,
-      personId: updated.person.id,
-      paymentId,
-      amount: input.amount,
-      occurredAt: paidAt,
-    });
 
     return updated;
   },

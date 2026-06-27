@@ -1,3 +1,5 @@
+import { type SQLiteDatabase } from "expo-sqlite";
+
 import { getDb } from "@/lib/db/client";
 import type { ActivityEventsRow } from "@/lib/db/row-types";
 import { createId } from "@/lib/id";
@@ -62,39 +64,60 @@ const ACTIVITY_SELECT = `
   LEFT JOIN payments pay ON pay.id = ae.payment_id
 `;
 
+async function insertActivityEvent(
+  db: SQLiteDatabase,
+  input: CreateActivityEventInput,
+): Promise<void> {
+  const now = new Date().toISOString();
+  const id = createId();
+  const occurredAt = input.occurredAt ?? now;
+
+  await db.runAsync(
+    `INSERT INTO activity_events (
+      id,
+      type,
+      debt_id,
+      payment_id,
+      person_id,
+      amount,
+      occurred_at,
+      created_at
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+    id,
+    input.type,
+    input.debtId,
+    input.paymentId ?? null,
+    input.personId,
+    input.amount ?? null,
+    occurredAt,
+    now,
+  );
+}
+
 export const activityRepository = {
   async create(input: CreateActivityEventInput): Promise<void> {
     const db = await getDb();
-    const now = new Date().toISOString();
-    const id = createId();
-    const occurredAt = input.occurredAt ?? now;
+    await insertActivityEvent(db, input);
+  },
 
-    await db.runAsync(
-      `INSERT INTO activity_events (
-        id,
-        type,
-        debt_id,
-        payment_id,
-        person_id,
-        amount,
-        occurred_at,
-        created_at
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-      id,
-      input.type,
-      input.debtId,
-      input.paymentId ?? null,
-      input.personId,
-      input.amount ?? null,
-      occurredAt,
-      now,
-    );
+  async createWithDb(db: SQLiteDatabase, input: CreateActivityEventInput): Promise<void> {
+    await insertActivityEvent(db, input);
   },
 
   async list(): Promise<ActivityEventWithRelations[]> {
     const db = await getDb();
     const rows = await db.getAllAsync<ActivityEventListRow>(
       `${ACTIVITY_SELECT} ORDER BY ae.occurred_at DESC`,
+    );
+
+    return rows.map(rowToActivityEventWithRelations);
+  },
+
+  async listRecent(limit: number): Promise<ActivityEventWithRelations[]> {
+    const db = await getDb();
+    const rows = await db.getAllAsync<ActivityEventListRow>(
+      `${ACTIVITY_SELECT} ORDER BY ae.occurred_at DESC LIMIT ?`,
+      [limit],
     );
 
     return rows.map(rowToActivityEventWithRelations);
