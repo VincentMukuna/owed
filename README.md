@@ -1,6 +1,6 @@
 # Owed
 
-A mobile-first personal credit tracker for informal debts — who owes you, how much, when they promised to pay, and what it was for.
+A mobile-first personal credit tracker for informal debts (who owes you, how much, when they promised to pay, and what it was for).
 
 Owed is a private memory and follow-up tool, not a lending platform. It helps you stay clear on money owed without digging through chats or relying on memory.
 
