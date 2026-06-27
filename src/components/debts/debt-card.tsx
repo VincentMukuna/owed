@@ -7,8 +7,8 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
 import { Text } from "@/components/ui/text";
-import type { DebtCardView } from "@/features/debts/view-models";
 import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
+import type { DebtCardView } from "@/features/debts/view-models";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 type DebtCardProps = {

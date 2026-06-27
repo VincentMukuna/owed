@@ -2,8 +2,8 @@ import { View } from "react-native";
 
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
-import type { CardDebtStatus } from "@/features/debts/view-models";
 import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
+import type { CardDebtStatus } from "@/features/debts/view-models";
 
 import { Text } from "./text";
 

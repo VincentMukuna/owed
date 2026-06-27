@@ -2,8 +2,8 @@ import type { QueryClient } from "@tanstack/react-query";
 
 import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 import {
-  invalidateAfterDebtMutation,
   type DebtMutationInvalidationOptions,
+  invalidateAfterDebtMutation,
 } from "@/lib/query/invalidate-queries";
 
 export type AfterDebtDomainChangeOptions = DebtMutationInvalidationOptions & {
