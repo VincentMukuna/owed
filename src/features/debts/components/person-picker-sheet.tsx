@@ -14,10 +14,11 @@ import { Platform, Text, type TextInput, View } from "react-native";
 import {
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
-  BottomSheetFlashList,
   BottomSheetModal,
   BottomSheetTextInput,
+  useBottomSheetScrollableCreator,
 } from "@gorhom/bottom-sheet";
+import { FlashList } from "@shopify/flash-list";
 import { Check, Plus, Search } from "lucide-react-native";
 import { FullWindowOverlay } from "react-native-screens";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
@@ -51,6 +52,7 @@ export const PersonPickerSheet = forwardRef<PersonPickerSheetRef, PersonPickerSh
     const inputRef = useRef<TextInput>(null);
     const [query, setQuery] = useState("");
     const snapPoints = useMemo(() => ["90%"], []);
+    const renderScrollComponent = useBottomSheetScrollableCreator();
 
     useImperativeHandle(
       ref,
@@ -235,14 +237,15 @@ export const PersonPickerSheet = forwardRef<PersonPickerSheetRef, PersonPickerSh
             value={query}
           />
         </View>
-        <BottomSheetFlashList
+        <FlashList
           data={filtered}
-          keyExtractor={keyExtractor as never}
-          renderItem={renderItem as never}
+          keyExtractor={keyExtractor}
+          renderItem={renderItem}
           ListHeaderComponent={listHeader}
           ListEmptyComponent={listEmpty}
           contentContainerStyle={styles.listContent}
           keyboardShouldPersistTaps="handled"
+          renderScrollComponent={renderScrollComponent}
         />
       </BottomSheetModal>
     );
