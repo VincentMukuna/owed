@@ -11,21 +11,19 @@ import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { UnistylesRuntime, useUnistyles } from "react-native-unistyles";
 
 import { Toast } from "@/components/shared/toast";
-import {
-  HOME_RECENT_ACTIVITY_LIMIT,
-  fetchActivityViews,
-  fetchRecentActivityViews,
-} from "@/features/activity/lib/fetch-activities";
+import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
+import { loadActivities } from "@/features/activity/hooks/use-activities";
+import { loadRecentActivities } from "@/features/activity/hooks/use-recent-activities";
 import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
-import { fetchDebtCardViews } from "@/features/debts/lib/fetch-debts";
-import { fetchPeoplePickerViews } from "@/features/debts/lib/fetch-people";
+import { loadDebts } from "@/features/debts/hooks/use-debts";
+import { loadPeoplePicker } from "@/features/debts/hooks/use-people";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
-import { fetchPeopleListViews } from "@/features/people/lib/fetch-people-list";
+import { loadPeopleList } from "@/features/people/hooks/use-people-list";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
-import { fetchUnreadReminderCount } from "@/features/reminders/lib/fetch-reminders";
 import { registerNotificationHandlers } from "@/features/reminders/lib/register-notification-handlers";
 import { hydratePersistedSettings } from "@/features/reminders/lib/reminder-storage";
 import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
+import { reminderRepository } from "@/features/reminders/repositories/reminder-repository";
 import { bootstrapCurrency } from "@/features/settings/lib/bootstrap-currency";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
@@ -44,32 +42,32 @@ export default function RootLayout() {
       hydrateOnboardingState(),
       queryClient.prefetchQuery({
         queryKey: debtKeys.all,
-        queryFn: fetchDebtCardViews,
+        queryFn: loadDebts,
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({
         queryKey: activityKeys.all,
-        queryFn: fetchActivityViews,
+        queryFn: loadActivities,
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({
         queryKey: activityKeys.recent(HOME_RECENT_ACTIVITY_LIMIT),
-        queryFn: () => fetchRecentActivityViews(HOME_RECENT_ACTIVITY_LIMIT),
+        queryFn: () => loadRecentActivities(HOME_RECENT_ACTIVITY_LIMIT),
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({
         queryKey: peopleKeys.all,
-        queryFn: fetchPeoplePickerViews,
+        queryFn: loadPeoplePicker,
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({
         queryKey: peopleKeys.list,
-        queryFn: fetchPeopleListViews,
+        queryFn: loadPeopleList,
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({
         queryKey: reminderKeys.unreadCount(),
-        queryFn: fetchUnreadReminderCount,
+        queryFn: () => reminderRepository.countUnread(),
         staleTime: Number.POSITIVE_INFINITY,
       }),
     ]).then(() => {

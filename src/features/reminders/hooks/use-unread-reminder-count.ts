@@ -1,13 +1,13 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchUnreadReminderCount } from "@/features/reminders/lib/fetch-reminders";
+import { reminderRepository } from "@/features/reminders/repositories/reminder-repository";
 
 import { reminderKeys } from "./query-keys";
 
 export function useUnreadReminderCount() {
   return useQuery({
     queryKey: reminderKeys.unreadCount(),
-    queryFn: fetchUnreadReminderCount,
+    queryFn: () => reminderRepository.countUnread(),
     staleTime: Number.POSITIVE_INFINITY,
   });
 }

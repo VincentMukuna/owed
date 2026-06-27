@@ -1,13 +1,20 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { fetchActivityViews } from "@/features/activity/lib/fetch-activities";
+import { activityKeys } from "@/features/debts/hooks/query-keys";
+import { buildActivityView } from "@/features/debts/lib/build-activity-view";
+import { activityRepository } from "@/features/debts/repositories/activity-repository";
 
-import { activityKeys } from "../../debts/hooks/query-keys";
+export async function loadActivities() {
+  const now = new Date();
+  const events = await activityRepository.list();
+
+  return events.map((event) => buildActivityView(event, now));
+}
 
 export function useActivities() {
   return useQuery({
     queryKey: activityKeys.all,
-    queryFn: fetchActivityViews,
+    queryFn: loadActivities,
     staleTime: Number.POSITIVE_INFINITY,
   });
 }

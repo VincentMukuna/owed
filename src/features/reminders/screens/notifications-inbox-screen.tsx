@@ -13,7 +13,7 @@ import { NotificationsScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { NotificationRow } from "@/features/reminders/components/notification-row";
 import { useMarkInboxRead } from "@/features/reminders/hooks/use-mark-inbox-read";
 import { useRemindersInbox } from "@/features/reminders/hooks/use-reminders-inbox";
-import type { ReminderInboxView } from "@/features/reminders/lib/fetch-reminders";
+import type { ReminderInboxView } from "@/features/reminders/view-models";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { invalidateReminderQueries } from "@/lib/query/invalidate-queries";
 

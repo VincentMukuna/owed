@@ -13,10 +13,10 @@ Read `docs/performance.md` before changing list screens, repositories, query hoo
 - **Lists:** `FlashList` (via `DebtList` / `ActivityList`) — never `ScrollView` + `.map()` for debts or activity feeds.
 - **DB lists:** `debtRepository.listSummaries()` — never load all payment rows for list views. Use `getById()` only for single-debt detail.
 - **Remaining balance:** aggregate with SQL `SUM(amount)`, not JS over `payments[]`.
-- **Mappers:** do not map `payments[]` in `toDebtCardView` for list paths; one shared `now` per batch in `fetch-*.ts`.
-- **React Query:** `staleTime: Infinity` on local SQLite queries; shared `queryFn` in `fetch-debts.ts` / `fetch-activities.ts`; invalidate only in mutations.
+- **Mappers:** do not map `payments[]` in `toDebtCardView` for list paths; one shared `now` per batch in hook `load*` queryFns.
+- **React Query:** `staleTime: Infinity` on local SQLite queries; hooks read repositories and map to views; invalidate only in mutations.
 - **Derivations:** single-pass helpers in `debt-list-utils.ts` + `useMemo` — no chained `.filter()` in screen render.
-- **New root-tab queries:** prefetch in `src/app/_layout.tsx` with the same `queryFn` as the hook.
+- **New root-tab queries:** prefetch in `src/app/_layout.tsx` with the same exported `load*` as the hook.
 
 ## Before merging list/data changes
 

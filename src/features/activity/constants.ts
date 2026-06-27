@@ -1,0 +1,1 @@
+export const HOME_RECENT_ACTIVITY_LIMIT = 5;

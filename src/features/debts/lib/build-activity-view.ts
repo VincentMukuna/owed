@@ -1,9 +1,8 @@
 import { formatRelativeTime } from "@/features/debts/lib/format-dates";
+import type { ActivityEventWithRelations } from "@/features/debts/repositories/activity-repository";
 import type { ActivityView, ActivityViewType } from "@/features/debts/view-models";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 import type { ActivityEventType } from "@/types";
-
-import type { ActivityEventWithRelations } from "../repositories/activity-repository";
 
 function toActivityViewType(type: ActivityEventType): ActivityViewType {
   switch (type) {

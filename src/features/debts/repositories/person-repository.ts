@@ -1,11 +1,21 @@
 import { APP_CONFIG } from "@/constants/config";
+import { toISODate } from "@/features/debts/lib/format-dates";
+import type { ActivityEventWithRelations } from "@/features/debts/repositories/activity-repository";
 import { getDb } from "@/lib/db/client";
-import { type PersonSummary, rowToPerson } from "@/lib/db/mappers";
+import { type DebtSummary, type PersonSummary, rowToPerson } from "@/lib/db/mappers";
 import type { PeopleRow } from "@/lib/db/row-types";
 import { createId } from "@/lib/id";
 import type { Person } from "@/types";
 
-import { toISODate } from "../lib/format-dates";
+import { activityRepository } from "./activity-repository";
+import { debtRepository } from "./debt-repository";
+
+export type PersonDetailData = {
+  person: Person;
+  summary: PersonSummary;
+  debts: DebtSummary[];
+  events: ActivityEventWithRelations[];
+};
 
 type PersonSummaryRow = {
   id: string;
@@ -99,6 +109,21 @@ export const personRepository = {
     );
 
     return rows.map(rowToPersonSummary);
+  },
+
+  async getDetailData(personId: string): Promise<PersonDetailData | undefined> {
+    const [person, summary, debts, events] = await Promise.all([
+      this.getById(personId),
+      this.getSummary(personId),
+      debtRepository.listSummariesForPerson(personId),
+      activityRepository.listForPerson(personId),
+    ]);
+
+    if (!person || !summary) {
+      return undefined;
+    }
+
+    return { person, summary, debts, events };
   },
 
   /** Single person's aggregates, computed with the same SQL as the list. */

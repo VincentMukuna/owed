@@ -1,4 +1,5 @@
 import { APP_CONFIG } from "@/constants/config";
+import type { CreateDebtInput, PersonRef, RecordPaymentInput } from "@/features/debts/view-models";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { getDb } from "@/lib/db/client";
 import {
@@ -11,7 +12,6 @@ import type { DebtsRow, PaymentsRow, PeopleRow } from "@/lib/db/row-types";
 import { createId } from "@/lib/id";
 import type { Person } from "@/types";
 
-import type { CreateDebtInput, PersonRef, RecordPaymentInput } from "../view-models";
 import { activityRepository } from "./activity-repository";
 import { personRepository } from "./person-repository";
 

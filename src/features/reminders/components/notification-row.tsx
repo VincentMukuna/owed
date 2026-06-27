@@ -6,7 +6,7 @@ import { Bell } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
-import type { ReminderInboxView } from "@/features/reminders/lib/fetch-reminders";
+import type { ReminderInboxView } from "@/features/reminders/view-models";
 
 type NotificationRowProps = {
   item: ReminderInboxView;

@@ -34,19 +34,13 @@ Owed is a local SQLite app that should stay responsive over months/years of use.
 ┌──────────────────────────▼──────────────────────────────────┐
 │  React Query hooks (useDebts, useActivities, useDebt)        │
 │  • staleTime: Infinity for local SQLite                      │
-│  • queryFn → fetch-* helpers (shared with prefetch)          │
+│  • queryFn: repository read → map to view (shared w/ prefetch) │
 │  • invalidateQueries only in mutations                       │
 └──────────────────────────┬──────────────────────────────────┘
                            │
 ┌──────────────────────────▼──────────────────────────────────┐
-│  fetch-debts.ts / fetch-activities.ts                          │
-│  • One shared `now` Date per batch map                         │
-└──────────────────────────┬────────────────────────────────────┘
-                           │
-┌──────────────────────────▼──────────────────────────────────┐
 │  Repositories                                                  │
-│  • listSummaries() → DebtSummary (no payments)                │
-│  • getById()     → DebtWithRelations (full payments)           │
+│  • listSummaries() / getById() — domain shapes only            │
 └──────────────────────────┬────────────────────────────────────┘
                            │
 ┌──────────────────────────▼──────────────────────────────────┐
@@ -89,7 +83,7 @@ LEFT JOIN (
 | Guideline | Detail |
 |-----------|--------|
 | **Skip payment mapping on lists** | `toDebtCardView(debtSummary)` leaves `payments` empty. Map payments only in detail views. |
-| **One `now` per batch** | `fetchDebtCardViews` / `fetchActivityViews` create a single `Date` and pass it to all mappers in the batch. |
+| **One `now` per batch** | Hook `queryFn`s create a single `Date` and pass it to all mappers in the batch. |
 | **Formatted strings at boundary** | Store ISO in DB; use `formatDueDate`, `formatRelativeTime`, etc. at map-to-view time only. |
 
 ---
@@ -99,7 +93,7 @@ LEFT JOIN (
 | Guideline | Detail |
 |-----------|--------|
 | **`staleTime: Infinity`** | Local SQLite data is authoritative until a mutation changes it. Set on `useDebts`, `useActivities`, `useDebt`, and matching `prefetchQuery` calls. |
-| **Shared `queryFn`** | Export fetch logic from `fetch-debts.ts` / `fetch-activities.ts`. Hooks and `_layout.tsx` prefetch must use the **same** function. |
+| **Shared `queryFn`** | Export `load*` functions from hooks. `_layout.tsx` prefetch must use the **same** function as the hook. |
 | **Invalidate on mutation only** | Mutations (`useAddDebt`, `useRecordPayment`, seed hook, etc.) call `invalidateQueries`. Do not lower `staleTime` to refresh lists. |
 | **Prefetch new tab queries** | If a new root tab loads a large query, add it to the `_layout.tsx` init `Promise.all`. |
 
@@ -133,10 +127,9 @@ LEFT JOIN (
 
 | Path | Role |
 |------|------|
-| `src/features/debts/repositories/debt-repository.ts` | `listSummaries()`, `getById()`, `DEBT_SUMMARY_SELECT` |
+| `src/features/debts/repositories/debt-repository.ts` | `listSummaries()`, `getById()` |
+| `src/features/debts/hooks/use-debts.ts` | `loadDebts` — shared queryFn + view mapping |
 | `src/lib/db/mappers.ts` | `DebtSummary` vs `DebtWithRelations` |
-| `src/features/debts/lib/fetch-debts.ts` | Shared debts queryFn |
-| `src/features/debts/lib/fetch-activities.ts` | Shared activities queryFn |
 | `src/features/debts/lib/debt-list-utils.ts` | `bucketHomeDebts`, `filterDebts`, `computeDebtTabCounts` |
 | `src/features/debts/lib/mappers.ts` | `toDebtCardView`, `toDebtDetailView` |
 | `src/components/debts/debt-list.tsx` | Virtualized debt list |
@@ -147,14 +140,13 @@ LEFT JOIN (
 
 ## 8. Adding a new list screen
 
-1. **Repository** — Use a summary or aggregate query unless full relations are required.
-2. **fetch-*.ts** — Add a shared `queryFn` with batch `now` if mapping dates.
-3. **Hook** — `useQuery` with `staleTime: Infinity` and exported `queryKeys`.
-4. **UI** — `FlashList` (or reuse `DebtList` / `ActivityList`).
-5. **Derivations** — Single-pass utils + `useMemo`; no filter chains in JSX.
-6. **Mutations** — `invalidateQueries` for the new key.
-7. **Launch** — Prefetch in `_layout.tsx` if the screen is on a root tab or critical path.
-8. **Verify** — Seed sample data; scroll and tab-switch under load.
+1. **Repository** — Summary or aggregate query returning domain shapes.
+2. **Hook** — `load*` queryFn: read repository, map to view with batch `now`; `useQuery` with `staleTime: Infinity`.
+3. **UI** — `FlashList` (or reuse `DebtList` / `ActivityList`).
+4. **Derivations** — Single-pass utils + `useMemo`; no filter chains in JSX.
+5. **Mutations** — `invalidateQueries` for the new key.
+6. **Launch** — Prefetch in `_layout.tsx` if the screen is on a root tab or critical path.
+7. **Verify** — Seed sample data; scroll and tab-switch under load.
 
 ---
 

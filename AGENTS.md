@@ -12,7 +12,7 @@ Owed must stay fast with hundreds of debts and activity events. Follow the patte
 
 - List debts → `listSummaries()` + `DebtSummary` (no payments). Detail → `getById()` only.
 - Long lists → `FlashList` (`DebtList`, `ActivityList`). Not `ScrollView` + `.map()`.
-- Queries → `staleTime: Infinity`, shared `fetch-*.ts` queryFns, prefetch in `_layout.tsx`, invalidate on mutation only.
+- Queries → `staleTime: Infinity`, hooks read repositories and map to views, prefetch imports shared `load*` from hooks, invalidate on mutation only.
 - Screen derivations → `debt-list-utils.ts` single-pass + `useMemo`.
 
 Verify with Settings → Developer → Seed sample data (dev builds) before merging list/data work.
