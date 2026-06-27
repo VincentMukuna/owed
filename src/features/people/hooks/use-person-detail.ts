@@ -3,36 +3,43 @@ import { useQuery } from "@tanstack/react-query";
 import { peopleKeys } from "@/features/debts/hooks/query-keys";
 import { buildActivityView } from "@/features/debts/lib/build-activity-view";
 import { toDebtCardView } from "@/features/debts/lib/mappers";
+import { activityRepository } from "@/features/debts/repositories/activity-repository";
+import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { personRepository } from "@/features/debts/repositories/person-repository";
 import { derivePersonStatus } from "@/features/people/lib/person-status";
 import { getInitials } from "@/lib/utils/formatters";
 
 export async function loadPersonDetail(personId: string) {
-  const data = await personRepository.getDetailData(personId);
+  const [person, summary, debts, events] = await Promise.all([
+    personRepository.getById(personId),
+    personRepository.getSummary(personId),
+    debtRepository.listSummariesForPerson(personId),
+    activityRepository.listForPerson(personId),
+  ]);
 
-  if (!data) {
+  if (!person || !summary) {
     return undefined;
   }
 
   const now = new Date();
-  const cards = data.debts.map((debt) => toDebtCardView(debt, now));
+  const cards = debts.map((debt) => toDebtCardView(debt, now));
 
   return {
-    id: data.person.id,
-    name: data.person.name,
-    initials: getInitials(data.person.name),
-    phoneNumber: data.person.phoneNumber,
-    notes: data.person.notes,
-    outstanding: data.summary.outstanding,
-    originalTotal: data.summary.originalTotal,
-    status: derivePersonStatus(data.summary),
-    openDebtCount: data.summary.openDebtCount,
-    overdueCount: data.summary.overdueCount,
-    dueSoonCount: data.summary.dueSoonCount,
-    paidCount: data.summary.paidDebtCount,
+    id: person.id,
+    name: person.name,
+    initials: getInitials(person.name),
+    phoneNumber: person.phoneNumber,
+    notes: person.notes,
+    outstanding: summary.outstanding,
+    originalTotal: summary.originalTotal,
+    status: derivePersonStatus(summary),
+    openDebtCount: summary.openDebtCount,
+    overdueCount: summary.overdueCount,
+    dueSoonCount: summary.dueSoonCount,
+    paidCount: summary.paidDebtCount,
     activeDebts: cards.filter((card) => card.status !== "paid"),
     settledDebts: cards.filter((card) => card.status === "paid"),
-    payments: data.events.map((event) => buildActivityView(event, now)),
+    payments: events.map((event) => buildActivityView(event, now)),
   };
 }
 
