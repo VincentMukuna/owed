@@ -12,6 +12,7 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { ActivityRow } from "@/components/activity/activity-list";
 import { DebtCard } from "@/components/debts/debt-card";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import { DetailScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { peopleKeys } from "@/features/debts/hooks/query-keys";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
@@ -40,7 +41,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
   if (isPending) {
-    return null;
+    return <DetailScreenSkeleton />;
   }
 
   if (!person) {

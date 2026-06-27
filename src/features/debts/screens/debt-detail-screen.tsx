@@ -13,6 +13,7 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Badge } from "@/components/ui/badge";
+import { DetailScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { debtKeys } from "@/features/debts/hooks/query-keys";
 import { useDebt } from "@/features/debts/hooks/use-debt";
 import type { DebtDetailView } from "@/features/debts/view-models";
@@ -37,7 +38,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
   if (isPending) {
-    return null;
+    return <DetailScreenSkeleton />;
   }
 
   if (!debt) {

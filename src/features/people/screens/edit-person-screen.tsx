@@ -7,6 +7,7 @@ import { router, useNavigation } from "expo-router";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
+import { FormScreenSkeleton } from "@/components/ui/screen-skeletons";
 
 import { usePersonDetail } from "../hooks/use-person-detail";
 import { useUpdatePerson } from "../hooks/use-update-person";
@@ -67,7 +68,7 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
   }, [canSave, handleSave, navigation, updatePerson.isPending]);
 
   if (isPending) {
-    return null;
+    return <FormScreenSkeleton />;
   }
 
   if (!person) {

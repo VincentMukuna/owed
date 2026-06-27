@@ -14,7 +14,9 @@ import { SummaryStatCard } from "@/components/debts/summary-stat-card";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { useActivities } from "@/features/activity/hooks/use-activities";
+import { HomeScreenSkeleton } from "@/components/ui/screen-skeletons";
+import { useRecentActivities } from "@/features/activity/hooks/use-recent-activities";
+import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/lib/fetch-activities";
 import { HomeDebtSection } from "@/features/dashboard/components/home-debt-section";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import { type DebtFilterKey, bucketHomeDebts } from "@/features/debts/lib/debt-list-utils";
@@ -23,8 +25,6 @@ import { BellBadgeButton } from "@/features/reminders/components/bell-badge-butt
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { invalidateHomeQueries } from "@/lib/query/invalidate-queries";
 import { formatCurrency } from "@/lib/utils/formatters";
-
-const RECENT_ACTIVITY_LIMIT = 5;
 
 type HomeSectionRow = {
   key: string;
@@ -57,14 +57,13 @@ export function HomeScreen() {
   const { theme } = useUnistyles();
   const queryClient = useQueryClient();
   const { data: debts = [], isPending } = useDebts();
-  const { data: activities = [] } = useActivities();
+  const { data: recentActivity = [] } = useRecentActivities(HOME_RECENT_ACTIVITY_LIMIT);
 
   const handleRefresh = useCallback(() => invalidateHomeQueries(queryClient), [queryClient]);
   const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
   const buckets = useMemo(() => bucketHomeDebts(debts), [debts]);
   const sections = useMemo(() => buildHomeSections(buckets, theme.colors.danger), [buckets, theme]);
-  const recentActivity = useMemo(() => activities.slice(0, RECENT_ACTIVITY_LIMIT), [activities]);
 
   const openDebt = useCallback((debtId: string) => {
     router.push(`/debt/${debtId}`);
@@ -173,7 +172,11 @@ export function HomeScreen() {
   }, [recentActivity, openActivity]);
 
   if (isPending) {
-    return null;
+    return (
+      <TabScreen>
+        <HomeScreenSkeleton />
+      </TabScreen>
+    );
   }
 
   if (debts.length === 0) {

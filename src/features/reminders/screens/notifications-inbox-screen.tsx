@@ -9,6 +9,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Bell } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
+import { NotificationsScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { NotificationRow } from "@/features/reminders/components/notification-row";
 import { useMarkInboxRead } from "@/features/reminders/hooks/use-mark-inbox-read";
 import { useRemindersInbox } from "@/features/reminders/hooks/use-reminders-inbox";
@@ -43,7 +44,7 @@ export function NotificationsInboxScreen() {
   const keyExtractor = useCallback((item: ReminderInboxView) => item.id, []);
 
   if (isPending) {
-    return null;
+    return <NotificationsScreenSkeleton />;
   }
 
   if (items.length === 0) {

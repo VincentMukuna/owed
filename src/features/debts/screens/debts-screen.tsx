@@ -15,6 +15,7 @@ import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { IconButton } from "@/components/shared/icon-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import { TabListScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import {
   type DebtFilterKey,
@@ -171,7 +172,11 @@ export function DebtsScreen() {
   );
 
   if (isPending) {
-    return null;
+    return (
+      <TabScreen>
+        <TabListScreenSkeleton showFilterTabs />
+      </TabScreen>
+    );
   }
 
   return (

@@ -14,6 +14,7 @@ import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { IconButton } from "@/components/shared/icon-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import { TabListScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { selectionChange } from "@/lib/haptics";
 import { invalidatePeopleQueries } from "@/lib/query/invalidate-queries";
@@ -119,7 +120,11 @@ export function PeopleScreen() {
   );
 
   if (isPending) {
-    return null;
+    return (
+      <TabScreen>
+        <TabListScreenSkeleton row="person" showSummary />
+      </TabScreen>
+    );
   }
 
   return (

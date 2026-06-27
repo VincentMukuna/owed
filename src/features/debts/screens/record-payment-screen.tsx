@@ -7,6 +7,7 @@ import { Stack, router, useLocalSearchParams, useNavigation } from "expo-router"
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
+import { FormScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { useDebt } from "@/features/debts/hooks/use-debt";
 import { useRecordPayment } from "@/features/debts/hooks/use-record-payment";
 import { formatCurrency, formatCurrencyPrefix } from "@/lib/utils/formatters";
@@ -57,7 +58,7 @@ export function RecordPaymentScreen() {
   }, [canSave, handleSave, navigation, recordPayment.isPending]);
 
   if (isPending) {
-    return null;
+    return <FormScreenSkeleton />;
   }
 
   if (!debt) {
