@@ -1,6 +1,7 @@
 export const debtKeys = {
   all: ["debts"] as const,
   presence: ["debts", "presence"] as const,
+  paidThisMonth: ["debts", "paid-this-month"] as const,
   detail: (id: string) => ["debts", id] as const,
 };
 

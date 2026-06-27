@@ -8,7 +8,10 @@ export type DebtMutationInvalidationOptions = {
 };
 
 export function invalidateDebtQueries(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({ queryKey: debtKeys.all });
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: debtKeys.all }),
+    queryClient.invalidateQueries({ queryKey: debtKeys.paidThisMonth }),
+  ]);
 }
 
 export function invalidateActivityQueries(queryClient: QueryClient) {

@@ -16,6 +16,7 @@ import { loadActivities } from "@/features/activity/hooks/use-activities";
 import { loadRecentActivities } from "@/features/activity/hooks/use-recent-activities";
 import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
 import { loadDebts } from "@/features/debts/hooks/use-debts";
+import { loadPaidThisMonth } from "@/features/debts/hooks/use-paid-this-month";
 import { loadPeoplePicker } from "@/features/debts/hooks/use-people";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
 import { loadPeopleList } from "@/features/people/hooks/use-people-list";
@@ -43,6 +44,11 @@ export default function RootLayout() {
       queryClient.prefetchQuery({
         queryKey: debtKeys.all,
         queryFn: loadDebts,
+        staleTime: Number.POSITIVE_INFINITY,
+      }),
+      queryClient.prefetchQuery({
+        queryKey: debtKeys.paidThisMonth,
+        queryFn: loadPaidThisMonth,
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({

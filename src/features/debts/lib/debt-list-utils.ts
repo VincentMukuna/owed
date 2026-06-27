@@ -20,7 +20,6 @@ export type DebtTabCounts = {
 export type HomeDebtBuckets = {
   totalOwed: number;
   activeCount: number;
-  paidThisMonth: number;
   overdue: DebtCardView[];
   dueSoon: DebtCardView[];
   activePartial: DebtCardView[];
@@ -161,11 +160,9 @@ export function bucketHomeDebts(debts: DebtCardView[]): HomeDebtBuckets {
 
   let totalOwed = 0;
   let activeCount = 0;
-  let paidThisMonth = 0;
 
   for (const debt of debts) {
     if (debt.status === "paid") {
-      paidThisMonth += debt.amount;
       continue;
     }
 
@@ -190,7 +187,6 @@ export function bucketHomeDebts(debts: DebtCardView[]): HomeDebtBuckets {
   return {
     totalOwed,
     activeCount,
-    paidThisMonth,
     overdue,
     dueSoon,
     activePartial,

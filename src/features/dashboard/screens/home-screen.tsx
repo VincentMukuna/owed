@@ -19,6 +19,7 @@ import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
 import { useRecentActivities } from "@/features/activity/hooks/use-recent-activities";
 import { HomeDebtSection } from "@/features/dashboard/components/home-debt-section";
 import { useDebts } from "@/features/debts/hooks/use-debts";
+import { usePaidThisMonth } from "@/features/debts/hooks/use-paid-this-month";
 import { type DebtFilterKey, bucketHomeDebts } from "@/features/debts/lib/debt-list-utils";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { BellBadgeButton } from "@/features/reminders/components/bell-badge-button";
@@ -57,6 +58,7 @@ export function HomeScreen() {
   const { theme } = useUnistyles();
   const queryClient = useQueryClient();
   const { data: debts = [], isPending } = useDebts();
+  const { data: paidThisMonth = 0 } = usePaidThisMonth();
   const { data: recentActivity = [] } = useRecentActivities(HOME_RECENT_ACTIVITY_LIMIT);
 
   const handleRefresh = useCallback(() => invalidateHomeQueries(queryClient), [queryClient]);
@@ -142,14 +144,14 @@ export function HomeScreen() {
           <View style={styles.statCell}>
             <SummaryStatCard
               label="Paid this month"
-              value={formatCurrency(buckets.paidThisMonth)}
+              value={formatCurrency(paidThisMonth)}
               color={theme.colors.success}
             />
           </View>
         </View>
       </View>
     ),
-    [buckets, theme],
+    [buckets, paidThisMonth, theme],
   );
 
   const listFooter = useMemo(() => {
