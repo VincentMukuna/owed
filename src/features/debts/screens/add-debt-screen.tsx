@@ -194,27 +194,32 @@ export function AddDebtScreen() {
           </View>
         </Field>
 
-        <Field label="Promised date">
-          <View style={styles.chips}>
-            {QUICK_DATES.map((label) => {
-              const selected = quickDate === label;
-              return (
-                <PressableScale
-                  key={label}
-                  onPress={() => {
-                    selectionChange();
-                    setQuickDate(label);
-                    setDueDateIso(resolveQuickDate(label));
-                  }}
-                  style={[styles.chip, selected && styles.chipSelected]}
-                >
-                  <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
-                    {label}
-                  </Text>
-                </PressableScale>
-              );
-            })}
-          </View>
+        <Field
+          bare
+          footer={
+            <View style={styles.chips}>
+              {QUICK_DATES.map((label) => {
+                const selected = quickDate === label;
+                return (
+                  <PressableScale
+                    key={label}
+                    onPress={() => {
+                      selectionChange();
+                      setQuickDate(label);
+                      setDueDateIso(resolveQuickDate(label));
+                    }}
+                    style={[styles.chip, selected && styles.chipSelected]}
+                  >
+                    <Text style={[styles.chipText, selected && styles.chipTextSelected]}>
+                      {label}
+                    </Text>
+                  </PressableScale>
+                );
+              })}
+            </View>
+          }
+          label="Promised date"
+        >
           <PressableScale
             onPress={() => {
               selectionChange();
@@ -284,11 +289,22 @@ export function AddDebtScreen() {
   );
 }
 
-function Field({ label, children }: { label: string; children: React.ReactNode }) {
+function Field({
+  label,
+  children,
+  footer,
+  bare = false,
+}: {
+  label: string;
+  children: React.ReactNode;
+  footer?: React.ReactNode;
+  bare?: boolean;
+}) {
   return (
     <View style={styles.field}>
       <Text style={styles.sectionTitle}>{label}</Text>
-      <View style={styles.inputCard}>{children}</View>
+      {bare ? children : <View style={styles.inputCard}>{children}</View>}
+      {footer}
     </View>
   );
 }
@@ -409,7 +425,7 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: "row",
     flexWrap: "wrap",
     gap: 8,
-    marginBottom: 16,
+    marginTop: 4,
   },
   chip: {
     paddingHorizontal: 14,
@@ -432,10 +448,10 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.primaryForeground,
   },
   dateField: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: 12,
-    paddingHorizontal: 12,
-    paddingVertical: 12,
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
     flexDirection: "row",
     alignItems: "center",
     gap: 10,
