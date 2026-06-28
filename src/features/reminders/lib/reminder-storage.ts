@@ -3,11 +3,14 @@ import { UnistylesRuntime } from "react-native-unistyles";
 import { APP_CONFIG } from "@/constants/config";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { getItem, setItem, storageKeys } from "@/lib/storage/local-storage";
+import { applyBrandColorTheme } from "@/styles/apply-brand-theme";
+import { type BrandColorThemeId, DEFAULT_BRAND_COLOR_THEME } from "@/styles/brand-themes";
 import { type AppThemeName, type ThemePreference, appThemes } from "@/styles/themes";
 
 export type PersistedSettings = {
   defaultCurrency?: string;
   themePreference?: ThemePreference;
+  brandColorTheme?: BrandColorThemeId;
   defaultReminderTime?: string;
   overdueReminderEnabled?: boolean;
   notificationsPermissionAsked?: boolean;
@@ -42,12 +45,19 @@ function applyThemePreference(themePreference: ThemePreference): void {
   UnistylesRuntime.setRootViewBackgroundColor(appThemes[themePreference].colors.background);
 }
 
+function applyBrandColorThemePreference(brandColorTheme: BrandColorThemeId): void {
+  useSettingsStore.getState().setBrandColorTheme(brandColorTheme);
+  applyBrandColorTheme(brandColorTheme);
+}
+
 export async function hydratePersistedSettings(): Promise<void> {
   const stored = await loadPersistedSettings();
   const store = useSettingsStore.getState();
   const themePreference = stored?.themePreference ?? "auto";
+  const brandColorTheme = stored?.brandColorTheme ?? DEFAULT_BRAND_COLOR_THEME;
 
   store.setDefaultCurrency(stored?.defaultCurrency ?? APP_CONFIG.defaultCurrency);
+  applyBrandColorThemePreference(brandColorTheme);
   applyThemePreference(themePreference);
   store.setDefaultReminderTime(stored?.defaultReminderTime ?? APP_CONFIG.defaultReminderTime);
   store.setOverdueReminderEnabled(stored?.overdueReminderEnabled ?? false);
@@ -59,6 +69,11 @@ export const hydrateReminderSettings = hydratePersistedSettings;
 export async function saveThemePreference(themePreference: ThemePreference): Promise<void> {
   applyThemePreference(themePreference);
   await persistSettings({ themePreference });
+}
+
+export async function saveBrandColorTheme(brandColorTheme: BrandColorThemeId): Promise<void> {
+  applyBrandColorThemePreference(brandColorTheme);
+  await persistSettings({ brandColorTheme });
 }
 
 export async function saveDefaultReminderTime(defaultReminderTime: string): Promise<void> {

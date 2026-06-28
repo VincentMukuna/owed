@@ -130,7 +130,17 @@ export function AddDebtScreen() {
         exitAddDebt();
       },
     });
-  }, [addDebt, canSave, defaultCurrency, dueDateIso, fromOnboarding, person, parsedAmount, reason, reminder]);
+  }, [
+    addDebt,
+    canSave,
+    defaultCurrency,
+    dueDateIso,
+    fromOnboarding,
+    person,
+    parsedAmount,
+    reason,
+    reminder,
+  ]);
 
   useLayoutEffect(() => {
     navigation.setOptions({

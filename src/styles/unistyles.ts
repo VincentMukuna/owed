@@ -1,9 +1,13 @@
 import { StyleSheet } from "react-native-unistyles";
 
-import { type AppTheme, appThemes } from "./themes";
+import { createBrandedAppThemes } from "./apply-brand-theme";
+import { DEFAULT_BRAND_COLOR_THEME } from "./brand-themes";
+import { type AppTheme } from "./themes";
+
+const initialThemes = createBrandedAppThemes(DEFAULT_BRAND_COLOR_THEME);
 
 StyleSheet.configure({
-  themes: appThemes,
+  themes: initialThemes,
   settings: {
     initialTheme: "light",
   },

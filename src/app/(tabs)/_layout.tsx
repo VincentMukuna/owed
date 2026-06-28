@@ -10,10 +10,10 @@ export default function TabLayout() {
   return (
     <NativeTabs
       backgroundColor={theme.colors.background}
-      iconColor={{ default: theme.colors.tabInactive, selected: theme.colors.primary }}
+      iconColor={{ default: theme.colors.tabInactive, selected: theme.colors.tabActive }}
       labelStyle={{
         default: { color: theme.colors.tabInactive, fontSize: 10, fontWeight: "700" },
-        selected: { color: theme.colors.primary, fontSize: 10, fontWeight: "700" },
+        selected: { color: theme.colors.tabActive, fontSize: 10, fontWeight: "700" },
       }}
       minimizeBehavior="onScrollDown"
       screenListeners={{
@@ -24,7 +24,7 @@ export default function TabLayout() {
         },
       }}
       tabBarRespectsIMEInsets
-      tintColor={theme.colors.primary}
+      tintColor={theme.colors.tint}
     >
       <NativeTabs.Trigger contentStyle={{ backgroundColor: theme.colors.background }} name="home">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>

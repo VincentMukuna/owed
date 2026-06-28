@@ -164,6 +164,16 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
+              name="brand-color"
+              options={{
+                ...stackOptions,
+                headerShown: true,
+                headerLargeTitleEnabled: false,
+                animation: "slide_from_right",
+                title: "Brand Color",
+              }}
+            />
+            <Stack.Screen
               name="activity"
               options={{
                 ...stackOptions,

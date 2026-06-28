@@ -3,7 +3,7 @@ import { useCallback, useRef, useState } from "react";
 
 import { AppState, ScrollView, Switch, Text, View } from "react-native";
 
-import { useFocusEffect } from "expo-router";
+import { type Href, router, useFocusEffect } from "expo-router";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { ChevronRight } from "lucide-react-native";
@@ -40,6 +40,7 @@ import {
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { formatReminderTimeDisplay } from "@/features/settings/lib/format-reminder-time";
 import { selectionChange } from "@/lib/haptics";
+import { getBrandColorTheme } from "@/styles/brand-themes";
 import type { ThemePreference } from "@/styles/themes";
 
 const THEME_OPTIONS: { label: string; value: ThemePreference }[] = [
@@ -72,6 +73,8 @@ export function SettingsScreen() {
   const tabScrollPadding = useTabScrollPadding();
   const defaultCurrency = useCurrentCurrency();
   const themePreference = useSettingsStore((state) => state.themePreference);
+  const brandColorTheme = useSettingsStore((state) => state.brandColorTheme);
+  const brandColorLabel = getBrandColorTheme(brandColorTheme).name;
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
   const overdueReminderEnabled = useSettingsStore((state) => state.overdueReminderEnabled);
   const changeCurrency = useChangeCurrency();
@@ -231,6 +234,18 @@ export function SettingsScreen() {
                   })}
                 </View>
               </View>
+
+              <PressableScale
+                onPress={() => router.push("/brand-color" as Href)}
+                style={[styles.row, styles.rowBorder]}
+              >
+                <Text style={styles.icon}>🎨</Text>
+                <Text style={styles.label}>Brand Color</Text>
+                <View style={styles.valueWrap}>
+                  <Text style={styles.value}>{brandColorLabel}</Text>
+                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
+                </View>
+              </PressableScale>
 
               <PressableScale
                 onPress={() => {
@@ -469,9 +484,9 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: 7,
   },
   segmentSelected: {
-    backgroundColor: theme.colors.card,
+    backgroundColor: theme.colors.selection,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.colors.primaryBorder,
   },
   segmentText: {
     fontSize: 12,
@@ -479,6 +494,6 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.muted,
   },
   segmentTextSelected: {
-    color: theme.colors.text,
+    color: theme.colors.primary,
   },
 }));
