@@ -56,9 +56,61 @@ Visual inspiration:
 * Modern finance apps
 * Calm habit trackers
 * Minimal SaaS dashboards
-* Soft card-based mobile UI
+* Premium ledger rows layered directly on the page
+* Soft carded surfaces only where containment adds clarity
 
 The app should look trustworthy, private, and easy to use.
+
+## Current UI Philosophy
+
+The latest direction is **card-light, not card-first**.
+
+Default to layouts that feel like information is layered directly onto the app background: ledger rows, section bands, thin dividers, and careful spacing. Cards should be used sparingly and intentionally, not as the default answer for every list, form, or section.
+
+Use cards when they create a real mental container:
+
+* Hero/overview summaries that need to feel like a distinct object
+* Dashboard stat summaries where large values need stable space
+* Copyable follow-up message content
+* Input bodies, with labels kept outside the card
+* Modals, bottom sheets, and genuinely framed tools
+
+Avoid cards when the content is naturally a list:
+
+* Debt rows
+* People rows
+* Activity rows
+* Person detail metadata
+* Payment history rows
+* Repeated section content where dividers are enough
+
+Rows should feel premium and calm:
+
+* Use a two-column ledger rhythm: person/context on the left, amount/date/status on the right
+* Keep names and amounts medium-weight unless hierarchy truly requires more emphasis
+* Prefer subtle separators over floating containers
+* Keep row padding balanced; avoid asymmetric top-heavy spacing
+* Use avatars/initials as anchors, not decorative badges everywhere
+
+Status treatment:
+
+* Do not default to large status pills in list rows
+* When the section heading already communicates status, hide redundant row status cues
+* When a status cue is needed, place it near the amount/date column rather than beside the name
+* Use compact dot + label treatment for status, especially for partial/overdue/due soon states
+
+Forms:
+
+* Labels should remain flush on the background as persistent section labels
+* Only the actual input/control body should be carded
+* Avoid underlined inputs when the form needs more structure
+* Keep carded input bodies quiet: subtle border, small radius, tiny/no shadow, no chunky nested cards
+
+Light and dark mode:
+
+* Light mode should feel warm, legible, and lightly elevated
+* Dark mode can keep slightly stronger separation, but should not become heavy fintech
+* Muted labels must remain readable when placed directly on the background
 
 ## Target User
 
@@ -151,7 +203,7 @@ Use a modern, highly readable sans-serif.
 The hierarchy should feel premium:
 
 * Large number-focused hero text for total owed
-* Clear card titles
+* Clear section labels
 * Compact metadata
 * Friendly labels
 * Good spacing
@@ -269,7 +321,8 @@ Design notes:
 
 * Make the total owed card feel calm, not alarming.
 * Overdue should be visible but not panic-inducing.
-* Use cards with soft shadows or subtle borders.
+* Keep dashboard stat summaries as compact cards; large numbers need stable containment.
+* Do not force the debt sections into cards. Use section headings plus ledger rows on the background.
 * Avoid clutter.
 
 ### 4. Debt List Screen
@@ -289,28 +342,28 @@ Tabs / filters:
 
 Sort priority:
 
-* Overdue first
-* Due soon next
-* Active after
-* Paid last
+* All tab: sort by due date
+* Overdue tab: overdue debts only
+* Due soon/Home section: due-soon debts only
+* Paid tab: paid debts only
 
-Debt card content:
+Debt row content:
 
 * Person name
 * Amount remaining
 * Due date
-* Status pill
+* Compact status cue only when needed
 * Note preview
 * Optional progress indicator if partially paid
 
-Example card:
+Example row:
 Brian Mwangi
 KES 3,000
 Due Friday
 “Transport + drinks”
 Status: Due soon
 
-Status pills:
+Status cues:
 
 * Active
 * Due soon
@@ -319,7 +372,15 @@ Status pills:
 * Paid
 
 Interaction:
-Tapping a card opens debt detail.
+Tapping a row opens debt detail.
+
+Design notes:
+
+* Prefer rows with thin separators over individual debt cards.
+* Use cards only for alternate experiments or non-list contexts.
+* Hide redundant row status cues when the section label already says Due soon, Overdue, or Active.
+* If status is shown, keep it near the amount/date column.
+* In the All tab, sort by due date. Users can open the Overdue tab when they specifically want overdue first.
 
 ### 5. Add Debt Screen
 
@@ -361,6 +422,13 @@ Reminder copy:
 Design notes:
 This should be one of the most polished screens. The whole app depends on fast entry.
 
+Form layout notes:
+
+* Keep labels flush on the page background.
+* Card only the input/control body beneath each label.
+* Avoid underlined inputs for primary forms.
+* Keep spacing generous enough that the form breathes, but preserve fast entry.
+
 ### 6. Debt Detail Screen
 
 Purpose:
@@ -369,7 +437,7 @@ Give the full context and actions for one debt.
 Header:
 Person name + status
 
-Top summary card:
+Top overview card:
 
 * Amount remaining
 * Original amount
@@ -388,6 +456,13 @@ Sections:
 2. Payment history
 3. Reminder
 4. Follow-up message
+
+Design notes:
+
+* The overview should remain a card; it is the screen's main summary object.
+* Detail sections below the overview should mostly be divider-based, not carded.
+* Always show the progress bar for active/partial debts, even at 0%, so the summary layout is stable.
+* The follow-up message text/action should sit inside a subtle message card, without a trailing bottom separator.
 
 Actions:
 
@@ -442,11 +517,24 @@ If amount equals remaining balance:
 Show:
 “Debt marked as paid.”
 
-### 8. Paid / Settled State
+### 8. People Screens
+
+Purpose:
+Let users understand money owed by person, not only by individual debt.
+
+Design notes:
+
+* People lists should use the same ledger-row language as debt lists.
+* Keep the person overview summary as a card when it aggregates totals.
+* Person detail metadata should be divider-based, not a card.
+* Active and settled debt sections within a person detail should reuse ledger rows.
+* Avoid nested cards inside person detail; section labels and separators should do most of the grouping.
+
+### 9. Paid / Settled State
 
 A paid debt should feel satisfying.
 
-Debt card:
+Debt row:
 
 * Status: Paid
 * Amount: KES 0 remaining
@@ -460,7 +548,7 @@ Show a subtle success state:
 
 Avoid over-celebrating. Keep it mature.
 
-### 9. Activity Screen
+### 10. Activity Screen
 
 Purpose:
 Show a chronological record of payments, added debts, and status changes.
@@ -475,7 +563,7 @@ Activity examples:
 Design:
 Simple timeline/list.
 
-### 10. Settings Screen
+### 11. Settings Screen
 
 MVP settings:
 
@@ -500,11 +588,14 @@ Design reusable components for:
 * Icon button
 * Amount display
 * Summary stat card
-* Debt card
-* Status pill
+* Ledger debt row
+* Ledger person row
+* Compact status cue
+* Status pill only for headers/detail summaries
 * Empty state
 * Text input
 * Amount input
+* Carded input body
 * Date picker row
 * Quick date chips
 * Toggle row
@@ -562,9 +653,9 @@ Animation style:
 
 Examples:
 
-* Card enters with slight fade/slide
+* Row enters with slight fade/slide
 * Button press has subtle scale/opacity
-* Status pill updates smoothly
+* Status cue updates smoothly
 * Bottom sheet slides naturally
 * Success toast fades in/out
 
@@ -701,7 +792,8 @@ Also provide:
 * Color palette
 * Typography scale
 * Spacing scale
-* Status pill variants
+* Status cue variants
+* Card usage rules
 * Button/input states
 * Empty states
 * Toast/snackbar examples
