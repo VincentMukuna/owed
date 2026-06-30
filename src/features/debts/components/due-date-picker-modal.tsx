@@ -3,6 +3,7 @@ import { useCallback, useState } from "react";
 import { Modal, Platform, Pressable, Text, View } from "react-native";
 
 import DateTimePicker from "@react-native-community/datetimepicker";
+import { FullWindowOverlay } from "react-native-screens";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
@@ -67,26 +68,36 @@ export function DueDatePickerModal({ visible, value, onClose, onSave }: DueDateP
     );
   }
 
+  const sheet = (
+    <Pressable onPress={onClose} style={styles.backdrop}>
+      <Pressable onPress={(event) => event.stopPropagation()} style={styles.sheet}>
+        <View style={styles.sheetHeader}>
+          <Text style={styles.sheetTitle}>Promised date</Text>
+          <PressableScale onPress={handleDone} style={styles.doneButton}>
+            <Text style={styles.doneText}>Done</Text>
+          </PressableScale>
+        </View>
+        <DateTimePicker
+          display="spinner"
+          mode="date"
+          onChange={handleChange}
+          style={styles.picker}
+          themeVariant={theme.name}
+          value={draft}
+        />
+      </Pressable>
+    </Pressable>
+  );
+
+  // FullWindowOverlay matches the filters bottom sheet container so the picker
+  // layers above it. RN Modal alone renders underneath that overlay on iOS.
+  if (Platform.OS === "ios") {
+    return <FullWindowOverlay>{sheet}</FullWindowOverlay>;
+  }
+
   return (
     <Modal animationType="slide" onRequestClose={onClose} transparent visible={visible}>
-      <Pressable onPress={onClose} style={styles.backdrop}>
-        <Pressable onPress={(event) => event.stopPropagation()} style={styles.sheet}>
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>Promised date</Text>
-            <PressableScale onPress={handleDone} style={styles.doneButton}>
-              <Text style={styles.doneText}>Done</Text>
-            </PressableScale>
-          </View>
-          <DateTimePicker
-            display="spinner"
-            mode="date"
-            onChange={handleChange}
-            style={styles.picker}
-            themeVariant={theme.name}
-            value={draft}
-          />
-        </Pressable>
-      </Pressable>
+      {sheet}
     </Modal>
   );
 }

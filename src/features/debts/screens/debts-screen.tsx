@@ -500,13 +500,14 @@ export function DebtsScreen() {
             <Text style={styles.filterLabel}>Promised date</Text>
             <View style={styles.dateRangeRow}>
               <DateRangeField
-                label="From"
+                placeholder="From"
                 value={dateRange.from}
                 onClear={() => clearRangeDate("from")}
                 onPress={() => openDatePicker("from")}
               />
+              <Text style={styles.dateRangeSeparator}>-</Text>
               <DateRangeField
-                label="To"
+                placeholder="To"
                 value={dateRange.to}
                 onClear={() => clearRangeDate("to")}
                 onPress={() => openDatePicker("to")}
@@ -527,39 +528,34 @@ export function DebtsScreen() {
 }
 
 type DateRangeFieldProps = {
-  label: string;
+  placeholder: string;
   value?: string;
   onPress: () => void;
   onClear: () => void;
 };
 
-function DateRangeField({ label, value, onPress, onClear }: DateRangeFieldProps) {
+function DateRangeField({ placeholder, value, onPress, onClear }: DateRangeFieldProps) {
   const { theme } = useUnistyles();
 
   return (
     <PressableScale onPress={onPress} style={styles.dateField}>
-      <View style={styles.dateFieldHeader}>
-        <Text style={styles.dateFieldLabel}>{label}</Text>
-        {value ? (
-          <PressableScale
-            hitSlop={8}
-            onPress={(event) => {
-              event.stopPropagation();
-              onClear();
-            }}
-            style={styles.dateClear}
-            scaleTo={0.9}
-          >
-            <X color={theme.colors.muted} size={13} strokeWidth={2} />
-          </PressableScale>
-        ) : null}
-      </View>
-      <View style={styles.dateValueRow}>
-        <Calendar color={theme.colors.muted} size={15} strokeWidth={1.6} />
-        <Text style={[styles.dateValue, !value && styles.dateValueEmpty]} numberOfLines={1}>
-          {value ? formatDueDate(value) : "Any"}
-        </Text>
-      </View>
+      <Calendar color={theme.colors.muted} size={15} strokeWidth={1.6} />
+      <Text style={[styles.dateValue, !value && styles.dateValueEmpty]} numberOfLines={1}>
+        {value ? formatDueDate(value) : placeholder}
+      </Text>
+      {value ? (
+        <PressableScale
+          hitSlop={8}
+          onPress={(event) => {
+            event.stopPropagation();
+            onClear();
+          }}
+          style={styles.dateClear}
+          scaleTo={0.9}
+        >
+          <X color={theme.colors.muted} size={13} strokeWidth={2} />
+        </PressableScale>
+      ) : null}
     </PressableScale>
   );
 }
@@ -700,43 +696,32 @@ const styles = StyleSheet.create((theme) => ({
   },
   dateRangeRow: {
     flexDirection: "row",
-    gap: 10,
+    alignItems: "center",
+    gap: 8,
+  },
+  dateRangeSeparator: {
+    fontSize: 15,
+    fontWeight: "500",
+    color: theme.colors.muted,
   },
   dateField: {
     flex: 1,
     minWidth: 0,
+    flexDirection: "row",
+    alignItems: "center",
     borderRadius: 14,
     borderWidth: 1,
     borderColor: theme.colors.borderStrong,
     backgroundColor: theme.colors.card,
     paddingHorizontal: 12,
-    paddingVertical: 10,
+    paddingVertical: 12,
     gap: 8,
-  },
-  dateFieldHeader: {
-    minHeight: 18,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
-  },
-  dateFieldLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: theme.colors.muted,
-    textTransform: "uppercase",
-    letterSpacing: 1,
   },
   dateClear: {
     width: 20,
     height: 20,
     alignItems: "center",
     justifyContent: "center",
-  },
-  dateValueRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
   },
   dateValue: {
     flex: 1,
