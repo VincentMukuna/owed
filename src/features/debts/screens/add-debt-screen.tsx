@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { ScrollView, Switch, Text, TextInput, View } from "react-native";
 
@@ -23,6 +23,7 @@ import type { CreateDebtInput, PersonRef } from "@/features/debts/view-models";
 import { completeOnboarding } from "@/features/onboarding/lib/onboarding-storage";
 import {
   type NotificationPermissionState,
+  getNotificationPermissionState,
   openOsNotificationSettings,
 } from "@/features/reminders/lib/notification-permissions";
 import { requestReminderPermissionOnToggle } from "@/features/reminders/lib/request-reminder-permissions";
@@ -75,6 +76,15 @@ export function AddDebtScreen() {
 
   const parsedAmount = parseInt(amount, 10);
   const canSave = person !== null && parsedAmount > 0;
+
+  useEffect(() => {
+    void getNotificationPermissionState().then((state) => {
+      setNotifPermission(state);
+      if (state === "allowed") {
+        setReminder(true);
+      }
+    });
+  }, []);
 
   const openPicker = useCallback(() => {
     selectionChange();
