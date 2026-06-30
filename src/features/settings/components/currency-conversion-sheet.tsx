@@ -188,7 +188,7 @@ export const CurrencyConversionSheet = forwardRef<
         ) : null}
 
         <View style={styles.previewCard}>
-          <Text style={styles.previewLabel}>Total owed</Text>
+          <Text style={styles.previewLabel}>Total unsettled</Text>
           <Text style={styles.previewValue}>
             {formatCurrency(totalRemaining, fromCurrency)}
             {convertedTotal !== undefined ? (

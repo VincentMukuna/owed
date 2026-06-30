@@ -14,6 +14,7 @@ type HomeDebtSectionProps = {
   filter: DebtFilterKey;
   onDebtPress: (debtId: string) => void;
   onTitlePress: (filter: DebtFilterKey) => void;
+  showDirectionCue?: boolean;
   title: string;
   titleColor?: string;
 };
@@ -25,6 +26,7 @@ export function HomeDebtSection({
   filter,
   onDebtPress,
   onTitlePress,
+  showDirectionCue = false,
 }: HomeDebtSectionProps) {
   const preview = debts.slice(0, HOME_SECTION_DEBT_LIMIT);
 
@@ -44,6 +46,7 @@ export function HomeDebtSection({
               key={debt.id}
               debt={debt}
               onPress={() => onDebtPress(debt.id)}
+              showDirectionCue={showDirectionCue}
               showStatusCue={false}
               style={needsBreathingRoom ? styles.statusDebtCard : null}
             />

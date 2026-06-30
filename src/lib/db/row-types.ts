@@ -10,6 +10,7 @@ export interface PeopleRow {
 export interface DebtsRow {
   id: string;
   person_id: string;
+  direction: string;
   original_amount: number;
   currency: string;
   reason: string | null;

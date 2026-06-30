@@ -5,7 +5,7 @@ import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { debtKeys } from "./query-keys";
 
 export async function loadPaidThisMonth() {
-  return debtRepository.sumPaymentsInMonth(new Date());
+  return debtRepository.sumPaymentsInMonth({ now: new Date() });
 }
 
 export function usePaidThisMonth() {

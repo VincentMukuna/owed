@@ -14,6 +14,7 @@ type DebtListProps = {
   ListEmptyComponent?: React.ReactElement | null;
   ListHeaderComponent?: React.ReactElement | null;
   refreshControlProps?: RefreshControlProps;
+  showDirectionCue?: boolean;
 };
 
 const DebtListInner = forwardRef<FlashListRef<DebtCardView>, DebtListProps>(
@@ -25,14 +26,19 @@ const DebtListInner = forwardRef<FlashListRef<DebtCardView>, DebtListProps>(
       ListEmptyComponent,
       ListHeaderComponent,
       refreshControlProps,
+      showDirectionCue = false,
     },
     ref,
   ) => {
     const renderItem = useCallback(
       ({ item }: { item: DebtCardView }) => (
-        <DebtCard debt={item} onPress={() => onDebtPress(item.id)} />
+        <DebtCard
+          debt={item}
+          onPress={() => onDebtPress(item.id)}
+          showDirectionCue={showDirectionCue}
+        />
       ),
-      [onDebtPress],
+      [onDebtPress, showDirectionCue],
     );
 
     const keyExtractor = useCallback((item: DebtCardView) => item.id, []);

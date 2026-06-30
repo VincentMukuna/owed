@@ -84,9 +84,24 @@ export function HomeScreen() {
   }, []);
 
   const openDebtsFilter = useCallback((filter: DebtFilterKey) => {
+    if (filter === "paid-this-month") {
+      router.push({
+        pathname: "/debts",
+        params: { filter: "all", direction: "all", focusDate: "", focusType: "paid-this-month" },
+      });
+      return;
+    }
+
     router.push({
       pathname: "/debts",
-      params: { filter, focusDate: "", focusType: "" },
+      params: { filter, direction: "all", focusDate: "", focusType: "" },
+    });
+  }, []);
+
+  const openDebtsDirection = useCallback((direction: "they_owe_me" | "i_owe_them") => {
+    router.push({
+      pathname: "/debts",
+      params: { direction, filter: "all", focusDate: "", focusType: "" },
     });
   }, []);
 
@@ -97,6 +112,7 @@ export function HomeScreen() {
         filter={item.filter}
         onDebtPress={openDebt}
         onTitlePress={openDebtsFilter}
+        showDirectionCue
         title={item.title}
         titleColor={item.titleColor}
       />
@@ -112,8 +128,27 @@ export function HomeScreen() {
         <View style={styles.heroCard}>
           <View style={[styles.heroOrb, styles.heroOrbTop]} />
           <View style={[styles.heroOrb, styles.heroOrbBottom]} />
-          <Text style={styles.heroLabel}>Total owed to you</Text>
-          <Text style={styles.heroAmount}>{formatCurrency(buckets.totalOwed)}</Text>
+          <View style={styles.directionTotals}>
+            <PressableScale
+              onPress={() => openDebtsDirection("they_owe_me")}
+              style={styles.directionTotal}
+            >
+              <Text style={styles.directionLabel}>Owed to you</Text>
+              <Text adjustsFontSizeToFit numberOfLines={1} style={styles.directionAmount}>
+                {formatCurrency(buckets.owedToYou)}
+              </Text>
+            </PressableScale>
+            <View style={styles.directionDivider} />
+            <PressableScale
+              onPress={() => openDebtsDirection("i_owe_them")}
+              style={styles.directionTotal}
+            >
+              <Text style={styles.directionLabel}>You owe</Text>
+              <Text adjustsFontSizeToFit numberOfLines={1} style={styles.directionAmount}>
+                {formatCurrency(buckets.youOwe)}
+              </Text>
+            </PressableScale>
+          </View>
           <Text style={styles.heroMeta}>
             Across {buckets.activeCount} active {buckets.activeCount === 1 ? "promise" : "promises"}
           </Text>
@@ -122,7 +157,8 @@ export function HomeScreen() {
         <View style={styles.statsGrid}>
           <View style={styles.statCell}>
             <SummaryStatCard
-              label="Active"
+              label="Active promises"
+              onPress={() => openDebtsFilter("active")}
               value={String(buckets.activeCount)}
               color={theme.colors.status.active.dot}
             />
@@ -130,6 +166,7 @@ export function HomeScreen() {
           <View style={styles.statCell}>
             <SummaryStatCard
               label="Overdue"
+              onPress={() => openDebtsFilter("overdue")}
               value={String(buckets.overdue.length)}
               color={theme.colors.danger}
             />
@@ -137,13 +174,15 @@ export function HomeScreen() {
           <View style={styles.statCell}>
             <SummaryStatCard
               label="Due soon"
+              onPress={() => openDebtsFilter("due-soon")}
               value={String(buckets.dueSoon.length)}
               color={theme.colors.warning}
             />
           </View>
           <View style={styles.statCell}>
             <SummaryStatCard
-              label="Paid this month"
+              label="Settled this month"
+              onPress={() => openDebtsFilter("paid-this-month")}
               value={formatCurrency(paidThisMonth)}
               color={theme.colors.success}
             />
@@ -151,7 +190,7 @@ export function HomeScreen() {
         </View>
       </View>
     ),
-    [buckets, paidThisMonth, theme],
+    [buckets, openDebtsDirection, openDebtsFilter, paidThisMonth, theme],
   );
 
   const listFooter = useMemo(() => {
@@ -205,7 +244,7 @@ export function HomeScreen() {
               </View>
               <Text style={styles.emptyTitle}>No money tracked yet.</Text>
               <Text style={styles.emptyCopy}>
-                {"Add the first amount someone owes you and we'll help you remember the details."}
+                Add a promise to remember money between you and someone else.
               </Text>
             </View>
           </View>
@@ -220,7 +259,7 @@ export function HomeScreen() {
       <View style={styles.header}>
         <View>
           <Text style={styles.kicker}>Good morning</Text>
-          <Text style={styles.pageTitleLg}>{"Here's what you're owed"}</Text>
+          <Text style={styles.pageTitleLg}>{"Here's what's unsettled"}</Text>
         </View>
         <BellBadgeButton onPress={openNotifications} />
       </View>
@@ -306,19 +345,32 @@ const styles = StyleSheet.create((theme) => ({
     bottom: -40,
     left: -40,
   },
-  heroLabel: {
+  directionTotals: {
+    flexDirection: "row",
+    alignItems: "stretch",
+    gap: 12,
+  },
+  directionTotal: {
+    flex: 1,
+    minWidth: 0,
+    gap: 4,
+  },
+  directionDivider: {
+    width: 1,
+    backgroundColor: theme.colors.onPrimarySurface,
+  },
+  directionLabel: {
     fontSize: 11,
-    fontWeight: "600",
+    fontWeight: "700",
     color: theme.colors.onPrimarySurfaceMuted,
     textTransform: "uppercase",
-    letterSpacing: 1.6,
+    letterSpacing: 1.1,
   },
-  heroAmount: {
-    fontSize: 38,
+  directionAmount: {
+    fontSize: 24,
     fontWeight: "700",
     color: theme.colors.primaryForeground,
-    lineHeight: 40,
-    marginTop: 4,
+    lineHeight: 29,
     fontVariant: ["tabular-nums"],
   },
   heroMeta: {

@@ -2,6 +2,7 @@ import { memo } from "react";
 
 import { type StyleProp, View, type ViewStyle } from "react-native";
 
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
@@ -14,68 +15,87 @@ import { formatCurrency } from "@/lib/utils/formatters";
 type DebtCardProps = {
   debt: DebtCardView;
   onPress: () => void;
+  showDirectionCue?: boolean;
   showStatusCue?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
-export const DebtCard = memo(({ debt, onPress, showStatusCue = true, style }: DebtCardProps) => {
-  const { theme } = useUnistyles();
-  const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
-  const statusColors = theme.colors.status[debt.status];
+export const DebtCard = memo(
+  ({ debt, onPress, showDirectionCue = false, showStatusCue = true, style }: DebtCardProps) => {
+    const { theme } = useUnistyles();
+    const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
+    const statusColors = theme.colors.status[debt.status];
+    const DirectionIcon = debt.direction === "they_owe_me" ? ArrowDownLeft : ArrowUpRight;
+    const directionColor =
+      debt.direction === "they_owe_me" ? theme.colors.success : theme.colors.danger;
 
-  return (
-    <PressableScale onPress={onPress} style={[styles.card, style]}>
-      <View style={styles.row}>
-        <Avatar initials={debt.initials} status={debt.status} />
-        <View style={styles.body}>
-          <View style={styles.topRow}>
-            <View style={styles.meta}>
-              <Text numberOfLines={1} style={styles.name}>
-                {debt.name}
-              </Text>
-              <Text muted style={styles.reason} numberOfLines={1}>
-                {debt.reason}
-              </Text>
-              {debt.status === "partial" ? (
-                <View style={styles.progressRow}>
-                  <View style={styles.progressTrack}>
-                    <View style={[styles.progressFill, { width: `${pct}%` }]} />
-                  </View>
-                  <Text muted style={styles.progressText}>
-                    {Math.round(pct)}%
+    return (
+      <PressableScale onPress={onPress} style={[styles.card, style]}>
+        <View style={styles.row}>
+          <Avatar initials={debt.initials} status={debt.status} />
+          <View style={styles.body}>
+            <View style={styles.topRow}>
+              <View style={styles.meta}>
+                <View style={styles.nameRow}>
+                  <Text numberOfLines={1} style={styles.name}>
+                    {debt.name}
                   </Text>
+                  {showDirectionCue ? (
+                    <DirectionIcon
+                      color={directionColor}
+                      size={14}
+                      strokeWidth={2.3}
+                      style={styles.directionIcon}
+                    />
+                  ) : null}
                 </View>
-              ) : null}
-            </View>
-            <View style={styles.amountCol}>
-              {showStatusCue ? (
-                <View style={styles.statusRow}>
-                  <View style={[styles.statusDot, { backgroundColor: statusColors.dot }]} />
-                  <Text style={[styles.statusText, { color: statusColors.text }]} numberOfLines={1}>
-                    {DEBT_STATUS_LABELS[debt.status]}
-                  </Text>
-                </View>
-              ) : null}
-              <Text
-                adjustsFontSizeToFit
-                minimumFontScale={0.78}
-                numberOfLines={1}
-                style={styles.amount}
-              >
-                {formatCurrency(debt.remaining)}
-              </Text>
-              <View style={styles.dueRow}>
-                <Text style={styles.dueDate} numberOfLines={1}>
-                  {debt.dueDate}
+                <Text muted style={styles.reason} numberOfLines={1}>
+                  {debt.reason}
                 </Text>
+                {debt.status === "partial" ? (
+                  <View style={styles.progressRow}>
+                    <View style={styles.progressTrack}>
+                      <View style={[styles.progressFill, { width: `${pct}%` }]} />
+                    </View>
+                    <Text muted style={styles.progressText}>
+                      {Math.round(pct)}%
+                    </Text>
+                  </View>
+                ) : null}
+              </View>
+              <View style={styles.amountCol}>
+                {showStatusCue ? (
+                  <View style={styles.statusRow}>
+                    <View style={[styles.statusDot, { backgroundColor: statusColors.dot }]} />
+                    <Text
+                      style={[styles.statusText, { color: statusColors.text }]}
+                      numberOfLines={1}
+                    >
+                      {DEBT_STATUS_LABELS[debt.status]}
+                    </Text>
+                  </View>
+                ) : null}
+                <Text
+                  adjustsFontSizeToFit
+                  minimumFontScale={0.78}
+                  numberOfLines={1}
+                  style={styles.amount}
+                >
+                  {formatCurrency(debt.remaining)}
+                </Text>
+                <View style={styles.dueRow}>
+                  <Text style={styles.dueDate} numberOfLines={1}>
+                    {debt.dueDate}
+                  </Text>
+                </View>
               </View>
             </View>
           </View>
         </View>
-      </View>
-    </PressableScale>
-  );
-});
+      </PressableScale>
+    );
+  },
+);
 
 DebtCard.displayName = "DebtCard";
 
@@ -104,7 +124,17 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     minWidth: 0,
   },
+  nameRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    minWidth: 0,
+  },
+  directionIcon: {
+    flexShrink: 0,
+  },
   name: {
+    flexShrink: 1,
     fontSize: 15,
     fontWeight: "500",
     lineHeight: 20,

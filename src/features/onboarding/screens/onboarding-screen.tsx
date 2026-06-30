@@ -83,9 +83,9 @@ export function OnboardingScreen() {
           <View style={styles.logoWrap}>
             <Wallet color={theme.colors.primaryForeground} size={28} strokeWidth={1.5} />
           </View>
-          <Text style={styles.title}>Never forget{"\n"}who owes you.</Text>
+          <Text style={styles.title}>{"Never forget\nwhat's owed."}</Text>
           <Text style={styles.subtitle}>
-            Track amounts, promised dates, and payments, all in one private place.
+            Track money between you and others, all in one private place.
           </Text>
         </Animated.View>
 

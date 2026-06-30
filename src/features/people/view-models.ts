@@ -10,12 +10,18 @@ export type PersonListItemView = {
   initials: string;
   phoneNumber?: string;
   outstanding: number;
+  owedToYou: number;
+  youOwe: number;
   openDebtCount: number;
+  owedToYouOpenCount: number;
+  youOweOpenCount: number;
   overdueCount: number;
+  owedToYouOverdueCount: number;
+  youOweOverdueCount: number;
   dueSoonCount: number;
+  owedToYouDueSoonCount: number;
+  youOweDueSoonCount: number;
   status: PersonStatus;
-  /** Display label, e.g. "Yesterday". */
-  lastActivity: string;
   /** ISO timestamp for sorting. */
   lastActivityAt: string;
 };
@@ -27,13 +33,20 @@ export type PersonDetailView = {
   phoneNumber?: string;
   notes?: string;
   outstanding: number;
+  owedToYou: number;
+  youOwe: number;
   originalTotal: number;
   status: PersonStatus;
   openDebtCount: number;
+  owedToYouOpenCount: number;
+  youOweOpenCount: number;
   overdueCount: number;
+  owedToYouOverdueCount: number;
+  youOweOverdueCount: number;
   dueSoonCount: number;
+  owedToYouDueSoonCount: number;
+  youOweDueSoonCount: number;
   paidCount: number;
-  activeDebts: DebtCardView[];
-  settledDebts: DebtCardView[];
+  debts: DebtCardView[];
   payments: ActivityView[];
 };

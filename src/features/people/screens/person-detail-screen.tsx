@@ -5,7 +5,7 @@ import { RefreshControl, ScrollView, Text, View } from "react-native";
 import { type Href, Stack, router } from "expo-router";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { CheckCircle2, ChevronDown, ChevronUp, Receipt, Wallet } from "lucide-react-native";
+import { ChevronDown, ChevronUp, Receipt, Wallet } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
@@ -30,8 +30,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const { data: person, isPending } = usePersonDetail(personId);
-  const [activeExpanded, setActiveExpanded] = useState(true);
-  const [settledExpanded, setSettledExpanded] = useState(false);
+  const [debtsExpanded, setDebtsExpanded] = useState(true);
   const [paymentsExpanded, setPaymentsExpanded] = useState(true);
 
   const handleRefresh = useCallback(
@@ -56,7 +55,6 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   }
 
   const firstName = getFirstName(person.name);
-  const hasNoDebts = person.activeDebts.length === 0 && person.settledDebts.length === 0;
 
   const openDebt = (debtId: string) => {
     router.push(`/debt/${debtId}`);
@@ -113,47 +111,27 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
           ) : null}
 
           <CollapsibleSection
-            count={person.activeDebts.length}
-            expanded={activeExpanded}
-            onToggle={() => setActiveExpanded((value) => !value)}
-            title="Active"
+            count={person.debts.length}
+            expanded={debtsExpanded}
+            onToggle={() => setDebtsExpanded((value) => !value)}
+            title="Promises"
           >
-            {person.activeDebts.length > 0 ? (
+            {person.debts.length > 0 ? (
               <View style={styles.cards}>
-                {person.activeDebts.map((debt) => (
-                  <DebtCard key={debt.id} debt={debt} onPress={() => openDebt(debt.id)} />
+                {person.debts.map((debt) => (
+                  <DebtCard
+                    key={debt.id}
+                    debt={debt}
+                    onPress={() => openDebt(debt.id)}
+                    showDirectionCue
+                  />
                 ))}
               </View>
             ) : (
               <SectionEmpty
-                copy={
-                  hasNoDebts
-                    ? `Add the first amount ${firstName} owes you.`
-                    : `All amounts from ${firstName} are settled.`
-                }
+                copy={`Add the first promise between you and ${firstName}.`}
                 icon={<Wallet color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
-                title={hasNoDebts ? "No debts yet" : "Nothing pending"}
-              />
-            )}
-          </CollapsibleSection>
-
-          <CollapsibleSection
-            count={person.settledDebts.length}
-            expanded={settledExpanded}
-            onToggle={() => setSettledExpanded((value) => !value)}
-            title="Settled"
-          >
-            {person.settledDebts.length > 0 ? (
-              <View style={styles.cards}>
-                {person.settledDebts.map((debt) => (
-                  <DebtCard key={debt.id} debt={debt} onPress={() => openDebt(debt.id)} />
-                ))}
-              </View>
-            ) : (
-              <SectionEmpty
-                copy="Paid debts from this person will appear here."
-                icon={<CheckCircle2 color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
-                title="No settled amounts yet"
+                title="No promises yet"
               />
             )}
           </CollapsibleSection>
@@ -172,7 +150,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
               </View>
             ) : (
               <SectionEmpty
-                copy={`Payments from ${firstName} will show up here.`}
+                copy={`Payments between you and ${firstName} will show up here.`}
                 icon={<Receipt color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
                 title="No payments yet"
               />
@@ -182,7 +160,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
 
         <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
           <PressableScale onPress={openAddDebt} style={styles.primaryBtn}>
-            <Text style={styles.primaryBtnText}>Add debt for {firstName}</Text>
+            <Text style={styles.primaryBtnText}>Add promise for {firstName}</Text>
           </PressableScale>
         </View>
       </View>
@@ -202,11 +180,21 @@ function PersonSummary({ person }: { person: PersonDetailView }) {
   return (
     <View style={styles.summaryCard}>
       <View style={styles.summaryTop}>
-        <Text style={styles.summaryHint}>Total remaining</Text>
+        <Text style={styles.summaryHint}>Total unsettled</Text>
         <PersonStatusBadge status={person.status} />
       </View>
       <Text style={styles.summaryAmount}>{formatCurrency(person.outstanding)}</Text>
       <Text style={styles.summarySupport}>{supporting}</Text>
+      <View style={styles.directionBreakdown}>
+        <View>
+          <Text style={styles.summaryFooterLabel}>Owed to you</Text>
+          <Text style={styles.summaryFooterValue}>{formatCurrency(person.owedToYou)}</Text>
+        </View>
+        <View>
+          <Text style={styles.summaryFooterLabel}>You owe</Text>
+          <Text style={styles.summaryFooterValue}>{formatCurrency(person.youOwe)}</Text>
+        </View>
+      </View>
       {person.overdueCount > 0 ? (
         <Text style={styles.summaryOverdue}>{person.overdueCount} overdue</Text>
       ) : null}
@@ -342,6 +330,11 @@ const styles = StyleSheet.create((theme) => ({
     paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
+  },
+  directionBreakdown: {
+    flexDirection: "row",
+    gap: 20,
+    marginTop: 16,
   },
   summaryFooterLabel: {
     fontSize: 11,

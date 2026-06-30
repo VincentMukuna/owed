@@ -79,7 +79,7 @@ export const PERSON_STATUS_LABELS: Record<PersonStatus, string> = {
   "due-soon": "Due soon",
   active: "Active",
   settled: "Settled",
-  none: "No debts",
+  none: "No promises",
 };
 
 export function derivePersonStatus(input: {

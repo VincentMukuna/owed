@@ -39,8 +39,15 @@ export function PeopleScreen() {
     [people, deferredSearchQuery],
   );
 
-  const totalOwed = useMemo(
-    () => people.reduce((sum, person) => sum + person.outstanding, 0),
+  const totals = useMemo(
+    () =>
+      people.reduce(
+        (sum, person) => ({
+          owedToYou: sum.owedToYou + person.owedToYou,
+          youOwe: sum.youOwe + person.youOwe,
+        }),
+        { owedToYou: 0, youOwe: 0 },
+      ),
     [people],
   );
 
@@ -86,12 +93,12 @@ export function PeopleScreen() {
     return (
       <View style={styles.summary}>
         <Text style={styles.summaryText}>
-          {people.length} {people.length === 1 ? "person" : "people"} · {formatCurrency(totalOwed)}{" "}
-          owed
+          {people.length} {people.length === 1 ? "person" : "people"} · Owed to you{" "}
+          {formatCurrency(totals.owedToYou)} · You owe {formatCurrency(totals.youOwe)}
         </Text>
       </View>
     );
-  }, [people.length, totalOwed]);
+  }, [people.length, totals]);
 
   const emptyState = useMemo(
     () => (
@@ -107,7 +114,7 @@ export function PeopleScreen() {
         <Text style={styles.emptyCopy}>
           {isSearching
             ? "Try searching by name or phone number."
-            : "Add people you lend money to, then log what they owe."}
+            : "Add people connected to money promises, then log what is unsettled."}
         </Text>
         {!isSearching ? (
           <PressableScale onPress={openAddPerson} style={styles.emptyCta}>
@@ -146,7 +153,7 @@ export function PeopleScreen() {
           <>
             <View>
               <Text style={styles.title}>People</Text>
-              <Text style={styles.subtitle}>See what each person still owes.</Text>
+              <Text style={styles.subtitle}>See money between you and each person.</Text>
             </View>
             <IconButton onPress={openSearch}>
               <Search color={theme.colors.icon} size={16} strokeWidth={1.5} />

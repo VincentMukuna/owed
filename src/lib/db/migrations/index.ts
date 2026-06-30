@@ -4,8 +4,9 @@ import { migration as migration001 } from "./001-initial";
 import { migration as migration002 } from "./002-reminders";
 import { migration as migration003 } from "./003-reminder-dedup";
 import { migration as migration004 } from "./004-reminder-grouping";
+import { migration as migration005 } from "./005-debt-direction";
 
-const migrations = [migration001, migration002, migration003, migration004];
+const migrations = [migration001, migration002, migration003, migration004, migration005];
 
 async function getCurrentVersion(db: SQLiteDatabase): Promise<number> {
   const table = await db.getFirstAsync<{ name: string }>(

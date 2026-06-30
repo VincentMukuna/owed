@@ -9,7 +9,7 @@ import {
 } from "@/lib/db/mappers";
 import type { DebtsRow, PaymentsRow, PeopleRow } from "@/lib/db/row-types";
 import { createId } from "@/lib/id";
-import type { Person } from "@/types";
+import type { DebtDirection, Person } from "@/types";
 
 import { activityRepository } from "./activity-repository";
 import { personRepository } from "./person-repository";
@@ -36,6 +36,7 @@ type DebtPersonRow = DebtsRow & {
 
 type DebtSummaryRow = DebtPersonRow & {
   paid_total: number;
+  last_paid_at: string | null;
 };
 
 function toPersonRow(debtRow: DebtPersonRow): PeopleRow {
@@ -53,6 +54,7 @@ function toDebtRow(debtRow: DebtPersonRow): DebtsRow {
   return {
     id: debtRow.id,
     person_id: debtRow.person_id,
+    direction: debtRow.direction,
     original_amount: debtRow.original_amount,
     currency: debtRow.currency,
     reason: debtRow.reason,
@@ -86,11 +88,12 @@ const DEBT_SUMMARY_SELECT = `
     p.notes AS person_notes,
     p.created_at AS person_created_at,
     p.updated_at AS person_updated_at,
-    COALESCE(pay_totals.paid_total, 0) AS paid_total
+    COALESCE(pay_totals.paid_total, 0) AS paid_total,
+    pay_totals.last_paid_at AS last_paid_at
   FROM debts d
   INNER JOIN people p ON p.id = d.person_id
   LEFT JOIN (
-    SELECT debt_id, SUM(amount) AS paid_total
+    SELECT debt_id, SUM(amount) AS paid_total, MAX(paid_at) AS last_paid_at
     FROM payments
     GROUP BY debt_id
   ) pay_totals ON pay_totals.debt_id = d.id
@@ -153,16 +156,27 @@ export const debtRepository = {
     return row?.total ?? 0;
   },
 
-  async sumPaymentsInMonth(now: Date = new Date()): Promise<number> {
+  async sumPaymentsInMonth(input: { now?: Date; direction?: DebtDirection } = {}): Promise<number> {
+    const now = input.now ?? new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
     const nextMonthStart = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+    const directionClause = input.direction ? " AND d.direction = ?" : "";
+    const params: (string | DebtDirection)[] = [
+      monthStart.toISOString(),
+      nextMonthStart.toISOString(),
+    ];
+
+    if (input.direction) {
+      params.push(input.direction);
+    }
 
     const db = await getDb();
     const row = await db.getFirstAsync<{ total: number | null }>(
       `SELECT COALESCE(SUM(amount), 0) AS total
-       FROM payments
-       WHERE paid_at >= ? AND paid_at < ?`,
-      [monthStart.toISOString(), nextMonthStart.toISOString()],
+       FROM payments pay
+       INNER JOIN debts d ON d.id = pay.debt_id
+       WHERE pay.paid_at >= ? AND pay.paid_at < ?${directionClause}`,
+      params,
     );
 
     return row?.total ?? 0;
@@ -201,7 +215,9 @@ export const debtRepository = {
        ORDER BY d.due_date ASC`,
     );
 
-    return rows.map((row) => toDebtSummary(toDebtRow(row), toPersonRow(row), row.paid_total));
+    return rows.map((row) =>
+      toDebtSummary(toDebtRow(row), toPersonRow(row), row.paid_total, row.last_paid_at),
+    );
   },
 
   async list(): Promise<DebtSummary[]> {
@@ -218,7 +234,9 @@ export const debtRepository = {
       [personId],
     );
 
-    return rows.map((row) => toDebtSummary(toDebtRow(row), toPersonRow(row), row.paid_total));
+    return rows.map((row) =>
+      toDebtSummary(toDebtRow(row), toPersonRow(row), row.paid_total, row.last_paid_at),
+    );
   },
 
   async getById(id: string): Promise<DebtWithRelations | undefined> {
@@ -245,6 +263,7 @@ export const debtRepository = {
     const debtRow: DebtsRow = {
       id,
       person_id: person.id,
+      direction: input.direction,
       original_amount: input.originalAmount,
       currency,
       reason: input.reason?.trim() || null,
@@ -271,6 +290,7 @@ export const debtRepository = {
         `INSERT INTO debts (
           id,
           person_id,
+          direction,
           original_amount,
           currency,
           reason,
@@ -281,9 +301,10 @@ export const debtRepository = {
           archived_at,
           created_at,
           updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, NULL, ?, ?, NULL, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, ?, ?, NULL, ?, ?)`,
         debtRow.id,
         debtRow.person_id,
+        debtRow.direction,
         debtRow.original_amount,
         debtRow.currency,
         debtRow.reason,

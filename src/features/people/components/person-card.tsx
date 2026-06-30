@@ -12,13 +12,24 @@ import { PersonStatusBadge } from "./person-status-badge";
 
 function buildSummaryLine(person: PersonListItemView): string {
   if (person.status === "none") {
-    return "No debts yet";
+    return "No promises yet";
   }
   if (person.status === "settled") {
     return "Settled up";
   }
 
-  const parts = [`${person.openDebtCount} active`];
+  const parts: string[] = [];
+  if (person.owedToYou > 0) {
+    parts.push(`Owes you ${formatCurrency(person.owedToYou)}`);
+  }
+  if (person.youOwe > 0) {
+    parts.push(`You owe ${formatCurrency(person.youOwe)}`);
+  }
+
+  if (parts.length === 0) {
+    parts.push(`${person.openDebtCount} active`);
+  }
+
   if (person.overdueCount > 0) {
     parts.push(`${person.overdueCount} overdue`);
   } else if (person.dueSoonCount > 0) {
@@ -49,19 +60,6 @@ export const PersonCard = memo(({ person, onPress }: PersonCardProps) => {
               <Text style={styles.sub} numberOfLines={1}>
                 {buildSummaryLine(person)}
               </Text>
-            </View>
-            <View style={styles.amountCol}>
-              {person.status !== "none" ? (
-                <Text
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.78}
-                  numberOfLines={1}
-                  style={styles.amount}
-                >
-                  {formatCurrency(person.outstanding)}
-                </Text>
-              ) : null}
-              <Text style={styles.lastActivity}>Updated {person.lastActivity}</Text>
             </View>
           </View>
 
@@ -108,9 +106,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   topRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
     alignItems: "center",
-    gap: 10,
   },
   meta: {
     flex: 1,
@@ -125,23 +121,6 @@ const styles = StyleSheet.create((theme) => ({
   sub: {
     fontSize: 13,
     color: theme.colors.muted,
-    lineHeight: 18,
-  },
-  amountCol: {
-    alignItems: "flex-end",
-    flexShrink: 0,
-    maxWidth: "45%",
-  },
-  amount: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: theme.colors.text,
-    lineHeight: 20,
-    fontVariant: ["tabular-nums"],
-  },
-  lastActivity: {
-    fontSize: 12,
-    color: theme.colors.mutedLight,
     lineHeight: 18,
   },
   footer: {

@@ -54,10 +54,15 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
 
   const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
   const firstName = getFirstName(debt.name);
-  const followUpMsg = `Hey ${firstName}, just a reminder about the ${formatCurrency(debt.remaining)} you said you'd send on ${debt.dueDate}.`;
+  const isUserOwed = debt.direction === "they_owe_me";
+  const reminderText = isUserOwed
+    ? `Hey ${firstName}, just a reminder about the ${formatCurrency(debt.remaining)} you said you'd send on ${debt.dueDate}.`
+    : debt.reason
+      ? `You owe ${firstName} ${formatCurrency(debt.remaining)} for ${debt.reason}.`
+      : `You owe ${firstName} ${formatCurrency(debt.remaining)}.`;
 
   const handleCopy = async () => {
-    await Clipboard.setStringAsync(followUpMsg);
+    await Clipboard.setStringAsync(reminderText);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -106,7 +111,9 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
                   <View style={styles.timelineBody}>
                     <View style={styles.timelineTop}>
                       <Text style={styles.paymentAmount}>
-                        {formatCurrency(payment.amount)} paid
+                        {isUserOwed
+                          ? `${formatCurrency(payment.amount)} paid`
+                          : `You paid ${formatCurrency(payment.amount)}`}
                       </Text>
                       <Text style={styles.paymentDate}>{payment.date}</Text>
                     </View>
@@ -119,19 +126,23 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
 
           {debt.status !== "paid" ? (
             <View style={styles.followUpSection}>
-              <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Follow-up message</Text>
+              <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>
+                {isUserOwed ? "Follow-up message" : "Payment reminder"}
+              </Text>
               <View style={styles.messageCard}>
-                <Text style={styles.messageBox}>{followUpMsg}</Text>
-                <Pressable onPress={handleCopy} style={styles.copyBtn}>
-                  {copied ? (
-                    <Check color={theme.colors.success} size={14} strokeWidth={2.5} />
-                  ) : (
-                    <Copy color={theme.colors.primary} size={14} strokeWidth={2.5} />
-                  )}
-                  <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
-                    {copied ? "Copied!" : "Copy message"}
-                  </Text>
-                </Pressable>
+                <Text style={styles.messageBox}>{reminderText}</Text>
+                {isUserOwed ? (
+                  <Pressable onPress={handleCopy} style={styles.copyBtn}>
+                    {copied ? (
+                      <Check color={theme.colors.success} size={14} strokeWidth={2.5} />
+                    ) : (
+                      <Copy color={theme.colors.primary} size={14} strokeWidth={2.5} />
+                    )}
+                    <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
+                      {copied ? "Copied!" : "Copy message"}
+                    </Text>
+                  </Pressable>
+                ) : null}
               </View>
             </View>
           ) : null}
@@ -190,7 +201,11 @@ function PaidSummary({ debt, firstName }: { debt: DebtDetailView; firstName: str
         <Check color={theme.colors.success} size={24} strokeWidth={2.5} />
       </View>
       <Text style={styles.paidTitle}>Settled</Text>
-      <Text style={styles.paidCopy}>{firstName} has fully paid this amount.</Text>
+      <Text style={styles.paidCopy}>
+        {debt.direction === "i_owe_them"
+          ? `You fully paid this amount to ${firstName}.`
+          : `${firstName} has fully paid this amount.`}
+      </Text>
       <Text style={styles.paidAmount}>{formatCurrency(debt.amount)}</Text>
       {lastPayment ? <Text style={styles.paidDate}>Paid {lastPayment.date}</Text> : null}
     </View>

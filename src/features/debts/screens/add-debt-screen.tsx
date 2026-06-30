@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import { ScrollView, Switch, Text, TextInput, View } from "react-native";
 
@@ -19,10 +19,11 @@ import {
 import { useAddDebt } from "@/features/debts/hooks/use-add-debt";
 import { usePeople } from "@/features/debts/hooks/use-people";
 import { formatDueDate, resolveQuickDate } from "@/features/debts/lib/format-dates";
-import type { CreateDebtInput, PersonRef } from "@/features/debts/view-models";
+import type { CreateDebtInput, DebtDirection, PersonRef } from "@/features/debts/view-models";
 import { completeOnboarding } from "@/features/onboarding/lib/onboarding-storage";
 import {
   type NotificationPermissionState,
+  getNotificationPermissionState,
   openOsNotificationSettings,
 } from "@/features/reminders/lib/notification-permissions";
 import { requestReminderPermissionOnToggle } from "@/features/reminders/lib/request-reminder-permissions";
@@ -32,6 +33,10 @@ import { HOME_ROUTE } from "@/lib/navigation/routes";
 import { formatCurrencyPrefix, getInitials } from "@/lib/utils/formatters";
 
 const QUICK_DATES = ["Today", "Tomorrow", "Friday", "Next week"];
+const DIRECTION_OPTIONS: { value: DebtDirection; label: string }[] = [
+  { value: "they_owe_me", label: "They owe me" },
+  { value: "i_owe_them", label: "I owe them" },
+];
 
 function exitAddDebt() {
   if (router.canGoBack()) {
@@ -65,6 +70,7 @@ export function AddDebtScreen() {
     personId ? { kind: "existing", id: personId } : null,
   );
   const [personName, setPersonName] = useState(() => presetPersonName ?? "");
+  const [direction, setDirection] = useState<DebtDirection>("they_owe_me");
   const [amount, setAmount] = useState("");
   const [dueDateIso, setDueDateIso] = useState(() => resolveQuickDate("Today"));
   const [reason, setReason] = useState("");
@@ -75,6 +81,15 @@ export function AddDebtScreen() {
 
   const parsedAmount = parseInt(amount, 10);
   const canSave = person !== null && parsedAmount > 0;
+
+  useEffect(() => {
+    void getNotificationPermissionState().then((state) => {
+      setNotifPermission(state);
+      if (state === "allowed") {
+        setReminder(true);
+      }
+    });
+  }, []);
 
   const openPicker = useCallback(() => {
     selectionChange();
@@ -113,6 +128,7 @@ export function AddDebtScreen() {
 
     const payload: CreateDebtInput = {
       person,
+      direction,
       originalAmount: parsedAmount,
       dueDate: dueDateIso,
       reason: reason.trim() || undefined,
@@ -134,6 +150,7 @@ export function AddDebtScreen() {
     addDebt,
     canSave,
     defaultCurrency,
+    direction,
     dueDateIso,
     fromOnboarding,
     person,
@@ -161,6 +178,28 @@ export function AddDebtScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <Field bare label="Direction">
+          <View style={styles.segmented}>
+            {DIRECTION_OPTIONS.map((option) => {
+              const selected = direction === option.value;
+              return (
+                <PressableScale
+                  key={option.value}
+                  onPress={() => {
+                    selectionChange();
+                    setDirection(option.value);
+                  }}
+                  style={[styles.segment, selected && styles.segmentSelected]}
+                >
+                  <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
+                    {option.label}
+                  </Text>
+                </PressableScale>
+              );
+            })}
+          </View>
+        </Field>
+
         <Field label="Person">
           {person ? (
             <View style={styles.personChip}>
@@ -183,7 +222,9 @@ export function AddDebtScreen() {
             </View>
           ) : (
             <PressableScale onPress={openPicker} style={styles.personField}>
-              <Text style={styles.personPlaceholder}>Who owes you?</Text>
+              <Text style={styles.personPlaceholder}>
+                {direction === "i_owe_them" ? "Who do you owe?" : "Who owes you?"}
+              </Text>
               <ChevronRight color={theme.colors.placeholder} size={18} strokeWidth={2} />
             </PressableScale>
           )}
@@ -353,6 +394,33 @@ const styles = StyleSheet.create((theme) => ({
     shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
     shadowRadius: theme.name === "light" ? 1.5 : 2,
     elevation: theme.name === "light" ? 0 : 1,
+  },
+  segmented: {
+    flexDirection: "row",
+    gap: 8,
+    backgroundColor: theme.colors.surfaceMuted,
+    borderRadius: 16,
+    padding: 4,
+  },
+  segment: {
+    flex: 1,
+    minHeight: 42,
+    alignItems: "center",
+    justifyContent: "center",
+    borderRadius: 12,
+  },
+  segmentSelected: {
+    backgroundColor: theme.colors.card,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  segmentText: {
+    fontSize: 13,
+    fontWeight: "700",
+    color: theme.colors.muted,
+  },
+  segmentTextSelected: {
+    color: theme.colors.text,
   },
   sectionTitle: {
     fontSize: 11,

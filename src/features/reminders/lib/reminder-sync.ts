@@ -118,8 +118,13 @@ async function syncOsNotifications(eligibleById: Map<string, DebtSummary>): Prom
           a.debt.person.name.localeCompare(b.debt.person.name),
       );
       const total = sorted.reduce((sum, entry) => sum + entry.debt.remainingAmount, 0);
+      const firstDirection = sorted[0].debt.direction;
+      const direction = sorted.every((entry) => entry.debt.direction === firstDirection)
+        ? firstDirection
+        : "mixed";
       const content = buildCollapsedReminderContent({
         type: bucket.type,
+        direction,
         names: sorted.map((entry) => entry.debt.person.name),
         totalCount: members.length,
         totalRemaining: total,
@@ -145,6 +150,7 @@ async function syncOsNotifications(eligibleById: Map<string, DebtSummary>): Prom
     for (const { reminder, debt } of members) {
       const content = buildReminderNotificationContent({
         type: bucket.type,
+        direction: debt.direction,
         personName: debt.person.name,
         remainingAmount: debt.remainingAmount,
         currency: debt.currency,
