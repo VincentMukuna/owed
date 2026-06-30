@@ -13,6 +13,7 @@ export async function loadRemindersInbox() {
   return items.map((item) => {
     const content = buildReminderNotificationContent({
       type: item.type,
+      direction: item.direction,
       personName: item.personName,
       remainingAmount: item.remainingAmount,
       currency: item.currency,

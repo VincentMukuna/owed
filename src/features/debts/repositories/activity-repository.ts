@@ -1,9 +1,10 @@
 import { type SQLiteDatabase } from "expo-sqlite";
 
 import { getDb } from "@/lib/db/client";
+import { rowToDebtDirection } from "@/lib/db/mappers";
 import type { ActivityEventsRow } from "@/lib/db/row-types";
 import { createId } from "@/lib/id";
-import type { ActivityEvent, ActivityEventType } from "@/types";
+import type { ActivityEvent, ActivityEventType, DebtDirection } from "@/types";
 
 export type CreateActivityEventInput = {
   type: ActivityEventType;
@@ -18,6 +19,7 @@ type ActivityEventListRow = ActivityEventsRow & {
   person_name: string;
   debt_reason: string | null;
   debt_currency: string;
+  debt_direction: string;
   payment_note: string | null;
 };
 
@@ -38,6 +40,7 @@ export type ActivityEventWithRelations = ActivityEvent & {
   personName: string;
   debtReason?: string;
   debtCurrency: string;
+  debtDirection: DebtDirection;
   paymentNote?: string;
 };
 
@@ -47,6 +50,7 @@ function rowToActivityEventWithRelations(row: ActivityEventListRow): ActivityEve
     personName: row.person_name,
     debtReason: row.debt_reason ?? undefined,
     debtCurrency: row.debt_currency,
+    debtDirection: rowToDebtDirection(row.debt_direction),
     paymentNote: row.payment_note ?? undefined,
   };
 }
@@ -57,6 +61,7 @@ const ACTIVITY_SELECT = `
     p.name AS person_name,
     d.reason AS debt_reason,
     d.currency AS debt_currency,
+    d.direction AS debt_direction,
     pay.note AS payment_note
   FROM activity_events ae
   INNER JOIN people p ON p.id = ae.person_id

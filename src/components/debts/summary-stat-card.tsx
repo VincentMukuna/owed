@@ -2,21 +2,29 @@ import { View } from "react-native";
 
 import { StyleSheet } from "react-native-unistyles";
 
+import { PressableScale } from "@/components/shared/pressable-scale";
 import { Text } from "@/components/ui/text";
 
 type SummaryStatCardProps = {
   label: string;
   value: string;
   color: string;
+  onPress?: () => void;
 };
 
-export function SummaryStatCard({ label, value, color }: SummaryStatCardProps) {
-  return (
+export function SummaryStatCard({ label, value, color, onPress }: SummaryStatCardProps) {
+  const content = (
     <View style={styles.card}>
       <Text style={[styles.label, { color }]}>{label}</Text>
       <Text style={styles.value}>{value}</Text>
     </View>
   );
+
+  if (!onPress) {
+    return content;
+  }
+
+  return <PressableScale onPress={onPress}>{content}</PressableScale>;
 }
 
 const styles = StyleSheet.create((theme) => ({

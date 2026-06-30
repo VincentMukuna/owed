@@ -1,5 +1,5 @@
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
-import type { ReminderType } from "@/types";
+import type { DebtDirection, ReminderType } from "@/types";
 
 function parseISODate(dateStr: string): Date {
   const [year, month, day] = dateStr.split("-").map(Number);
@@ -45,11 +45,26 @@ export type ReminderNotificationContent = {
 
 export function buildReminderNotificationContent(input: {
   type: ReminderType;
+  direction: DebtDirection;
   personName: string;
   remainingAmount: number;
   currency: string;
 }): ReminderNotificationContent {
   const amount = formatCurrency(input.remainingAmount, input.currency);
+
+  if (input.direction === "i_owe_them") {
+    if (input.type === "overdue") {
+      return {
+        title: "Overdue",
+        body: `You were due yesterday, ${amount} still owed to ${input.personName}.`,
+      };
+    }
+
+    return {
+      title: "Due today",
+      body: `You owe ${input.personName} ${amount} today.`,
+    };
+  }
 
   if (input.type === "overdue") {
     return {
@@ -70,6 +85,7 @@ export function groupKeyFor(type: ReminderType, bucketDate: string): string {
 
 export function buildCollapsedReminderContent(input: {
   type: ReminderType;
+  direction: DebtDirection | "mixed";
   /** Names ordered by remaining amount descending; only the first two are shown. */
   names: string[];
   totalCount: number;
@@ -77,6 +93,28 @@ export function buildCollapsedReminderContent(input: {
   currency: string;
 }): ReminderNotificationContent {
   const amount = formatCurrency(input.totalRemaining, input.currency);
+
+  if (input.direction === "mixed") {
+    return {
+      title: input.type === "overdue" ? "Overdue" : "Due today",
+      body: `${input.totalCount} promises need attention, ${amount} unsettled.`,
+    };
+  }
+
+  if (input.direction === "i_owe_them") {
+    if (input.type === "overdue") {
+      return {
+        title: "Overdue",
+        body: `${input.totalCount} payments you owe are overdue, ${amount} still unsettled.`,
+      };
+    }
+
+    return {
+      title: "Due today",
+      body: `${input.totalCount} payments you owe are due today, ${amount} total.`,
+    };
+  }
+
   const shown = input.names.slice(0, 2).map(getFirstName);
   const remainder = input.totalCount - shown.length;
   const lead = shown.join(", ");

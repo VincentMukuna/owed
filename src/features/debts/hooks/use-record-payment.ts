@@ -18,11 +18,13 @@ export function useRecordPayment() {
   return useMutation({
     mutationFn: ({ debtId, input }: RecordPaymentVariables) =>
       debtRepository.recordPayment(debtId, input),
-    onSuccess: async (_debt, variables) => {
+    onSuccess: async (debt, variables) => {
       await afterDebtDomainChange(queryClient, { debtId: variables.debtId });
 
       const isFullPayment = variables.input.amount >= variables.remainingBeforePayment;
-      showToast(isFullPayment ? "Debt marked as paid." : "Payment recorded.");
+      const fullMessage =
+        debt.direction === "i_owe_them" ? "Promise settled." : "Promise marked as paid.";
+      showToast(isFullPayment ? fullMessage : "Payment recorded.");
     },
     onError: () => {
       showToast("Could not record payment. Try again.");

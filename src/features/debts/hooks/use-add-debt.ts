@@ -13,7 +13,7 @@ export function useAddDebt() {
     mutationFn: (input: CreateDebtInput) => debtRepository.create(input),
     onSuccess: async () => {
       await afterDebtDomainChange(queryClient);
-      showToast("Debt saved.");
+      showToast("Promise saved.");
     },
     onError: (error) => {
       if (__DEV__) {

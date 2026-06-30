@@ -1,7 +1,7 @@
 import { getDb } from "@/lib/db/client";
 import type { RemindersRow } from "@/lib/db/row-types";
 import { createId } from "@/lib/id";
-import type { Reminder, ReminderStatus, ReminderType } from "@/types";
+import type { DebtDirection, Reminder, ReminderStatus, ReminderType } from "@/types";
 
 export type CreateReminderInput = {
   debtId: string;
@@ -14,6 +14,7 @@ export type CreateReminderInput = {
 
 export type ReminderInboxItem = Reminder & {
   personName: string;
+  direction: DebtDirection;
   remainingAmount: number;
   currency: string;
 };
@@ -22,6 +23,7 @@ type ReminderInboxRow = RemindersRow & {
   person_name: string;
   original_amount: number;
   paid_total: number;
+  direction: string;
   currency: string;
 };
 
@@ -45,6 +47,7 @@ function rowToInboxItem(row: ReminderInboxRow): ReminderInboxItem {
   return {
     ...rowToReminder(row),
     personName: row.person_name,
+    direction: row.direction === "i_owe_them" ? "i_owe_them" : "they_owe_me",
     remainingAmount: row.original_amount - row.paid_total,
     currency: row.currency,
   };
@@ -206,6 +209,7 @@ export const reminderRepository = {
         r.*,
         p.name AS person_name,
         d.original_amount,
+        d.direction,
         d.currency,
         COALESCE(pay_totals.paid_total, 0) AS paid_total
       FROM reminders r

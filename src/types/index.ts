@@ -1,4 +1,5 @@
 export type DebtStatus = "active" | "due-soon" | "overdue" | "partial" | "paid" | "archived";
+export type DebtDirection = "they_owe_me" | "i_owe_them";
 
 export type ReminderStatus = "scheduled" | "sent" | "cancelled";
 
@@ -30,6 +31,7 @@ export interface Debt {
   userId: string;
   personId: string;
   personName: string;
+  direction: DebtDirection;
   originalAmount: number;
   remainingAmount: number;
   currency: string;

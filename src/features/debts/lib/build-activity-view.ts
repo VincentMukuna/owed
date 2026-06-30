@@ -47,15 +47,24 @@ export function buildActivityView(
 
   switch (event.type) {
     case "debt_created":
-      text = `You added ${formatCurrency(amount, currency)} owed by ${event.personName}`;
+      text =
+        event.debtDirection === "i_owe_them"
+          ? `You added ${formatCurrency(amount, currency)} you owe ${event.personName}`
+          : `You added ${formatCurrency(amount, currency)} owed by ${event.personName}`;
       sub = reason;
       break;
     case "payment_recorded":
-      text = `${event.personName} paid ${formatCurrency(amount, currency)}`;
+      text =
+        event.debtDirection === "i_owe_them"
+          ? `You paid ${event.personName} ${formatCurrency(amount, currency)}`
+          : `${event.personName} paid ${formatCurrency(amount, currency)}`;
       sub = buildPaymentSub(event.paymentNote, event.debtReason);
       break;
     case "debt_paid":
-      text = `${getFirstName(event.personName)}'s debt was marked as paid`;
+      text =
+        event.debtDirection === "i_owe_them"
+          ? `Your debt to ${getFirstName(event.personName)} was marked as paid`
+          : `${getFirstName(event.personName)}'s debt was marked as paid`;
       sub = reason
         ? `${formatCurrency(amount, currency)} · ${reason}`
         : formatCurrency(amount, currency);

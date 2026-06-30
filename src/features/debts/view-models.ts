@@ -1,6 +1,7 @@
-import type { DebtStatus } from "@/types";
+import type { DebtDirection, DebtStatus } from "@/types";
 
 export type { DebtStatus };
+export type { DebtDirection };
 
 export type CardDebtStatus = Exclude<DebtStatus, "archived">;
 
@@ -15,8 +16,10 @@ export type DebtCardView = {
   id: string;
   name: string;
   initials: string;
+  direction: DebtDirection;
   amount: number;
   remaining: number;
+  lastPaymentAt?: string;
   currency: string;
   dueDate: string;
   /** Raw ISO due date (YYYY-MM-DD) for filtering; `dueDate` is the display string. */
@@ -39,6 +42,7 @@ export type PersonRef = { kind: "existing"; id: string } | { kind: "new"; name: 
 
 export type CreateDebtInput = {
   person: PersonRef;
+  direction: DebtDirection;
   originalAmount: number;
   dueDate: string;
   reason?: string;

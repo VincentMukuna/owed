@@ -8,6 +8,7 @@ import { saveOverdueReminderEnabled } from "@/features/reminders/lib/reminder-st
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { getDb } from "@/lib/db/client";
 import { createId } from "@/lib/id";
+import type { DebtDirection } from "@/types";
 
 /** Per bucket — six debts crosses the collapse threshold for one grouped push. */
 export const SEED_REMINDER_TEST_COUNT = 6;
@@ -24,16 +25,22 @@ type SeedDebtRow = {
   id: string;
   personId: string;
   name: string;
+  direction: DebtDirection;
   amount: number;
   dueDate: string;
   reason: string;
 };
 
+function seedDebtDirection(index: number): DebtDirection {
+  return index % 2 === 0 ? "they_owe_me" : "i_owe_them";
+}
+
 function buildDebtRows(count: number, dueDate: string, reason: string): SeedDebtRow[] {
-  return Array.from({ length: count }, () => ({
+  return Array.from({ length: count }, (_, index) => ({
     id: createId(),
     personId: createId(),
     name: faker.person.fullName(),
+    direction: seedDebtDirection(index),
     amount: faker.number.int({ min: 10, max: 500 }),
     dueDate,
     reason,
@@ -58,11 +65,12 @@ async function insertDebts(
 
     await db.runAsync(
       `INSERT INTO debts (
-        id, person_id, original_amount, currency, reason, due_date, lent_date,
+        id, person_id, direction, original_amount, currency, reason, due_date, lent_date,
         reminder_enabled, reminder_time, archived_at, created_at, updated_at
-      ) VALUES (?, ?, ?, ?, ?, ?, NULL, 1, ?, NULL, ?, ?)`,
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, NULL, 1, ?, NULL, ?, ?)`,
       debt.id,
       debt.personId,
+      debt.direction,
       debt.amount,
       APP_CONFIG.defaultCurrency,
       debt.reason,

@@ -4,6 +4,7 @@ import { APP_CONFIG } from "@/constants/config";
 import { toISODate } from "@/features/debts/lib/format-dates";
 import { getDb } from "@/lib/db/client";
 import { createId } from "@/lib/id";
+import type { DebtDirection } from "@/types";
 
 export const SEED_PEOPLE_COUNT = 100;
 export const SEED_DEBT_COUNT = 500;
@@ -82,6 +83,7 @@ type SeedPerson = {
 type SeedDebt = {
   id: string;
   personId: string;
+  direction: DebtDirection;
   originalAmount: number;
   reason: string;
   dueDate: string;
@@ -135,8 +137,14 @@ function pickPerson(people: SeedPerson[]): SeedPerson {
   );
 }
 
+function seedDebtDirection(index: number): DebtDirection {
+  // Keep the sample close to the original lending-heavy app, but guarantee
+  // every seed run exercises both directions without depending on chance.
+  return index % 4 === 3 ? "i_owe_them" : "they_owe_me";
+}
+
 function buildDebts(people: SeedPerson[], now: Date): SeedDebt[] {
-  return Array.from({ length: SEED_DEBT_COUNT }, () => {
+  return Array.from({ length: SEED_DEBT_COUNT }, (_, index) => {
     const person = pickPerson(people);
     const personCreatedAt = new Date(person.createdAt);
     const createdAt = randomBetween(personCreatedAt, now);
@@ -148,6 +156,7 @@ function buildDebts(people: SeedPerson[], now: Date): SeedDebt[] {
     return {
       id: createId(),
       personId: person.id,
+      direction: seedDebtDirection(index),
       originalAmount: randomSeedDebtAmount(),
       reason: randomSeedDebtReason(),
       dueDate: toISODate(dueDate),
@@ -254,6 +263,7 @@ export async function seedDebts(): Promise<SeedResult> {
         `INSERT INTO debts (
           id,
           person_id,
+          direction,
           original_amount,
           currency,
           reason,
@@ -264,9 +274,10 @@ export async function seedDebts(): Promise<SeedResult> {
           archived_at,
           created_at,
           updated_at
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
         debt.id,
         debt.personId,
+        debt.direction,
         debt.originalAmount,
         APP_CONFIG.defaultCurrency,
         debt.reason,

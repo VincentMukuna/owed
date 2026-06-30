@@ -1,6 +1,7 @@
 import { z } from "zod";
 
 export const addDebtSchema = z.object({
+  direction: z.enum(["they_owe_me", "i_owe_them"]),
   personName: z.string().trim().min(1, "Person name is required"),
   amount: z.number().positive("Amount must be greater than zero"),
   dueDate: z.string().min(1, "Due date is required"),
