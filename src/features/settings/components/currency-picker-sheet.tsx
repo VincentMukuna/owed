@@ -25,6 +25,7 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { CURRENCIES, type CurrencyOption } from "@/features/settings/lib/currencies";
+import { getCurrencyFlag } from "@/features/settings/lib/currency-flags";
 import { selectionChange } from "@/lib/haptics";
 
 const SHEET_CONTAINER = (Platform.OS === "ios" ? FullWindowOverlay : undefined) as
@@ -126,11 +127,14 @@ export const CurrencyPickerSheet = forwardRef<CurrencyPickerSheetRef, CurrencyPi
             onPress={() => selectCurrency(item.code)}
             style={[styles.row, selected && styles.rowSelected]}
           >
-            <View style={styles.rowCopy}>
-              <Text style={styles.rowCode}>{item.code}</Text>
-              <Text numberOfLines={1} style={styles.rowName}>
-                {item.name}
-              </Text>
+            <View style={styles.rowLeading}>
+              <Text style={styles.rowFlag}>{getCurrencyFlag(item.code)}</Text>
+              <View style={styles.rowCopy}>
+                <Text style={styles.rowCode}>{item.code}</Text>
+                <Text numberOfLines={1} style={styles.rowName}>
+                  {item.name}
+                </Text>
+              </View>
             </View>
             {selected ? <Check color={theme.colors.primary} size={18} strokeWidth={2.5} /> : null}
           </PressableScale>
@@ -256,6 +260,17 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.selected,
     borderWidth: 1,
     borderColor: theme.colors.selectedBorder,
+  },
+  rowLeading: {
+    flex: 1,
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 12,
+    minWidth: 0,
+  },
+  rowFlag: {
+    fontSize: 22,
+    lineHeight: 26,
   },
   rowCopy: {
     flex: 1,
