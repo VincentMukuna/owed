@@ -181,7 +181,7 @@ function PersonSummary({ person }: { person: PersonDetailView }) {
     <View style={styles.summaryCard}>
       <View style={styles.summaryTop}>
         <Text style={styles.summaryHint}>Total unsettled</Text>
-        <PersonStatusBadge status={person.status} />
+        <PersonStatusBadge overdueCount={person.overdueCount} status={person.status} />
       </View>
       <Text style={styles.summaryAmount}>{formatCurrency(person.outstanding)}</Text>
       <Text style={styles.summarySupport}>{supporting}</Text>
@@ -193,21 +193,6 @@ function PersonSummary({ person }: { person: PersonDetailView }) {
         <View>
           <Text style={styles.summaryFooterLabel}>You owe</Text>
           <Text style={styles.summaryFooterValue}>{formatCurrency(person.youOwe)}</Text>
-        </View>
-      </View>
-      {person.overdueCount > 0 ? (
-        <Text style={styles.summaryOverdue}>{person.overdueCount} overdue</Text>
-      ) : null}
-      <View style={styles.summaryFooter}>
-        <View>
-          <Text style={styles.summaryFooterLabel}>Original total</Text>
-          <Text style={styles.summaryFooterValue}>{formatCurrency(person.originalTotal)}</Text>
-        </View>
-        <View>
-          <Text style={styles.summaryFooterLabel}>Settled</Text>
-          <Text style={styles.summaryFooterValue}>
-            {person.paidCount} {person.paidCount === 1 ? "debt" : "debts"}
-          </Text>
         </View>
       </View>
     </View>
@@ -316,20 +301,6 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 13,
     color: theme.colors.muted,
     marginTop: 4,
-  },
-  summaryOverdue: {
-    fontSize: 13,
-    fontWeight: "600",
-    color: theme.colors.danger,
-    marginTop: 4,
-  },
-  summaryFooter: {
-    flexDirection: "row",
-    gap: 28,
-    marginTop: 16,
-    paddingTop: 16,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
   },
   directionBreakdown: {
     flexDirection: "row",

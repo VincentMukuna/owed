@@ -18,7 +18,6 @@ import { TabListScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { selectionChange } from "@/lib/haptics";
 import { invalidatePeopleQueries } from "@/lib/query/invalidate-queries";
-import { formatCurrency } from "@/lib/utils/formatters";
 
 import { PeopleList } from "../components/people-list";
 import { usePeopleList } from "../hooks/use-people-list";
@@ -37,18 +36,6 @@ export function PeopleScreen() {
   const visiblePeople = useMemo(
     () => filterAndSortPeople(people, deferredSearchQuery),
     [people, deferredSearchQuery],
-  );
-
-  const totals = useMemo(
-    () =>
-      people.reduce(
-        (sum, person) => ({
-          owedToYou: sum.owedToYou + person.owedToYou,
-          youOwe: sum.youOwe + person.youOwe,
-        }),
-        { owedToYou: 0, youOwe: 0 },
-      ),
-    [people],
   );
 
   useEffect(() => {
@@ -86,20 +73,6 @@ export function PeopleScreen() {
 
   const isSearching = searchQuery.trim().length > 0;
 
-  const listHeader = useMemo(() => {
-    if (people.length === 0) {
-      return null;
-    }
-    return (
-      <View style={styles.summary}>
-        <Text style={styles.summaryText}>
-          {people.length} {people.length === 1 ? "person" : "people"} · Owed to you{" "}
-          {formatCurrency(totals.owedToYou)} · You owe {formatCurrency(totals.youOwe)}
-        </Text>
-      </View>
-    );
-  }, [people.length, totals]);
-
   const emptyState = useMemo(
     () => (
       <View style={styles.empty}>
@@ -129,7 +102,7 @@ export function PeopleScreen() {
   if (isPending) {
     return (
       <TabScreen>
-        <TabListScreenSkeleton row="person" showSummary />
+        <TabListScreenSkeleton row="person" />
       </TabScreen>
     );
   }
@@ -166,7 +139,6 @@ export function PeopleScreen() {
         ref={listRef}
         contentContainerStyle={styles.scroll}
         ListEmptyComponent={emptyState}
-        ListHeaderComponent={listHeader}
         onPersonPress={openPerson}
         people={visiblePeople}
         refreshControlProps={refreshControlProps}
@@ -204,15 +176,6 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 14,
     fontWeight: "600",
     color: theme.colors.icon,
-  },
-  summary: {
-    paddingBottom: 12,
-  },
-  summaryText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: theme.colors.muted,
-    fontVariant: ["tabular-nums"],
   },
   scroll: {
     paddingHorizontal: 20,

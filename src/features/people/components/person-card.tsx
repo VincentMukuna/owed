@@ -1,8 +1,9 @@
-import { memo } from "react";
+import { Fragment, memo, type ReactNode } from "react";
 
 import { Text, View } from "react-native";
 
-import { StyleSheet } from "react-native-unistyles";
+import { ArrowDownLeft, ArrowUpRight, type LucideIcon } from "lucide-react-native";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -10,33 +11,93 @@ import { formatCurrency } from "@/lib/utils/formatters";
 import type { PersonListItemView } from "../view-models";
 import { PersonStatusBadge } from "./person-status-badge";
 
-function buildSummaryLine(person: PersonListItemView): string {
+function DirectionSegment({
+  icon: Icon,
+  color,
+  amount,
+  promiseCount,
+}: {
+  icon: LucideIcon;
+  color: string;
+  amount: number;
+  promiseCount: number;
+}) {
+  return (
+    <View style={styles.directionSegment}>
+      <Icon color={color} size={12} strokeWidth={2.3} style={styles.directionIcon} />
+      <Text style={styles.amount} numberOfLines={1}>
+        {formatCurrency(amount)}
+        {promiseCount > 0 ? ` (${promiseCount})` : ""}
+      </Text>
+    </View>
+  );
+}
+
+function PersonSummaryLine({ person }: { person: PersonListItemView }) {
+  const { theme } = useUnistyles();
+
   if (person.status === "none") {
-    return "No promises yet";
+    return (
+      <Text style={styles.sub} numberOfLines={1}>
+        No promises yet
+      </Text>
+    );
   }
   if (person.status === "settled") {
-    return "Settled up";
+    return (
+      <Text style={styles.sub} numberOfLines={1}>
+        Settled up
+      </Text>
+    );
   }
 
-  const parts: string[] = [];
+  const segments: ReactNode[] = [];
+
   if (person.owedToYou > 0) {
-    parts.push(`Owes you ${formatCurrency(person.owedToYou)}`);
+    segments.push(
+      <DirectionSegment
+        key="owed"
+        amount={person.owedToYou}
+        color={theme.colors.success}
+        icon={ArrowDownLeft}
+        promiseCount={person.owedToYouOpenCount}
+      />,
+    );
   }
   if (person.youOwe > 0) {
-    parts.push(`You owe ${formatCurrency(person.youOwe)}`);
+    segments.push(
+      <DirectionSegment
+        key="owe"
+        amount={person.youOwe}
+        color={theme.colors.danger}
+        icon={ArrowUpRight}
+        promiseCount={person.youOweOpenCount}
+      />,
+    );
   }
 
-  if (parts.length === 0) {
-    parts.push(`${person.openDebtCount} active`);
+  if (segments.length === 0) {
+    return (
+      <Text style={styles.sub} numberOfLines={1}>
+        {person.openDebtCount} active
+      </Text>
+    );
   }
 
-  if (person.overdueCount > 0) {
-    parts.push(`${person.overdueCount} overdue`);
-  } else if (person.dueSoonCount > 0) {
-    parts.push(`${person.dueSoonCount} due soon`);
-  }
-
-  return parts.join(" · ");
+  return (
+    <View style={styles.summaryRow}>
+      {segments.map((segment, index) => (
+        <Fragment key={index}>
+          {index > 0 ? (
+            <Text style={styles.separator} numberOfLines={1}>
+              {" · "}
+            </Text>
+          ) : null}
+          {segment}
+        </Fragment>
+      ))}
+    </View>
+  );
 }
 
 type PersonCardProps = {
@@ -45,6 +106,8 @@ type PersonCardProps = {
 };
 
 export const PersonCard = memo(({ person, onPress }: PersonCardProps) => {
+  const showBadge = person.status !== "active" && person.status !== "none";
+
   return (
     <PressableScale onPress={onPress} style={styles.card}>
       <View style={styles.row}>
@@ -52,23 +115,14 @@ export const PersonCard = memo(({ person, onPress }: PersonCardProps) => {
           <Text style={styles.avatarText}>{person.initials}</Text>
         </View>
         <View style={styles.body}>
-          <View style={styles.topRow}>
-            <View style={styles.meta}>
-              <Text style={styles.name} numberOfLines={1}>
-                {person.name}
-              </Text>
-              <Text style={styles.sub} numberOfLines={1}>
-                {buildSummaryLine(person)}
-              </Text>
-            </View>
-          </View>
-
-          {person.status !== "active" && person.status !== "none" ? (
-            <View style={styles.footer}>
-              <PersonStatusBadge status={person.status} />
-            </View>
-          ) : null}
+          <Text style={styles.name} numberOfLines={1}>
+            {person.name}
+          </Text>
+          <PersonSummaryLine person={person} />
         </View>
+        {showBadge ? (
+          <PersonStatusBadge overdueCount={person.overdueCount} status={person.status} />
+        ) : null}
       </View>
     </PressableScale>
   );
@@ -104,26 +158,47 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     minWidth: 0,
   },
-  topRow: {
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  meta: {
-    flex: 1,
-    minWidth: 0,
-  },
   name: {
     fontSize: 15,
     fontWeight: "600",
     color: theme.colors.text,
     lineHeight: 20,
   },
+  summaryRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    flexWrap: "nowrap",
+    marginTop: 2,
+    minWidth: 0,
+  },
+  directionSegment: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 4,
+    flexShrink: 1,
+    minWidth: 0,
+  },
+  directionIcon: {
+    flexShrink: 0,
+  },
+  separator: {
+    fontSize: 13,
+    color: theme.colors.muted,
+    lineHeight: 18,
+    flexShrink: 0,
+  },
   sub: {
     fontSize: 13,
     color: theme.colors.muted,
     lineHeight: 18,
+    flexShrink: 1,
   },
-  footer: {
-    marginTop: 8,
+  amount: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: theme.colors.muted,
+    lineHeight: 18,
+    fontVariant: ["tabular-nums"],
+    flexShrink: 1,
   },
 }));
