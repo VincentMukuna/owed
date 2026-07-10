@@ -11,6 +11,7 @@ const TYPE_SYMBOL: Record<ActivityView["type"], string> = {
   payment: "↓",
   add: "+",
   paid: "✓",
+  update: "•",
 };
 
 type ActivityListProps = {

@@ -65,7 +65,15 @@ export type RecordPaymentInput = {
   note?: string;
 };
 
-export type ActivityViewType = "payment" | "add" | "paid";
+export type UpdateDebtInput = {
+  originalAmount: number;
+  dueDate: string;
+  reason?: string;
+  reminderEnabled: boolean;
+  reminderTime?: string;
+};
+
+export type ActivityViewType = "payment" | "add" | "paid" | "update";
 
 export type ActivityView = {
   id: string;
