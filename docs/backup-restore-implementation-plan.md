@@ -59,6 +59,15 @@ Exit criteria:
 
 Inventory every local state surface that must round-trip.
 
+Frozen decisions:
+
+- Backup v1 uses an explicit allowlist of persisted surfaces, not a dump of every available table or storage key.
+- SQLite allowlist: `people`, `debts`, `payments`, `activity_events`, `reminders`, and `schema_migrations`.
+- AsyncStorage allowlist: `settings` and `onboarding-complete`.
+- Legacy pre-SQLite AsyncStorage keys (`debts`, `payments`, `people`) are excluded unless implementation discovery proves they are still actively used.
+- OS notification permission is excluded.
+- Existing scheduled notification IDs are not authoritative restore state; restore cancels current Owed notifications and reconciles schedules after import.
+
 Required scope:
 
 - SQLite user data: people, debts, payments, activity events, reminders, and migration/schema state as needed for compatibility.
