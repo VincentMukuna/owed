@@ -17,7 +17,7 @@
       "encoding": "json",
       "hashAlgorithm": "sha256",
       "hash": "fixture-hash",
-      "byteLength": 1897,
+      "byteLength": 1911,
       "counts": {
         "people": 1,
         "debts": 1,
@@ -60,7 +60,7 @@
         "id": "payment_1",
         "debtId": "debt_1",
         "amount": 5000,
-        "paidAt": "2026-07-05",
+        "paidAt": "2026-07-05T10:00:00.000Z",
         "note": "Partial payment",
         "createdAt": "2026-07-05T10:00:00.000Z"
       }

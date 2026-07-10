@@ -13,7 +13,9 @@ export class ZodBackupValidator implements BackupValidator<BackupPayloadV1> {
     const parsed = backupDocumentSchema.safeParse(input);
 
     if (!parsed.success) {
-      throw new BackupError("INVALID_DOCUMENT", "The backup document is not valid.", parsed.error);
+      throw new BackupError("INVALID_DOCUMENT", "The backup document is not valid.", parsed.error, {
+        issues: parsed.error.issues,
+      });
     }
 
     return parsed.data;
@@ -23,7 +25,9 @@ export class ZodBackupValidator implements BackupValidator<BackupPayloadV1> {
     const parsed = backupManifestSchema.safeParse(input);
 
     if (!parsed.success) {
-      throw new BackupError("INVALID_MANIFEST", "The backup manifest is not valid.", parsed.error);
+      throw new BackupError("INVALID_MANIFEST", "The backup manifest is not valid.", parsed.error, {
+        issues: parsed.error.issues,
+      });
     }
 
     return parsed.data;
@@ -33,7 +37,9 @@ export class ZodBackupValidator implements BackupValidator<BackupPayloadV1> {
     const parsed = backupPayloadV1Schema.safeParse(input);
 
     if (!parsed.success) {
-      throw new BackupError("INVALID_PAYLOAD", "The backup payload is not valid.", parsed.error);
+      throw new BackupError("INVALID_PAYLOAD", "The backup payload is not valid.", parsed.error, {
+        issues: parsed.error.issues,
+      });
     }
 
     return parsed.data;

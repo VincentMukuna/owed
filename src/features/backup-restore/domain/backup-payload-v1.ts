@@ -49,7 +49,7 @@ export const backupPayloadV1Schema = z.object({
       id: backupRowId,
       debtId: backupRowId,
       amount: z.number().int().positive(),
-      paidAt: isoDate,
+      paidAt: isoDateTime,
       note: nullableString,
       createdAt: isoDateTime,
     }),

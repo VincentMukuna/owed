@@ -97,6 +97,22 @@ function populatedPayload(): BackupPayloadV1 {
   };
 }
 
+function payloadWithPaymentTimestamp(): BackupPayloadV1 {
+  return {
+    ...populatedPayload(),
+    payments: [
+      {
+        id: "payment_1",
+        debtId: "debt_1",
+        amount: 100,
+        paidAt: "2026-07-05T10:00:00.000Z",
+        note: null,
+        createdAt: "2026-07-05T10:00:00.000Z",
+      },
+    ],
+  };
+}
+
 function emptyPayload(): BackupPayloadV1 {
   return {
     people: [],
@@ -132,6 +148,13 @@ describe("backup client", () => {
     expect(created.document.manifest.format).toBe("owed.backup");
     expect(created.document.payload.preferences.onboardingComplete).toBe(false);
     expect(created.bytes.byteLength).toBeGreaterThan(0);
+  });
+
+  it("accepts app-created payment timestamps in backup payloads", async () => {
+    const client = createTestClient(payloadWithPaymentTimestamp());
+    const created = await client.create();
+
+    expect(created.document.payload.payments[0]?.paidAt).toBe("2026-07-05T10:00:00.000Z");
   });
 
   it("inspects a created backup without modifying application state", async () => {
