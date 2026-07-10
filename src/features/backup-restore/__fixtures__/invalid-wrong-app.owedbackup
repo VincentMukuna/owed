@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "appId": "other-app",
+    "backupSchemaVersion": 1,
+    "createdAt": "2026-07-10T12:00:00.000Z",
+    "appVersion": "1.0.0",
+    "databaseSchemaVersion": 5
+  },
+  "data": {
+    "sqlite": {
+      "people": [],
+      "debts": [],
+      "payments": [],
+      "activity_events": [],
+      "reminders": [],
+      "schema_migrations": []
+    },
+    "settings": {},
+    "onboardingComplete": false
+  }
+}

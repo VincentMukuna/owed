@@ -1,0 +1,21 @@
+{
+  "metadata": {
+    "appId": "owed",
+    "backupSchemaVersion": 999,
+    "createdAt": "2026-07-10T12:00:00.000Z",
+    "appVersion": "99.0.0",
+    "databaseSchemaVersion": 999
+  },
+  "data": {
+    "sqlite": {
+      "people": [],
+      "debts": [],
+      "payments": [],
+      "activity_events": [],
+      "reminders": [],
+      "schema_migrations": []
+    },
+    "settings": {},
+    "onboardingComplete": false
+  }
+}

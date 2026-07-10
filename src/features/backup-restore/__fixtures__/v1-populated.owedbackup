@@ -1,0 +1,93 @@
+{
+  "metadata": {
+    "appId": "owed",
+    "backupSchemaVersion": 1,
+    "createdAt": "2026-07-10T12:00:00.000Z",
+    "appVersion": "1.0.0",
+    "databaseSchemaVersion": 5
+  },
+  "data": {
+    "sqlite": {
+      "people": [
+        {
+          "id": "person_1",
+          "name": "Avery Stone",
+          "phone_number": "+15551234567",
+          "notes": "Prefers weekday reminders",
+          "created_at": "2026-07-01T09:00:00.000Z",
+          "updated_at": "2026-07-01T09:00:00.000Z"
+        }
+      ],
+      "debts": [
+        {
+          "id": "debt_1",
+          "person_id": "person_1",
+          "original_amount": 25000,
+          "currency": "KES",
+          "reason": "Lunch and transport",
+          "due_date": "2026-07-15",
+          "lent_date": "2026-07-01",
+          "reminder_enabled": 1,
+          "reminder_time": "09:00",
+          "archived_at": null,
+          "created_at": "2026-07-01T09:05:00.000Z",
+          "updated_at": "2026-07-01T09:05:00.000Z",
+          "direction": "they_owe_me"
+        }
+      ],
+      "payments": [
+        {
+          "id": "payment_1",
+          "debt_id": "debt_1",
+          "amount": 5000,
+          "paid_at": "2026-07-05",
+          "note": "Partial payment",
+          "created_at": "2026-07-05T10:00:00.000Z"
+        }
+      ],
+      "activity_events": [
+        {
+          "id": "activity_1",
+          "type": "payment_recorded",
+          "debt_id": "debt_1",
+          "payment_id": "payment_1",
+          "person_id": "person_1",
+          "amount": 5000,
+          "occurred_at": "2026-07-05T10:00:00.000Z",
+          "created_at": "2026-07-05T10:00:00.000Z"
+        }
+      ],
+      "reminders": [
+        {
+          "id": "reminder_1",
+          "debt_id": "debt_1",
+          "type": "due",
+          "remind_at": "2026-07-15T09:00:00.000Z",
+          "status": "scheduled",
+          "notification_id": "notification_1",
+          "read_at": null,
+          "created_at": "2026-07-01T09:05:00.000Z",
+          "updated_at": "2026-07-01T09:05:00.000Z",
+          "group_key": "due:2026-07-15:KES",
+          "archived_at": null
+        }
+      ],
+      "schema_migrations": [
+        { "version": 1 },
+        { "version": 2 },
+        { "version": 3 },
+        { "version": 4 },
+        { "version": 5 }
+      ]
+    },
+    "settings": {
+      "defaultCurrency": "KES",
+      "themePreference": "dark",
+      "brandColorTheme": "default",
+      "defaultReminderTime": "09:00",
+      "overdueReminderEnabled": true,
+      "notificationsPermissionAsked": true
+    },
+    "onboardingComplete": true
+  }
+}

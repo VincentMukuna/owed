@@ -1,0 +1,34 @@
+{
+  "metadata": {
+    "appId": "owed",
+    "backupSchemaVersion": 1,
+    "createdAt": "2026-07-10T12:00:00.000Z",
+    "appVersion": "1.0.0",
+    "databaseSchemaVersion": 5
+  },
+  "data": {
+    "sqlite": {
+      "people": [],
+      "debts": [],
+      "payments": [],
+      "activity_events": [],
+      "reminders": [],
+      "schema_migrations": [
+        { "version": 1 },
+        { "version": 2 },
+        { "version": 3 },
+        { "version": 4 },
+        { "version": 5 }
+      ]
+    },
+    "settings": {
+      "defaultCurrency": "KES",
+      "themePreference": "auto",
+      "brandColorTheme": "default",
+      "defaultReminderTime": "09:00",
+      "overdueReminderEnabled": false,
+      "notificationsPermissionAsked": false
+    },
+    "onboardingComplete": false
+  }
+}
