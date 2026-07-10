@@ -38,6 +38,7 @@ Frozen decisions:
 - Backup export reads raw SQLite table rows directly, table-by-table, instead of using UI summary repositories.
 - Restore validates the envelope identity, supported backup schema, and required sections before destructive confirmation.
 - Restore does not perform manual domain/data integrity auditing of backed-up rows; transactional import and SQLite constraints are the integrity boundary.
+- Restore does not run ad hoc data manipulation/backfill logic; defaulting and data-shape upgrades belong in the existing database migration stack.
 - Restore imports rows in dependency order inside transactional SQLite work.
 - Restore invalidates app query/UI state once after replacement and reconciliation.
 - Seeded sample data is the performance gate for backup and restore responsiveness.
@@ -128,6 +129,7 @@ Required behavior:
 Migration requirement:
 
 - Restoring a backup from an older supported backup/database shape must run through the migration path and finish compatible with the current app.
+- If restored data needs defaults, backfills, or schema-shape changes, those changes must be represented as normal database migrations rather than restore-only transforms.
 - Future migrations must not break historical restore fixtures.
 
 Exit criteria:
