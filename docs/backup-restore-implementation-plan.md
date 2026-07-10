@@ -36,7 +36,8 @@ Frozen decisions:
 - The user-facing file uses a custom `.owedbackup` extension with JSON contents.
 - The filename pattern is `owed-backup-YYYY-MM-DD.owedbackup`.
 - Backup export reads raw SQLite table rows directly, table-by-table, instead of using UI summary repositories.
-- Restore validates the envelope and row shapes before destructive replacement.
+- Restore validates the envelope identity, supported backup schema, and required sections before destructive confirmation.
+- Restore does not perform manual domain/data integrity auditing of backed-up rows; transactional import and SQLite constraints are the integrity boundary.
 - Restore imports rows in dependency order inside transactional SQLite work.
 - Restore invalidates app query/UI state once after replacement and reconciliation.
 - Seeded sample data is the performance gate for backup and restore responsiveness.
@@ -118,6 +119,7 @@ Required behavior:
 - The destructive confirmation appears after validation and before replacement.
 - Canceling at any point before confirmation leaves current data unchanged.
 - Restore replacement is atomic from the user's perspective: a failed restore must not leave mixed current/restored data.
+- If row data fails during import, restore fails and rolls back without replacing the current app state.
 - Valid empty backups are restorable after confirmation.
 - Restored state preserves backed-up onboarding and settings.
 - Existing scheduled Owed notifications are canceled, restored reminders are reconciled, and stale notifications do not survive restore.
@@ -189,11 +191,6 @@ Restore validation tests:
 - Missing metadata.
 - Missing required local-state sections.
 - Malformed file contents.
-- Structurally valid file with invalid row shapes.
-- Broken foreign-key relationships.
-- Duplicate primary identifiers.
-- Invalid enum/status values.
-- Invalid dates or amounts.
 
 Restore behavior tests:
 
@@ -201,6 +198,7 @@ Restore behavior tests:
 - User cancels destructive confirmation.
 - Current data is unchanged after validation failure.
 - Current data is unchanged after restore failure.
+- Current data is unchanged if row import fails due to SQLite constraints.
 - Current data is replaced after successful restore.
 - Settings restore exactly.
 - Onboarding state restores exactly.
