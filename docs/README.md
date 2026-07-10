@@ -10,4 +10,5 @@ Product and design references for the Personal Credit Tracker MVP.
 | [reminders-prd.md](./reminders-prd.md) | **v0.3 sprint** — local notifications, reminders table, in-app inbox, reconciliation, and permission flow |
 | [people-prd.md](./people-prd.md) | **v1 People** — person-level view, Person detail, add-debt-for-person, edit person, search; Activity leaves the tab bar |
 | [bi-directional-debts-prd.md](./bi-directional-debts-prd.md) | **Bi-directional debts** — support both money owed to the user and money the user owes others without adding a separate module |
+| [debt-management-prd.md](./debt-management-prd.md) | **Debt management actions** — edit debt, archive debt, contextual payment actions, platform menus, and ledger-safe validation |
 | [performance.md](./performance.md) | **Scaling guidelines** — list/query/DB performance patterns and agent checklist |
