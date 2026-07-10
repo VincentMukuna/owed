@@ -2,7 +2,11 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { validateBackupEnvelope } from "@/features/backup-restore/lib/backup-envelope";
+import {
+  createBackupFilename,
+  serializeBackupEnvelope,
+  validateBackupEnvelope,
+} from "@/features/backup-restore/lib/backup-envelope";
 
 const fixturesDir = join(__dirname, "../__fixtures__");
 
@@ -48,5 +52,22 @@ describe("backup envelope validation", () => {
     const result = validateBackupEnvelope({ metadata: { appId: "owed", backupSchemaVersion: 1 } });
 
     expect(result).toEqual({ ok: false, reason: "malformed" });
+  });
+
+  it("builds a stable user-facing backup filename", () => {
+    const filename = createBackupFilename(new Date("2026-07-10T23:30:00.000Z"));
+
+    expect(filename).toBe("owed-backup-2026-07-10.owedbackup");
+  });
+
+  it("serializes backup files as readable JSON with a trailing newline", () => {
+    const fixture = loadFixture("v1-empty.owedbackup");
+    const result = validateBackupEnvelope(fixture);
+
+    expect(result.ok).toBe(true);
+    if (result.ok) {
+      expect(serializeBackupEnvelope(result.backup)).toMatch(/^\{\n {2}"metadata":/);
+      expect(serializeBackupEnvelope(result.backup)).toMatch(/\n$/);
+    }
   });
 });

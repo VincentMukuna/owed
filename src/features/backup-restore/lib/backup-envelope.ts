@@ -2,6 +2,7 @@ import { z } from "zod";
 
 export const OWED_BACKUP_APP_ID = "owed";
 export const CURRENT_BACKUP_SCHEMA_VERSION = 1;
+export const BACKUP_FILE_EXTENSION = "owedbackup";
 
 const isoDateTimeSchema = z.string().datetime({ offset: true });
 const backupRowSchema = z.record(z.string(), z.unknown());
@@ -33,6 +34,9 @@ export const backupEnvelopeSchema = z.object({
 });
 
 export type BackupEnvelope = z.infer<typeof backupEnvelopeSchema>;
+export type BackupDatabase = BackupEnvelope["data"]["database"];
+export type BackupPreferences = BackupEnvelope["data"]["preferences"];
+export type BackupRow = z.infer<typeof backupRowSchema>;
 
 export type BackupValidationResult =
   | { ok: true; backup: BackupEnvelope }
@@ -75,4 +79,13 @@ export function validateBackupEnvelope(input: unknown): BackupValidationResult {
   }
 
   return { ok: true, backup: parsed.data };
+}
+
+export function createBackupFilename(date = new Date()): string {
+  const day = date.toISOString().slice(0, 10);
+  return `owed-backup-${day}.${BACKUP_FILE_EXTENSION}`;
+}
+
+export function serializeBackupEnvelope(backup: BackupEnvelope): string {
+  return `${JSON.stringify(backup, null, 2)}\n`;
 }
