@@ -4,11 +4,8 @@ import type { BackupIntegrity } from "../../ports/backup-integrity";
 
 export class Sha256BackupIntegrity implements BackupIntegrity {
   async calculateHash(contents: Uint8Array): Promise<string> {
-    const buffer = contents.buffer.slice(
-      contents.byteOffset,
-      contents.byteOffset + contents.byteLength,
-    ) as ArrayBuffer;
-    const digest = await Crypto.digest(Crypto.CryptoDigestAlgorithm.SHA256, buffer);
+    const data = Uint8Array.from(contents);
+    const digest = await Crypto.digest(Crypto.CryptoDigestAlgorithm.SHA256, data);
     return [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
   }
 
