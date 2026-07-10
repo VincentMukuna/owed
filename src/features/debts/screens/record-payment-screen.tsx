@@ -23,7 +23,7 @@ export function RecordPaymentScreen() {
   const [payNote, setPayNote] = useState("");
 
   const parsedAmount = parseInt(payAmount, 10);
-  const canSave = Boolean(debt) && parsedAmount > 0;
+  const canSave = Boolean(debt) && parsedAmount > 0 && parsedAmount <= (debt?.remaining ?? 0);
 
   const handleSave = useCallback(() => {
     if (!debt || !canSave || !debtId) return;
@@ -64,7 +64,7 @@ export function RecordPaymentScreen() {
   if (!debt) {
     return (
       <>
-        <Stack.Screen options={{ title: "Add payment" }} />
+        <Stack.Screen options={{ title: "Add Payment" }} />
         <View style={styles.missing}>
           <Text style={styles.missingText}>Debt not found</Text>
         </View>
@@ -98,6 +98,11 @@ export function RecordPaymentScreen() {
               Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
             </Text>
           </Pressable>
+          {parsedAmount > debt.remaining ? (
+            <Text style={styles.errorText}>
+              Amount cannot exceed {formatCurrency(debt.remaining, debt.currency)} remaining
+            </Text>
+          ) : null}
         </View>
       </View>
 
@@ -183,5 +188,10 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 12,
     fontWeight: "700",
     color: theme.colors.primary,
+  },
+  errorText: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: theme.colors.danger,
   },
 }));
