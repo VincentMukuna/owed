@@ -7,6 +7,10 @@ import { type Href, router, useNavigation } from "expo-router";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
+import {
+  KEYBOARD_DONE_ACCESSORY_ID,
+  KeyboardDoneAccessory,
+} from "@/components/ui/keyboard-done-accessory";
 
 import { useAddPerson } from "../hooks/use-add-person";
 
@@ -15,6 +19,7 @@ export function AddPersonScreen() {
   const navigation = useNavigation();
   const addPerson = useAddPerson();
   const nameRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInput>(null);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
@@ -51,47 +56,57 @@ export function AddPersonScreen() {
   }, [addPerson.isPending, canSave, handleSave, navigation]);
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.form}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
-      <Field label="Name">
-        <TextInput
-          ref={nameRef}
-          autoCapitalize="words"
-          autoFocus
-          onChangeText={setName}
-          placeholder="Full name"
-          placeholderTextColor={theme.colors.placeholder}
-          style={styles.input}
-          value={name}
-        />
-      </Field>
+    <>
+      <ScrollView
+        contentContainerStyle={styles.form}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Field label="Name">
+          <TextInput
+            ref={nameRef}
+            autoCapitalize="words"
+            autoFocus
+            onChangeText={setName}
+            onSubmitEditing={() => phoneRef.current?.focus()}
+            placeholder="Full name"
+            placeholderTextColor={theme.colors.placeholder}
+            returnKeyType="next"
+            style={styles.input}
+            value={name}
+          />
+        </Field>
 
-      <Field label="Phone number">
-        <TextInput
-          autoCapitalize="none"
-          keyboardType="phone-pad"
-          onChangeText={setPhone}
-          placeholder="Optional"
-          placeholderTextColor={theme.colors.placeholder}
-          style={styles.input}
-          value={phone}
-        />
-      </Field>
+        <Field label="Phone number">
+          <TextInput
+            ref={phoneRef}
+            autoCapitalize="none"
+            inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
+            keyboardType="phone-pad"
+            onChangeText={setPhone}
+            placeholder="Optional"
+            placeholderTextColor={theme.colors.placeholder}
+            returnKeyType="done"
+            style={styles.input}
+            value={phone}
+          />
+        </Field>
 
-      <Field label="Notes">
-        <TextInput
-          multiline
-          onChangeText={setNotes}
-          placeholder="Optional. What this is about, context, etc."
-          placeholderTextColor={theme.colors.placeholder}
-          style={[styles.input, styles.notesInput]}
-          value={notes}
-        />
-      </Field>
-    </ScrollView>
+        <Field label="Notes">
+          <TextInput
+            inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
+            multiline
+            onChangeText={setNotes}
+            placeholder="Optional. What this is about, context, etc."
+            placeholderTextColor={theme.colors.placeholder}
+            style={[styles.input, styles.notesInput]}
+            value={notes}
+          />
+        </Field>
+      </ScrollView>
+      <KeyboardDoneAccessory />
+    </>
   );
 }
 

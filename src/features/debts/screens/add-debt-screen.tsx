@@ -11,6 +11,10 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import {
+  KEYBOARD_DONE_ACCESSORY_ID,
+  KeyboardDoneAccessory,
+} from "@/components/ui/keyboard-done-accessory";
 import { DueDatePickerModal } from "@/features/debts/components/due-date-picker-modal";
 import {
   PersonPickerSheet,
@@ -175,6 +179,7 @@ export function AddDebtScreen() {
     <BottomSheetModalProvider>
       <ScrollView
         contentContainerStyle={styles.form}
+        keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -235,10 +240,12 @@ export function AddDebtScreen() {
             <Text style={styles.prefix}>{formatCurrencyPrefix(defaultCurrency)}</Text>
             <TextInput
               ref={amountRef}
+              inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
               keyboardType="number-pad"
               onChangeText={setAmount}
               placeholder="0"
               placeholderTextColor={theme.colors.sheetHandle}
+              returnKeyType="done"
               style={[styles.input, styles.amountInput]}
               value={amount}
             />
@@ -297,6 +304,7 @@ export function AddDebtScreen() {
             onChangeText={setReason}
             placeholder="e.g. Lunch, rent help, transport, emergency"
             placeholderTextColor={theme.colors.placeholder}
+            returnKeyType="done"
             style={styles.input}
             value={reason}
           />
@@ -336,6 +344,7 @@ export function AddDebtScreen() {
       </ScrollView>
 
       <PersonPickerSheet ref={pickerRef} onSelect={handlePersonSelect} people={people} />
+      <KeyboardDoneAccessory />
     </BottomSheetModalProvider>
   );
 }

@@ -9,6 +9,10 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import {
+  KEYBOARD_DONE_ACCESSORY_ID,
+  KeyboardDoneAccessory,
+} from "@/components/ui/keyboard-done-accessory";
 import { FormScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { DueDatePickerModal } from "@/features/debts/components/due-date-picker-modal";
 import { useDebt } from "@/features/debts/hooks/use-debt";
@@ -107,6 +111,7 @@ export function EditDebtScreen() {
     <>
       <ScrollView
         contentContainerStyle={styles.form}
+        keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
@@ -139,10 +144,12 @@ export function EditDebtScreen() {
           <View>
             <Text style={styles.prefix}>{formatCurrencyPrefix(debt.currency)}</Text>
             <TextInput
+              inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
               keyboardType="number-pad"
               onChangeText={setAmount}
               placeholder="0"
               placeholderTextColor={theme.colors.sheetHandle}
+              returnKeyType="done"
               style={[styles.input, styles.amountInput]}
               value={amount}
             />
@@ -170,6 +177,7 @@ export function EditDebtScreen() {
             onChangeText={setReason}
             placeholder="What this is about"
             placeholderTextColor={theme.colors.placeholder}
+            returnKeyType="done"
             style={[styles.input, styles.reasonInput]}
             value={reason}
           />
@@ -199,6 +207,7 @@ export function EditDebtScreen() {
         onClose={() => setDatePickerOpen(false)}
         onSave={setDueDateIso}
       />
+      <KeyboardDoneAccessory />
     </>
   );
 }
