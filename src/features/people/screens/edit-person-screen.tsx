@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
 import { ScrollView, Text, TextInput, View } from "react-native";
 
@@ -7,6 +7,10 @@ import { router, useNavigation } from "expo-router";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
+import {
+  KEYBOARD_DONE_ACCESSORY_ID,
+  KeyboardDoneAccessory,
+} from "@/components/ui/keyboard-done-accessory";
 import { FormScreenSkeleton } from "@/components/ui/screen-skeletons";
 
 import { usePersonDetail } from "../hooks/use-person-detail";
@@ -21,6 +25,7 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
   const navigation = useNavigation();
   const { data: person, isPending } = usePersonDetail(personId);
   const updatePerson = useUpdatePerson();
+  const phoneRef = useRef<TextInput>(null);
 
   const [name, setName] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);
@@ -80,45 +85,55 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.form}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
-      <Field label="Name">
-        <TextInput
-          autoCapitalize="words"
-          onChangeText={setName}
-          placeholder="Full name"
-          placeholderTextColor={theme.colors.placeholder}
-          style={styles.input}
-          value={nameValue}
-        />
-      </Field>
+    <>
+      <ScrollView
+        contentContainerStyle={styles.form}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Field label="Name">
+          <TextInput
+            autoCapitalize="words"
+            onChangeText={setName}
+            onSubmitEditing={() => phoneRef.current?.focus()}
+            placeholder="Full name"
+            placeholderTextColor={theme.colors.placeholder}
+            returnKeyType="next"
+            style={styles.input}
+            value={nameValue}
+          />
+        </Field>
 
-      <Field label="Phone number">
-        <TextInput
-          autoCapitalize="none"
-          keyboardType="phone-pad"
-          onChangeText={setPhone}
-          placeholder="Optional"
-          placeholderTextColor={theme.colors.placeholder}
-          style={styles.input}
-          value={phoneValue}
-        />
-      </Field>
+        <Field label="Phone number">
+          <TextInput
+            ref={phoneRef}
+            autoCapitalize="none"
+            inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
+            keyboardType="phone-pad"
+            onChangeText={setPhone}
+            placeholder="Optional"
+            placeholderTextColor={theme.colors.placeholder}
+            returnKeyType="done"
+            style={styles.input}
+            value={phoneValue}
+          />
+        </Field>
 
-      <Field label="Notes">
-        <TextInput
-          multiline
-          onChangeText={setNotes}
-          placeholder="Optional. What this is about, context, etc."
-          placeholderTextColor={theme.colors.placeholder}
-          style={[styles.input, styles.notesInput]}
-          value={notesValue}
-        />
-      </Field>
-    </ScrollView>
+        <Field label="Notes">
+          <TextInput
+            inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
+            multiline
+            onChangeText={setNotes}
+            placeholder="Optional. What this is about, context, etc."
+            placeholderTextColor={theme.colors.placeholder}
+            style={[styles.input, styles.notesInput]}
+            value={notesValue}
+          />
+        </Field>
+      </ScrollView>
+      <KeyboardDoneAccessory />
+    </>
   );
 }
 

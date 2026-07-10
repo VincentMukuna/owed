@@ -7,6 +7,10 @@ import { Stack, router, useLocalSearchParams, useNavigation } from "expo-router"
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
+import {
+  KEYBOARD_DONE_ACCESSORY_ID,
+  KeyboardDoneAccessory,
+} from "@/components/ui/keyboard-done-accessory";
 import { FormScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { useDebt } from "@/features/debts/hooks/use-debt";
 import { useRecordPayment } from "@/features/debts/hooks/use-record-payment";
@@ -73,52 +77,59 @@ export function RecordPaymentScreen() {
   }
 
   return (
-    <ScrollView
-      contentContainerStyle={styles.form}
-      keyboardShouldPersistTaps="handled"
-      showsVerticalScrollIndicator={false}
-    >
-      <View style={styles.field}>
-        <Text style={styles.label}>Amount paid</Text>
-        <View style={styles.inputCard}>
-          <View>
-            <Text style={styles.prefix}>{formatCurrencyPrefix(debt.currency)}</Text>
+    <>
+      <ScrollView
+        contentContainerStyle={styles.form}
+        keyboardDismissMode="on-drag"
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.field}>
+          <Text style={styles.label}>Amount paid</Text>
+          <View style={styles.inputCard}>
+            <View>
+              <Text style={styles.prefix}>{formatCurrencyPrefix(debt.currency)}</Text>
+              <TextInput
+                autoFocus
+                inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
+                keyboardType="number-pad"
+                onChangeText={setPayAmount}
+                placeholder="0"
+                placeholderTextColor={theme.colors.sheetHandle}
+                returnKeyType="done"
+                style={[styles.input, styles.amountInput]}
+                value={payAmount}
+              />
+            </View>
+            <Pressable onPress={() => setPayAmount(String(debt.remaining))}>
+              <Text style={styles.fullAmountLink}>
+                Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
+              </Text>
+            </Pressable>
+            {parsedAmount > debt.remaining ? (
+              <Text style={styles.errorText}>
+                Amount cannot exceed {formatCurrency(debt.remaining, debt.currency)} remaining
+              </Text>
+            ) : null}
+          </View>
+        </View>
+
+        <View style={styles.field}>
+          <Text style={styles.label}>Note (optional)</Text>
+          <View style={styles.inputCard}>
             <TextInput
-              autoFocus
-              keyboardType="number-pad"
-              onChangeText={setPayAmount}
-              placeholder="0"
-              placeholderTextColor={theme.colors.sheetHandle}
-              style={[styles.input, styles.amountInput]}
-              value={payAmount}
+              onChangeText={setPayNote}
+              placeholder="e.g. M-Pesa, cash, bank transfer"
+              placeholderTextColor={theme.colors.placeholder}
+              returnKeyType="done"
+              style={styles.input}
+              value={payNote}
             />
           </View>
-          <Pressable onPress={() => setPayAmount(String(debt.remaining))}>
-            <Text style={styles.fullAmountLink}>
-              Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
-            </Text>
-          </Pressable>
-          {parsedAmount > debt.remaining ? (
-            <Text style={styles.errorText}>
-              Amount cannot exceed {formatCurrency(debt.remaining, debt.currency)} remaining
-            </Text>
-          ) : null}
         </View>
-      </View>
-
-      <View style={styles.field}>
-        <Text style={styles.label}>Note (optional)</Text>
-        <View style={styles.inputCard}>
-          <TextInput
-            onChangeText={setPayNote}
-            placeholder="e.g. M-Pesa, cash, bank transfer"
-            placeholderTextColor={theme.colors.placeholder}
-            style={styles.input}
-            value={payNote}
-          />
-        </View>
-      </View>
-    </ScrollView>
+      </ScrollView>
+      <KeyboardDoneAccessory />
+    </>
   );
 }
 

@@ -23,6 +23,10 @@ import { FullWindowOverlay } from "react-native-screens";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
+import {
+  KEYBOARD_DONE_ACCESSORY_ID,
+  KeyboardDoneAccessory,
+} from "@/components/ui/keyboard-done-accessory";
 import { useRecordPayment } from "@/features/debts/hooks/use-record-payment";
 import { formatCurrency, formatCurrencyPrefix } from "@/lib/utils/formatters";
 
@@ -131,6 +135,7 @@ export const RecordPaymentSheet = forwardRef<RecordPaymentSheetRef, RecordPaymen
       >
         <BottomSheetScrollView
           contentContainerStyle={styles.content}
+          keyboardDismissMode="on-drag"
           keyboardShouldPersistTaps="handled"
         >
           <View>
@@ -151,10 +156,12 @@ export const RecordPaymentSheet = forwardRef<RecordPaymentSheetRef, RecordPaymen
                 </Text>
                 <BottomSheetTextInput
                   ref={inputRef}
+                  inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
                   keyboardType="number-pad"
                   onChangeText={setPayAmount}
                   placeholder="0"
                   placeholderTextColor={theme.colors.sheetHandle}
+                  returnKeyType="done"
                   style={[styles.input, styles.amountInput]}
                   value={payAmount}
                 />
@@ -181,6 +188,7 @@ export const RecordPaymentSheet = forwardRef<RecordPaymentSheetRef, RecordPaymen
                 onChangeText={setPayNote}
                 placeholder="e.g. M-Pesa, cash, bank transfer"
                 placeholderTextColor={theme.colors.placeholder}
+                returnKeyType="done"
                 style={styles.input}
                 value={payNote}
               />
@@ -199,6 +207,7 @@ export const RecordPaymentSheet = forwardRef<RecordPaymentSheetRef, RecordPaymen
             )}
           </PressableScale>
         </BottomSheetScrollView>
+        <KeyboardDoneAccessory />
       </BottomSheetModal>
     );
   },

@@ -22,6 +22,10 @@ import { FullWindowOverlay } from "react-native-screens";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
+import {
+  KEYBOARD_DONE_ACCESSORY_ID,
+  KeyboardDoneAccessory,
+} from "@/components/ui/keyboard-done-accessory";
 import { useSuggestedExchangeRate } from "@/features/settings/hooks/use-suggested-exchange-rate";
 import {
   formatRateDate,
@@ -155,6 +159,7 @@ export const CurrencyConversionSheet = forwardRef<
     >
       <BottomSheetScrollView
         contentContainerStyle={styles.content}
+        keyboardDismissMode="on-drag"
         keyboardShouldPersistTaps="handled"
       >
         <Text style={styles.title}>Switch to {toCurrency}?</Text>
@@ -168,10 +173,12 @@ export const CurrencyConversionSheet = forwardRef<
           <BottomSheetTextInput
             ref={inputRef as never}
             editable={!isSubmitting}
+            inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
             keyboardType="decimal-pad"
             onChangeText={handleRateChange}
             placeholder="0.00"
             placeholderTextColor={theme.colors.placeholder}
+            returnKeyType="done"
             style={styles.rateInput}
             value={rateText}
           />
@@ -218,6 +225,7 @@ export const CurrencyConversionSheet = forwardRef<
           <Text style={styles.cancelText}>Cancel</Text>
         </PressableScale>
       </BottomSheetScrollView>
+      <KeyboardDoneAccessory />
     </BottomSheetModal>
   );
 });
