@@ -32,6 +32,21 @@ export class DefaultBackupFileClient implements BackupFileClient {
     };
   }
 
+  async pickFile(): Promise<BackupFile | null> {
+    const stored = await this.options.files.pick();
+
+    if (!stored) {
+      return null;
+    }
+
+    const inspection = await this.inspectFile(stored.uri);
+
+    return {
+      ...stored,
+      summary: inspection.summary,
+    };
+  }
+
   async share(file: BackupFile): Promise<void> {
     await this.options.files.share(file.uri, {
       dialogTitle: "Save Owed backup",
@@ -42,5 +57,15 @@ export class DefaultBackupFileClient implements BackupFileClient {
   async inspectFile(uri: string): Promise<BackupInspection> {
     const bytes = await this.options.files.read(uri);
     return this.options.backup.inspect(bytes);
+  }
+
+  async prepareRestoreFile(uri: string, options?: Parameters<BackupClient["prepareRestore"]>[1]) {
+    const bytes = await this.options.files.read(uri);
+    return this.options.backup.prepareRestore(bytes, options);
+  }
+
+  async restoreFile(uri: string, options?: Parameters<BackupClient["restore"]>[1]) {
+    const bytes = await this.options.files.read(uri);
+    return this.options.backup.restore(bytes, options);
   }
 }

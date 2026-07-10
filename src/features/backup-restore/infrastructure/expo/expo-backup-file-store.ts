@@ -1,3 +1,4 @@
+import * as DocumentPicker from "expo-document-picker";
 import { File, Paths } from "expo-file-system";
 import * as Sharing from "expo-sharing";
 
@@ -37,6 +38,29 @@ export class ExpoBackupFileStore implements BackupFileStore {
     } catch (error) {
       throw new BackupError("FILE_STORE_FAILED", "The backup file could not be read.", error);
     }
+  }
+
+  async pick(): Promise<StoredBackupFile | null> {
+    const result = await DocumentPicker.getDocumentAsync({
+      type: ["application/json", "*/*"],
+      copyToCacheDirectory: true,
+      multiple: false,
+    });
+
+    if (result.canceled) {
+      return null;
+    }
+
+    const asset = result.assets[0];
+    if (!asset) {
+      return null;
+    }
+
+    return {
+      uri: asset.uri,
+      name: asset.name,
+      sizeBytes: asset.size ?? 0,
+    };
   }
 
   async getInfo(uri: string): Promise<BackupFileInfo> {

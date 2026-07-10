@@ -16,6 +16,12 @@ export type {
   BackupSummary,
   BackupWarning,
   CanRestoreResult,
+  CommitRestoreOptions,
   CreatedBackup,
   CreateBackupOptions,
+  PreparedRestore,
+  PrepareRestoreOptions,
+  RestoreOptions,
+  RestorePlan,
+  RestoreResult,
 } from "./public/types";

@@ -1,7 +1,15 @@
-import { isOnboardingComplete } from "@/features/onboarding/lib/onboarding-storage";
-import { loadPersistedSettings } from "@/features/reminders/lib/reminder-storage";
+import {
+  hydrateOnboardingState,
+  isOnboardingComplete,
+} from "@/features/onboarding/lib/onboarding-storage";
+import {
+  hydratePersistedSettings,
+  loadPersistedSettings,
+} from "@/features/reminders/lib/reminder-storage";
+import { setItem, storageKeys } from "@/lib/storage/local-storage";
 
-import type { BackupPayloadV1 } from "../../domain/backup-payload-v1";
+import type { BackupPayloadV1, BackupRecordCounts } from "../../domain/backup-payload-v1";
+import type { BackupRestoreDestination } from "../../ports/backup-restore-destination";
 import type {
   BackupOperationContext,
   BackupSource,
@@ -11,6 +19,14 @@ import type {
 type BackupDatabaseConnection = {
   getFirstAsync<T>(source: string, ...params: unknown[]): Promise<T | null>;
   getAllAsync<T>(source: string, ...params: unknown[]): Promise<T[]>;
+  withExclusiveTransactionAsync(
+    task: (txn: BackupDatabaseTransaction) => Promise<void>,
+  ): Promise<void>;
+};
+
+type BackupDatabaseTransaction = {
+  execAsync(source: string): Promise<void>;
+  runAsync(source: string, ...params: unknown[]): Promise<unknown>;
 };
 
 type PersonRow = {
@@ -71,7 +87,9 @@ type ReminderRow = {
   archived_at: string | null;
 };
 
-export class SQLiteBackupAdapter implements BackupSource<BackupPayloadV1> {
+export class SQLiteBackupAdapter
+  implements BackupSource<BackupPayloadV1>, BackupRestoreDestination<BackupPayloadV1>
+{
   constructor(private readonly getDb: () => Promise<BackupDatabaseConnection>) {}
 
   async getSourceMetadata(): Promise<BackupSourceMetadata> {
@@ -107,6 +125,140 @@ export class SQLiteBackupAdapter implements BackupSource<BackupPayloadV1> {
         settings: settings ?? {},
         onboardingComplete,
       },
+    };
+  }
+
+  async getCurrentRecordCounts(): Promise<BackupRecordCounts> {
+    const db = await this.getDb();
+    const [people, debts, payments, activityEvents, reminders] = await Promise.all([
+      countRows(db, "people"),
+      countRows(db, "debts"),
+      countRows(db, "payments"),
+      countRows(db, "activity_events"),
+      countRows(db, "reminders"),
+    ]);
+
+    return {
+      people,
+      debts,
+      payments,
+      activityEvents,
+      reminders,
+    };
+  }
+
+  async replaceSnapshot(
+    payload: BackupPayloadV1,
+    _context: BackupOperationContext,
+  ): Promise<BackupRecordCounts> {
+    const db = await this.getDb();
+
+    await db.withExclusiveTransactionAsync(async (txn) => {
+      await txn.execAsync(`
+        DELETE FROM reminders;
+        DELETE FROM activity_events;
+        DELETE FROM payments;
+        DELETE FROM debts;
+        DELETE FROM people;
+      `);
+
+      for (const person of payload.people) {
+        await txn.runAsync(
+          `INSERT INTO people (id, name, phone_number, notes, created_at, updated_at)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          person.id,
+          person.name,
+          person.phoneNumber,
+          person.notes,
+          person.createdAt,
+          person.updatedAt,
+        );
+      }
+
+      for (const debt of payload.debts) {
+        await txn.runAsync(
+          `INSERT INTO debts (
+             id, person_id, original_amount, currency, reason, due_date, lent_date,
+             reminder_enabled, reminder_time, archived_at, created_at, updated_at, direction
+           )
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          debt.id,
+          debt.personId,
+          debt.originalAmount,
+          debt.currency,
+          debt.reason,
+          debt.dueDate,
+          debt.lentDate,
+          debt.reminderEnabled ? 1 : 0,
+          debt.reminderTime,
+          debt.archivedAt,
+          debt.createdAt,
+          debt.updatedAt,
+          debt.direction,
+        );
+      }
+
+      for (const payment of payload.payments) {
+        await txn.runAsync(
+          `INSERT INTO payments (id, debt_id, amount, paid_at, note, created_at)
+           VALUES (?, ?, ?, ?, ?, ?)`,
+          payment.id,
+          payment.debtId,
+          payment.amount,
+          payment.paidAt,
+          payment.note,
+          payment.createdAt,
+        );
+      }
+
+      for (const activity of payload.activityEvents) {
+        await txn.runAsync(
+          `INSERT INTO activity_events (
+             id, type, debt_id, payment_id, person_id, amount, occurred_at, created_at
+           )
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+          activity.id,
+          activity.type,
+          activity.debtId,
+          activity.paymentId,
+          activity.personId,
+          activity.amount,
+          activity.occurredAt,
+          activity.createdAt,
+        );
+      }
+
+      for (const reminder of payload.reminders) {
+        await txn.runAsync(
+          `INSERT INTO reminders (
+             id, debt_id, type, remind_at, status, notification_id, read_at,
+             created_at, updated_at, group_key, archived_at
+           )
+           VALUES (?, ?, ?, ?, ?, NULL, ?, ?, ?, ?, ?)`,
+          reminder.id,
+          reminder.debtId,
+          reminder.type,
+          reminder.remindAt,
+          reminder.status,
+          reminder.readAt,
+          reminder.createdAt,
+          reminder.updatedAt,
+          reminder.groupKey,
+          reminder.archivedAt,
+        );
+      }
+    });
+
+    await setItem(storageKeys.settings, payload.preferences.settings);
+    await setItem(storageKeys.onboardingComplete, payload.preferences.onboardingComplete);
+    await Promise.all([hydratePersistedSettings(), hydrateOnboardingState()]);
+
+    return {
+      people: payload.people.length,
+      debts: payload.debts.length,
+      payments: payload.payments.length,
+      activityEvents: payload.activityEvents.length,
+      reminders: payload.reminders.length,
     };
   }
 
@@ -204,4 +356,11 @@ export class SQLiteBackupAdapter implements BackupSource<BackupPayloadV1> {
       archivedAt: row.archived_at,
     }));
   }
+}
+
+async function countRows(db: BackupDatabaseConnection, tableName: string): Promise<number> {
+  const row = await db.getFirstAsync<{ count: number }>(
+    `SELECT COUNT(*) AS count FROM ${tableName}`,
+  );
+  return row?.count ?? 0;
 }

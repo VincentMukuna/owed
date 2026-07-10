@@ -14,6 +14,10 @@ import {
 } from "../domain/backup-payload-v1";
 import type { BackupCodec } from "../ports/backup-codec";
 import type { BackupIntegrity } from "../ports/backup-integrity";
+import type {
+  BackupPayloadRestoreDestination,
+  BackupRestoreHook,
+} from "../ports/backup-restore-destination";
 import type { BackupSource } from "../ports/backup-source";
 import type { BackupValidator } from "../ports/backup-validator";
 import type {
@@ -22,7 +26,12 @@ import type {
   CanRestoreResult,
   CreateBackupOptions,
   CreatedBackup,
+  PrepareRestoreOptions,
+  PreparedRestore,
+  RestoreOptions,
+  RestoreResult,
 } from "../public/types";
+import { PreparedRestoreOperation } from "./prepared-restore-operation";
 
 type BackupAppInfo = {
   appId: string;
@@ -41,9 +50,11 @@ type IdGenerator = {
 type DefaultBackupClientOptions = {
   app: BackupAppInfo;
   source: BackupSource<BackupPayloadV1>;
+  destination: BackupPayloadRestoreDestination;
   codec: BackupCodec;
   validator: BackupValidator<BackupPayloadV1>;
   integrity: BackupIntegrity;
+  hooks: BackupRestoreHook[];
   clock: Clock;
   idGenerator: IdGenerator;
 };
@@ -188,5 +199,48 @@ export class DefaultBackupClient implements BackupClient {
         error: normalizeBackupFailure(error),
       };
     }
+  }
+
+  async prepareRestore(
+    input: BackupInput,
+    options: PrepareRestoreOptions = {},
+  ): Promise<PreparedRestore> {
+    const inspection = await this.inspect(input);
+    const deleteCounts = await this.options.destination.getCurrentRecordCounts();
+
+    return new PreparedRestoreOperation({
+      inspection,
+      plan: {
+        mode: "replace",
+        deleteCounts,
+        insertCounts: inspection.summary.counts,
+        postRestoreActions: this.options.hooks.map((hook) => hook.name),
+      },
+      destination: this.options.destination,
+      hooks: this.options.hooks,
+      createSafetyBackup: async (restoringBackupId) => {
+        try {
+          return await this.create({
+            signal: options.signal,
+            metadata: {
+              purpose: "pre_restore_safety",
+              restoringBackupId,
+            },
+          });
+        } catch (error) {
+          throw new BackupError(
+            "SAFETY_BACKUP_FAILED",
+            "A safety backup could not be created.",
+            error,
+          );
+        }
+      },
+      now: () => this.options.clock.now(),
+    });
+  }
+
+  async restore(input: BackupInput, options: RestoreOptions = {}): Promise<RestoreResult> {
+    const prepared = await this.prepareRestore(input, options);
+    return prepared.commit(options);
   }
 }

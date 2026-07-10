@@ -13,6 +13,7 @@ export type BackupFileInfo = {
 
 export type BackupFileStore = {
   write(name: string, contents: Uint8Array): Promise<StoredBackupFile>;
+  pick(): Promise<StoredBackupFile | null>;
   read(uri: string): Promise<Uint8Array>;
   getInfo(uri: string): Promise<BackupFileInfo>;
   share(uri: string, options: { mimeType: string; dialogTitle?: string }): Promise<void>;

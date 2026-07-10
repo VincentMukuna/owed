@@ -64,7 +64,7 @@ export type BackupInspection<TPayload = BackupPayloadV1> = {
 };
 
 export type BackupWarning = {
-  code: "EMPTY_BACKUP" | "BACKUP_FROM_OLDER_APP";
+  code: "EMPTY_BACKUP" | "BACKUP_FROM_OLDER_APP" | "POST_RESTORE_HOOK_FAILED";
   message: string;
   details?: Record<string, unknown>;
 };

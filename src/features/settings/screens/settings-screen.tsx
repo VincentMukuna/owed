@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { useCallback, useRef, useState } from "react";
 
-import { AppState, ScrollView, Switch, Text, View } from "react-native";
+import { Alert, AppState, ScrollView, Switch, Text, View } from "react-native";
 
 import { type Href, router, useFocusEffect } from "expo-router";
 
@@ -11,7 +11,9 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import { createBackupFileClient } from "@/features/backup-restore";
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
+import { useUiStore } from "@/features/debts/store/ui-store";
 import {
   type NotificationPermissionState,
   getNotificationPermissionState,
@@ -37,6 +39,7 @@ import {
   useChangeCurrency,
   useCurrentCurrency,
 } from "@/features/settings/hooks/use-change-currency";
+import { useResetDatabase } from "@/features/settings/hooks/use-reset-database";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { formatReminderTimeDisplay } from "@/features/settings/lib/format-reminder-time";
 import { selectionChange } from "@/lib/haptics";
@@ -78,6 +81,8 @@ export function SettingsScreen() {
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
   const overdueReminderEnabled = useSettingsStore((state) => state.overdueReminderEnabled);
   const changeCurrency = useChangeCurrency();
+  const resetDatabase = useResetDatabase();
+  const showToast = useUiStore((state) => state.showToast);
   const currencyPickerRef = useRef<CurrencyPickerSheetRef>(null);
   const conversionSheetRef = useRef<CurrencyConversionSheetRef>(null);
 
@@ -85,6 +90,8 @@ export function SettingsScreen() {
   const [timePickerOpen, setTimePickerOpen] = useState(false);
   const [conversionTarget, setConversionTarget] = useState<string | null>(null);
   const [totalRemaining, setTotalRemaining] = useState(0);
+  const [backupBusy, setBackupBusy] = useState(false);
+  const [restoreBusy, setRestoreBusy] = useState(false);
 
   const refreshPermissionState = useCallback(() => {
     void getNotificationPermissionState().then(setPermissionState);
@@ -197,6 +204,100 @@ export function SettingsScreen() {
 
     setConversionTarget(null);
   }, [changeCurrency.isPending]);
+
+  const handleBackupPress = useCallback(async () => {
+    selectionChange();
+    setBackupBusy(true);
+
+    try {
+      const files = createBackupFileClient();
+      const file = await files.createFile();
+      await files.share(file);
+      Alert.alert("Backup created", "Your data has been saved successfully.", [{ text: "Done" }]);
+    } catch (error) {
+      if (__DEV__) {
+        console.error("[SettingsScreen] failed to create backup", error);
+      }
+      showToast("Could not create backup. Try again.");
+    } finally {
+      setBackupBusy(false);
+    }
+  }, [showToast]);
+
+  const handleRestorePress = useCallback(async () => {
+    selectionChange();
+    setRestoreBusy(true);
+
+    try {
+      const files = createBackupFileClient();
+      const file = await files.pickFile();
+
+      if (!file) {
+        return;
+      }
+
+      const prepared = await files.prepareRestoreFile(file.uri);
+
+      Alert.alert(
+        "Replace current data?",
+        "Restoring a backup will replace all current data in Owed.\n\nThis action cannot be undone.",
+        [
+          {
+            text: "Cancel",
+            style: "cancel",
+            onPress: () => {
+              prepared.dispose();
+            },
+          },
+          {
+            text: "Restore",
+            style: "destructive",
+            onPress: () => {
+              void (async () => {
+                setRestoreBusy(true);
+                try {
+                  await prepared.commit({ allowWarnings: true });
+                  Alert.alert("Backup restored", "Your data has been restored successfully.");
+                } catch (error) {
+                  if (__DEV__) {
+                    console.error("[SettingsScreen] failed to restore backup", error);
+                  }
+                  showToast("Could not restore backup. Try again.");
+                } finally {
+                  setRestoreBusy(false);
+                }
+              })();
+            },
+          },
+        ],
+      );
+    } catch (error) {
+      if (__DEV__) {
+        console.error("[SettingsScreen] selected backup is not valid", error);
+      }
+      Alert.alert("Backup not recognized", "The selected file isn't a valid Owed backup.", [
+        { text: "Choose another file" },
+      ]);
+    } finally {
+      setRestoreBusy(false);
+    }
+  }, [showToast]);
+
+  const handleDeleteAllDataPress = useCallback(() => {
+    selectionChange();
+    Alert.alert(
+      "Delete all data?",
+      "This will permanently delete all debts, people, payments, activity, and reminders from this device.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => resetDatabase.mutate(),
+        },
+      ],
+    );
+  }, [resetDatabase]);
 
   return (
     <BottomSheetModalProvider>
@@ -322,17 +423,57 @@ export function SettingsScreen() {
           </View>
 
           <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Privacy</Text>
+            <Text style={styles.sectionTitle}>Data</Text>
+            <Text style={styles.sectionHint}>
+              Owed is local-first. Back up your data anytime for extra peace of mind.
+            </Text>
             <View style={styles.card}>
-              <View style={styles.row}>
+              <PressableScale
+                disabled={backupBusy}
+                onPress={() => {
+                  void handleBackupPress();
+                }}
+                style={styles.row}
+              >
                 <Text style={styles.icon}>📤</Text>
-                <Text style={styles.label}>Export data</Text>
+                <Text style={styles.label}>Backup Data</Text>
                 <View style={styles.valueWrap}>
-                  <Text style={styles.value}>CSV</Text>
+                  <Text style={styles.value}>{backupBusy ? "Creating" : "Save"}</Text>
                   <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
                 </View>
-              </View>
+              </PressableScale>
+
+              <PressableScale
+                disabled={restoreBusy}
+                onPress={() => {
+                  void handleRestorePress();
+                }}
+                style={[styles.row, styles.rowBorder]}
+              >
+                <Text style={styles.icon}>📥</Text>
+                <Text style={styles.label}>Restore Backup</Text>
+                <View style={styles.valueWrap}>
+                  <Text style={styles.value}>{restoreBusy ? "Restoring" : "Choose"}</Text>
+                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
+                </View>
+              </PressableScale>
+
+              <PressableScale
+                disabled={resetDatabase.isPending}
+                onPress={handleDeleteAllDataPress}
+                style={[styles.row, styles.rowBorder]}
+              >
+                <Text style={styles.icon}>🗑️</Text>
+                <Text style={styles.label}>Delete All Data</Text>
+                <Text style={[styles.value, styles.dangerValue]}>
+                  {resetDatabase.isPending ? "Deleting" : "Delete"}
+                </Text>
+              </PressableScale>
             </View>
+            <Text style={styles.sectionHint}>
+              Your backups are created locally and stored wherever you choose. Owed never uploads
+              your backup files.
+            </Text>
           </View>
 
           <View style={styles.section}>
@@ -467,6 +608,9 @@ const styles = StyleSheet.create((theme) => ({
   value: {
     fontSize: 14,
     color: theme.colors.muted,
+  },
+  dangerValue: {
+    color: theme.colors.danger,
   },
   segmented: {
     flexDirection: "row",

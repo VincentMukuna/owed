@@ -8,6 +8,7 @@ import { type BackupPayloadV1 } from "@/features/backup-restore/domain/backup-pa
 import { JsonBackupCodec } from "@/features/backup-restore/infrastructure/codecs/json-backup-codec";
 import { ZodBackupValidator } from "@/features/backup-restore/infrastructure/validation/backup-validator";
 import type { BackupIntegrity } from "@/features/backup-restore/ports/backup-integrity";
+import type { BackupPayloadRestoreDestination } from "@/features/backup-restore/ports/backup-restore-destination";
 
 const fixturesDir = join(__dirname, "../__fixtures__");
 
@@ -25,7 +26,7 @@ class StaticIntegrity implements BackupIntegrity {
   }
 }
 
-function createTestClient(payload: BackupPayloadV1) {
+function createTestClient(payload: BackupPayloadV1, destination?: BackupPayloadRestoreDestination) {
   return new DefaultBackupClient({
     app: {
       appId: "com.vincentmukuna.owed",
@@ -40,9 +41,30 @@ function createTestClient(payload: BackupPayloadV1) {
         return payload;
       },
     },
+    destination: destination ?? {
+      async getCurrentRecordCounts() {
+        return {
+          people: 0,
+          debts: 0,
+          payments: 0,
+          activityEvents: 0,
+          reminders: 0,
+        };
+      },
+      async replaceSnapshot(restoredPayload) {
+        return {
+          people: restoredPayload.people.length,
+          debts: restoredPayload.debts.length,
+          payments: restoredPayload.payments.length,
+          activityEvents: restoredPayload.activityEvents.length,
+          reminders: restoredPayload.reminders.length,
+        };
+      },
+    },
     codec: new JsonBackupCodec(),
     validator: new ZodBackupValidator(),
     integrity: new StaticIntegrity(),
+    hooks: [],
     clock: {
       now: () => new Date("2026-07-10T12:00:00.000Z"),
     },
@@ -50,6 +72,29 @@ function createTestClient(payload: BackupPayloadV1) {
       generate: () => "backup_1",
     },
   });
+}
+
+function populatedPayload(): BackupPayloadV1 {
+  return {
+    people: [
+      {
+        id: "person_1",
+        name: "Avery Stone",
+        phoneNumber: null,
+        notes: null,
+        createdAt: "2026-07-01T09:00:00.000Z",
+        updatedAt: "2026-07-01T09:00:00.000Z",
+      },
+    ],
+    debts: [],
+    payments: [],
+    activityEvents: [],
+    reminders: [],
+    preferences: {
+      settings: {},
+      onboardingComplete: true,
+    },
+  };
 }
 
 function emptyPayload(): BackupPayloadV1 {
@@ -144,5 +189,100 @@ describe("backup client", () => {
     const encoded = await client.encode(document);
 
     expect(encoded.byteLength).toBe(created.bytes.byteLength);
+  });
+
+  it("prepares restore without replacing data", async () => {
+    let replaceCalls = 0;
+    const destination: BackupPayloadRestoreDestination = {
+      async getCurrentRecordCounts() {
+        return {
+          people: 9,
+          debts: 8,
+          payments: 7,
+          activityEvents: 6,
+          reminders: 5,
+        };
+      },
+      async replaceSnapshot() {
+        replaceCalls += 1;
+        return {
+          people: 1,
+          debts: 0,
+          payments: 0,
+          activityEvents: 0,
+          reminders: 0,
+        };
+      },
+    };
+    const client = createTestClient(populatedPayload(), destination);
+    const created = await client.create();
+    const prepared = await client.prepareRestore(created.bytes);
+
+    expect(replaceCalls).toBe(0);
+    expect(prepared.plan).toEqual({
+      mode: "replace",
+      deleteCounts: {
+        people: 9,
+        debts: 8,
+        payments: 7,
+        activityEvents: 6,
+        reminders: 5,
+      },
+      insertCounts: {
+        people: 1,
+        debts: 0,
+        payments: 0,
+        activityEvents: 0,
+        reminders: 0,
+      },
+      postRestoreActions: [],
+    });
+  });
+
+  it("commits a prepared restore with a safety backup", async () => {
+    const restoredPayloads: BackupPayloadV1[] = [];
+    const destination: BackupPayloadRestoreDestination = {
+      async getCurrentRecordCounts() {
+        return {
+          people: 0,
+          debts: 0,
+          payments: 0,
+          activityEvents: 0,
+          reminders: 0,
+        };
+      },
+      async replaceSnapshot(payload) {
+        restoredPayloads.push(payload);
+        return {
+          people: payload.people.length,
+          debts: payload.debts.length,
+          payments: payload.payments.length,
+          activityEvents: payload.activityEvents.length,
+          reminders: payload.reminders.length,
+        };
+      },
+    };
+    const client = createTestClient(populatedPayload(), destination);
+    const created = await client.create();
+    const prepared = await client.prepareRestore(created.bytes);
+    const result = await prepared.commit();
+
+    expect(restoredPayloads[0]?.people).toHaveLength(1);
+    expect(result.status).toBe("restored");
+    expect(result.safetyBackup?.document.manifest.metadata).toEqual({
+      purpose: "pre_restore_safety",
+      restoringBackupId: "backup_1",
+    });
+  });
+
+  it("does not allow a prepared restore to commit twice", async () => {
+    const client = createTestClient(populatedPayload());
+    const created = await client.create();
+    const prepared = await client.prepareRestore(created.bytes);
+
+    await prepared.commit();
+    await expect(prepared.commit()).rejects.toMatchObject({
+      code: "PREPARED_RESTORE_DISPOSED",
+    });
   });
 });
