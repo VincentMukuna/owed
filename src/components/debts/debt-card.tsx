@@ -8,6 +8,7 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
 import { Text } from "@/components/ui/text";
+import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
 import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { formatCurrency } from "@/lib/utils/formatters";
@@ -15,13 +16,21 @@ import { formatCurrency } from "@/lib/utils/formatters";
 type DebtCardProps = {
   debt: DebtCardView;
   onPress: () => void;
+  onAction?: (action: DebtAction, debt: DebtCardView) => void;
   showDirectionCue?: boolean;
   showStatusCue?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
 export const DebtCard = memo(
-  ({ debt, onPress, showDirectionCue = false, showStatusCue = true, style }: DebtCardProps) => {
+  ({
+    debt,
+    onPress,
+    onAction,
+    showDirectionCue = false,
+    showStatusCue = true,
+    style,
+  }: DebtCardProps) => {
     const { theme } = useUnistyles();
     const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
     const statusColors = theme.colors.status[debt.status];
@@ -29,7 +38,7 @@ export const DebtCard = memo(
     const directionColor =
       debt.direction === "they_owe_me" ? theme.colors.success : theme.colors.danger;
 
-    return (
+    const content = (
       <PressableScale onPress={onPress} style={[styles.card, style]}>
         <View style={styles.row}>
           <Avatar initials={debt.initials} status={debt.status} />
@@ -93,6 +102,16 @@ export const DebtCard = memo(
           </View>
         </View>
       </PressableScale>
+    );
+
+    if (!onAction) {
+      return content;
+    }
+
+    return (
+      <DebtActionsMenu debt={debt} onAction={onAction} openOnLongPress>
+        {content}
+      </DebtActionsMenu>
     );
   },
 );

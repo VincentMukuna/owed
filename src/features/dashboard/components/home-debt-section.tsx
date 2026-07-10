@@ -4,6 +4,7 @@ import { StyleSheet } from "react-native-unistyles";
 
 import { DebtCard } from "@/components/debts/debt-card";
 import { PressableScale } from "@/components/shared/pressable-scale";
+import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import type { DebtFilterKey } from "@/features/debts/lib/debt-list-utils";
 import type { DebtCardView } from "@/features/debts/view-models";
 
@@ -13,6 +14,7 @@ type HomeDebtSectionProps = {
   debts: DebtCardView[];
   filter: DebtFilterKey;
   onDebtPress: (debtId: string) => void;
+  onDebtAction?: (action: DebtAction, debt: DebtCardView) => void;
   onTitlePress: (filter: DebtFilterKey) => void;
   showDirectionCue?: boolean;
   title: string;
@@ -25,6 +27,7 @@ export function HomeDebtSection({
   debts,
   filter,
   onDebtPress,
+  onDebtAction,
   onTitlePress,
   showDirectionCue = false,
 }: HomeDebtSectionProps) {
@@ -45,6 +48,7 @@ export function HomeDebtSection({
             <DebtCard
               key={debt.id}
               debt={debt}
+              onAction={onDebtAction}
               onPress={() => onDebtPress(debt.id)}
               showDirectionCue={showDirectionCue}
               showStatusCue={false}

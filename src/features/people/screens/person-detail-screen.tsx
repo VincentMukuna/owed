@@ -1,9 +1,10 @@
-import { type ReactNode, useCallback, useState } from "react";
+import { type ReactNode, useCallback, useRef, useState } from "react";
 
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { type Href, Stack, router } from "expo-router";
 
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { ChevronDown, ChevronUp, Receipt, Wallet } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -13,7 +14,15 @@ import { ActivityRow } from "@/components/activity/activity-list";
 import { DebtCard } from "@/components/debts/debt-card";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { DetailScreenSkeleton } from "@/components/ui/screen-skeletons";
+import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
+import {
+  RecordPaymentSheet,
+  type RecordPaymentSheetRef,
+} from "@/features/debts/components/record-payment-sheet";
 import { peopleKeys } from "@/features/debts/hooks/query-keys";
+import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
+import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
+import type { DebtCardView } from "@/features/debts/view-models";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
@@ -29,9 +38,12 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const archiveDebt = useArchiveDebt();
   const { data: person, isPending } = usePersonDetail(personId);
   const [debtsExpanded, setDebtsExpanded] = useState(true);
   const [paymentsExpanded, setPaymentsExpanded] = useState(true);
+  const paymentSheetRef = useRef<RecordPaymentSheetRef>(null);
+  const [paymentDebt, setPaymentDebt] = useState<DebtCardView | null>(null);
 
   const handleRefresh = useCallback(
     () => queryClient.invalidateQueries({ queryKey: peopleKeys.detail(personId) }),
@@ -70,6 +82,23 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
     );
   };
 
+  const handleDebtAction = (action: DebtAction, debt: DebtCardView) => {
+    if (action === "record-payment") {
+      setPaymentDebt(debt);
+      requestAnimationFrame(() => paymentSheetRef.current?.present());
+      return;
+    }
+
+    if (action === "edit-debt") {
+      router.push(`/edit-debt?debtId=${debt.id}` as Href);
+      return;
+    }
+
+    confirmArchiveDebt(debt, () => {
+      archiveDebt.mutate({ debtId: debt.id });
+    });
+  };
+
   const hasDetails = Boolean(person.phoneNumber) || Boolean(person.notes);
 
   return (
@@ -84,86 +113,90 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
           ),
         }}
       />
-      <View collapsable={false} style={styles.screen}>
-        <ScrollView
-          contentContainerStyle={[styles.content, { paddingBottom: 120 + insets.bottom }]}
-          refreshControl={<RefreshControl {...refreshControlProps} />}
-          showsVerticalScrollIndicator={false}
-        >
-          <PersonSummary person={person} />
-
-          {hasDetails ? (
-            <View style={styles.card}>
-              <Text style={styles.cardLabel}>Details</Text>
-              {person.phoneNumber ? (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailKey}>Phone</Text>
-                  <Text style={styles.detailValue}>{person.phoneNumber}</Text>
-                </View>
-              ) : null}
-              {person.notes ? (
-                <View style={styles.detailRow}>
-                  <Text style={styles.detailKey}>Notes</Text>
-                  <Text style={[styles.detailValue, styles.detailNotes]}>{person.notes}</Text>
-                </View>
-              ) : null}
-            </View>
-          ) : null}
-
-          <CollapsibleSection
-            count={person.debts.length}
-            expanded={debtsExpanded}
-            onToggle={() => setDebtsExpanded((value) => !value)}
-            title="Promises"
+      <BottomSheetModalProvider>
+        <View collapsable={false} style={styles.screen}>
+          <ScrollView
+            contentContainerStyle={[styles.content, { paddingBottom: 120 + insets.bottom }]}
+            refreshControl={<RefreshControl {...refreshControlProps} />}
+            showsVerticalScrollIndicator={false}
           >
-            {person.debts.length > 0 ? (
-              <View style={styles.cards}>
-                {person.debts.map((debt) => (
-                  <DebtCard
-                    key={debt.id}
-                    debt={debt}
-                    onPress={() => openDebt(debt.id)}
-                    showDirectionCue
-                  />
-                ))}
-              </View>
-            ) : (
-              <SectionEmpty
-                copy={`Add the first promise between you and ${firstName}.`}
-                icon={<Wallet color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
-                title="No promises yet"
-              />
-            )}
-          </CollapsibleSection>
+            <PersonSummary person={person} />
 
-          <CollapsibleSection
-            count={person.payments.length}
-            expanded={paymentsExpanded}
-            onToggle={() => setPaymentsExpanded((value) => !value)}
-            title="Payment history"
-          >
-            {person.payments.length > 0 ? (
-              <View>
-                {person.payments.map((payment) => (
-                  <ActivityRow key={payment.id} activity={payment} />
-                ))}
+            {hasDetails ? (
+              <View style={styles.card}>
+                <Text style={styles.cardLabel}>Details</Text>
+                {person.phoneNumber ? (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailKey}>Phone</Text>
+                    <Text style={styles.detailValue}>{person.phoneNumber}</Text>
+                  </View>
+                ) : null}
+                {person.notes ? (
+                  <View style={styles.detailRow}>
+                    <Text style={styles.detailKey}>Notes</Text>
+                    <Text style={[styles.detailValue, styles.detailNotes]}>{person.notes}</Text>
+                  </View>
+                ) : null}
               </View>
-            ) : (
-              <SectionEmpty
-                copy={`Payments between you and ${firstName} will show up here.`}
-                icon={<Receipt color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
-                title="No payments yet"
-              />
-            )}
-          </CollapsibleSection>
-        </ScrollView>
+            ) : null}
 
-        <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
-          <PressableScale onPress={openAddDebt} style={styles.primaryBtn}>
-            <Text style={styles.primaryBtnText}>Add promise for {firstName}</Text>
-          </PressableScale>
+            <CollapsibleSection
+              count={person.debts.length}
+              expanded={debtsExpanded}
+              onToggle={() => setDebtsExpanded((value) => !value)}
+              title="Promises"
+            >
+              {person.debts.length > 0 ? (
+                <View style={styles.cards}>
+                  {person.debts.map((debt) => (
+                    <DebtCard
+                      key={debt.id}
+                      debt={debt}
+                      onAction={handleDebtAction}
+                      onPress={() => openDebt(debt.id)}
+                      showDirectionCue
+                    />
+                  ))}
+                </View>
+              ) : (
+                <SectionEmpty
+                  copy={`Add the first promise between you and ${firstName}.`}
+                  icon={<Wallet color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
+                  title="No promises yet"
+                />
+              )}
+            </CollapsibleSection>
+
+            <CollapsibleSection
+              count={person.payments.length}
+              expanded={paymentsExpanded}
+              onToggle={() => setPaymentsExpanded((value) => !value)}
+              title="Payment history"
+            >
+              {person.payments.length > 0 ? (
+                <View>
+                  {person.payments.map((payment) => (
+                    <ActivityRow key={payment.id} activity={payment} />
+                  ))}
+                </View>
+              ) : (
+                <SectionEmpty
+                  copy={`Payments between you and ${firstName} will show up here.`}
+                  icon={<Receipt color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
+                  title="No payments yet"
+                />
+              )}
+            </CollapsibleSection>
+          </ScrollView>
+
+          <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
+            <PressableScale onPress={openAddDebt} style={styles.primaryBtn}>
+              <Text style={styles.primaryBtnText}>Add promise for {firstName}</Text>
+            </PressableScale>
+          </View>
         </View>
-      </View>
+        <RecordPaymentSheet ref={paymentSheetRef} debt={paymentDebt} />
+      </BottomSheetModalProvider>
     </>
   );
 }

@@ -1,21 +1,29 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 
 import * as Clipboard from "expo-clipboard";
 import { LinearGradient } from "expo-linear-gradient";
-import { Stack, router } from "expo-router";
+import { type Href, Stack, router } from "expo-router";
 
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, Copy } from "lucide-react-native";
+import { Check, Copy, MoreHorizontal } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Badge } from "@/components/ui/badge";
 import { DetailScreenSkeleton } from "@/components/ui/screen-skeletons";
+import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
+import {
+  RecordPaymentSheet,
+  type RecordPaymentSheetRef,
+} from "@/features/debts/components/record-payment-sheet";
 import { debtKeys } from "@/features/debts/hooks/query-keys";
+import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebt } from "@/features/debts/hooks/use-debt";
+import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import type { DebtDetailView } from "@/features/debts/view-models";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
@@ -28,8 +36,10 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
+  const archiveDebt = useArchiveDebt();
   const { data: debt, isPending } = useDebt(debtId);
   const [copied, setCopied] = useState(false);
+  const paymentSheetRef = useRef<RecordPaymentSheetRef>(null);
 
   const handleRefresh = useCallback(
     () => queryClient.invalidateQueries({ queryKey: debtKeys.detail(debtId) }),
@@ -68,97 +78,133 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   };
 
   const openRecordPayment = () => {
-    router.push(`/record-payment?debtId=${debt.id}`);
+    paymentSheetRef.current?.present();
+  };
+
+  const handleDebtAction = (action: DebtAction) => {
+    if (action === "record-payment") {
+      openRecordPayment();
+      return;
+    }
+
+    if (action === "edit-debt") {
+      router.push(`/edit-debt?debtId=${debt.id}` as Href);
+      return;
+    }
+
+    confirmArchiveDebt(debt, () => {
+      archiveDebt.mutate(
+        { debtId: debt.id },
+        {
+          onSuccess: () => {
+            if (router.canGoBack()) {
+              router.back();
+            }
+          },
+        },
+      );
+    });
   };
 
   return (
     <>
       <Stack.Screen
         options={{
-          headerRight: () => <Badge status={debt.status} />,
+          headerRight: () => (
+            <DebtActionsMenu debt={debt} onAction={handleDebtAction}>
+              <Pressable hitSlop={10} style={styles.headerMenuTrigger}>
+                <MoreHorizontal color={theme.colors.icon} size={17} strokeWidth={2} />
+              </Pressable>
+            </DebtActionsMenu>
+          ),
           title: debt.name,
         }}
       />
-      <View collapsable={false} style={styles.screen}>
-        <ScrollView
-          contentContainerStyle={[
-            styles.content,
-            { paddingBottom: debt.status === "paid" ? 24 : 120 + insets.bottom },
-          ]}
-          refreshControl={<RefreshControl {...refreshControlProps} />}
-          showsVerticalScrollIndicator={false}
-        >
-          {debt.status === "paid" ? (
-            <PaidSummary debt={debt} firstName={firstName} />
-          ) : (
-            <ActiveSummary debt={debt} pct={pct} />
-          )}
+      <BottomSheetModalProvider>
+        <View collapsable={false} style={styles.screen}>
+          <ScrollView
+            contentContainerStyle={[
+              styles.content,
+              { paddingBottom: debt.status === "paid" ? 24 : 120 + insets.bottom },
+            ]}
+            refreshControl={<RefreshControl {...refreshControlProps} />}
+            showsVerticalScrollIndicator={false}
+          >
+            {debt.status === "paid" ? (
+              <PaidSummary debt={debt} firstName={firstName} />
+            ) : (
+              <ActiveSummary debt={debt} pct={pct} />
+            )}
 
-          <View style={styles.card}>
-            <Text style={styles.cardLabel}>Reason</Text>
-            <Text style={styles.cardBody}>{debt.reason}</Text>
-          </View>
-
-          {debt.payments.length > 0 ? (
             <View style={styles.card}>
-              <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Payment history</Text>
-              {debt.payments.map((payment, index) => (
-                <View key={payment.id} style={styles.timelineRow}>
-                  <View style={styles.timelineRail}>
-                    <View style={styles.timelineDot} />
-                    {index < debt.payments.length - 1 ? <View style={styles.timelineLine} /> : null}
-                  </View>
-                  <View style={styles.timelineBody}>
-                    <View style={styles.timelineTop}>
-                      <Text style={styles.paymentAmount}>
-                        {isUserOwed
-                          ? `${formatCurrency(payment.amount)} paid`
-                          : `You paid ${formatCurrency(payment.amount)}`}
-                      </Text>
-                      <Text style={styles.paymentDate}>{payment.date}</Text>
-                    </View>
-                    {payment.note ? <Text style={styles.paymentNote}>{payment.note}</Text> : null}
-                  </View>
-                </View>
-              ))}
+              <Text style={styles.cardLabel}>Reason</Text>
+              <Text style={styles.cardBody}>{debt.reason}</Text>
             </View>
-          ) : null}
+
+            {debt.payments.length > 0 ? (
+              <View style={styles.card}>
+                <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Payment history</Text>
+                {debt.payments.map((payment, index) => (
+                  <View key={payment.id} style={styles.timelineRow}>
+                    <View style={styles.timelineRail}>
+                      <View style={styles.timelineDot} />
+                      {index < debt.payments.length - 1 ? (
+                        <View style={styles.timelineLine} />
+                      ) : null}
+                    </View>
+                    <View style={styles.timelineBody}>
+                      <View style={styles.timelineTop}>
+                        <Text style={styles.paymentAmount}>
+                          {isUserOwed
+                            ? `${formatCurrency(payment.amount)} paid`
+                            : `You paid ${formatCurrency(payment.amount)}`}
+                        </Text>
+                        <Text style={styles.paymentDate}>{payment.date}</Text>
+                      </View>
+                      {payment.note ? <Text style={styles.paymentNote}>{payment.note}</Text> : null}
+                    </View>
+                  </View>
+                ))}
+              </View>
+            ) : null}
+
+            {debt.status !== "paid" ? (
+              <View style={styles.followUpSection}>
+                <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>
+                  {isUserOwed ? "Follow-up message" : "Payment reminder"}
+                </Text>
+                <View style={styles.messageCard}>
+                  <Text style={styles.messageBox}>{reminderText}</Text>
+                  {isUserOwed ? (
+                    <Pressable onPress={handleCopy} style={styles.copyBtn}>
+                      {copied ? (
+                        <Check color={theme.colors.success} size={14} strokeWidth={2.5} />
+                      ) : (
+                        <Copy color={theme.colors.primary} size={14} strokeWidth={2.5} />
+                      )}
+                      <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
+                        {copied ? "Copied!" : "Copy message"}
+                      </Text>
+                    </Pressable>
+                  ) : null}
+                </View>
+              </View>
+            ) : null}
+          </ScrollView>
 
           {debt.status !== "paid" ? (
-            <View style={styles.followUpSection}>
-              <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>
-                {isUserOwed ? "Follow-up message" : "Payment reminder"}
-              </Text>
-              <View style={styles.messageCard}>
-                <Text style={styles.messageBox}>{reminderText}</Text>
-                {isUserOwed ? (
-                  <Pressable onPress={handleCopy} style={styles.copyBtn}>
-                    {copied ? (
-                      <Check color={theme.colors.success} size={14} strokeWidth={2.5} />
-                    ) : (
-                      <Copy color={theme.colors.primary} size={14} strokeWidth={2.5} />
-                    )}
-                    <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
-                      {copied ? "Copied!" : "Copy message"}
-                    </Text>
-                  </Pressable>
-                ) : null}
-              </View>
-            </View>
+            <LinearGradient
+              colors={theme.colors.footerGradient}
+              style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
+            >
+              <PressableScale onPress={openRecordPayment} style={styles.primaryBtn}>
+                <Text style={styles.primaryBtnText}>Add payment</Text>
+              </PressableScale>
+            </LinearGradient>
           ) : null}
-        </ScrollView>
-
-        {debt.status !== "paid" ? (
-          <LinearGradient
-            colors={theme.colors.footerGradient}
-            style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
-          >
-            <PressableScale onPress={openRecordPayment} style={styles.primaryBtn}>
-              <Text style={styles.primaryBtnText}>Add payment</Text>
-            </PressableScale>
-          </LinearGradient>
-        ) : null}
-      </View>
+        </View>
+        <RecordPaymentSheet ref={paymentSheetRef} debt={debt} />
+      </BottomSheetModalProvider>
     </>
   );
 }
@@ -166,7 +212,10 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
 function ActiveSummary({ debt, pct }: { debt: DebtDetailView; pct: number }) {
   return (
     <View style={styles.summaryCard}>
-      <Text style={styles.summaryHint}>Amount remaining</Text>
+      <View style={styles.summaryTop}>
+        <Text style={styles.summaryHint}>Amount remaining</Text>
+        <Badge status={debt.status} />
+      </View>
       <Text style={styles.summaryAmount}>{formatCurrency(debt.remaining)}</Text>
       <View style={styles.partialBlock}>
         <View style={styles.partialMeta}>
@@ -197,6 +246,10 @@ function PaidSummary({ debt, firstName }: { debt: DebtDetailView; firstName: str
 
   return (
     <View style={styles.paidCard}>
+      <View style={styles.paidTop}>
+        <View />
+        <Badge status={debt.status} />
+      </View>
       <View style={styles.paidIcon}>
         <Check color={theme.colors.success} size={24} strokeWidth={2.5} />
       </View>
@@ -233,6 +286,12 @@ const styles = StyleSheet.create((theme) => ({
     paddingTop: 8,
     gap: 24,
   },
+  headerMenuTrigger: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
   summaryCard: {
     backgroundColor: theme.colors.card,
     borderRadius: 16,
@@ -244,6 +303,12 @@ const styles = StyleSheet.create((theme) => ({
     shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
     shadowRadius: theme.name === "light" ? 1.5 : 2,
     elevation: theme.name === "light" ? 0 : 1,
+  },
+  summaryTop: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
   },
   summaryHint: {
     fontSize: 11,
@@ -316,6 +381,12 @@ const styles = StyleSheet.create((theme) => ({
     shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
     shadowRadius: theme.name === "light" ? 1.5 : 2,
     elevation: theme.name === "light" ? 0 : 1,
+  },
+  paidTop: {
+    alignSelf: "stretch",
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: 4,
   },
   paidIcon: {
     width: 48,

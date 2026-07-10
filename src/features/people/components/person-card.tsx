@@ -1,4 +1,4 @@
-import { Fragment, memo, type ReactNode } from "react";
+import { Fragment, type ReactNode, memo } from "react";
 
 import { Text, View } from "react-native";
 
