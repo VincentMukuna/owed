@@ -27,7 +27,7 @@ export function useRecordPayment() {
       showToast(isFullPayment ? fullMessage : "Payment recorded.");
     },
     onError: () => {
-      showToast("Could not record payment. Try again.");
+      showToast("Could not add payment. Try again.");
     },
   });
 }

@@ -198,7 +198,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
               style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
             >
               <PressableScale onPress={openRecordPayment} style={styles.primaryBtn}>
-                <Text style={styles.primaryBtnText}>Add payment</Text>
+                <Text style={styles.primaryBtnText}>Add Payment</Text>
               </PressableScale>
             </LinearGradient>
           ) : null}

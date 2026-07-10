@@ -101,17 +101,20 @@ export function RecordPaymentScreen() {
                 value={payAmount}
               />
             </View>
-            <Pressable onPress={() => setPayAmount(String(debt.remaining))}>
-              <Text style={styles.fullAmountLink}>
-                Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
-              </Text>
-            </Pressable>
-            {parsedAmount > debt.remaining ? (
-              <Text style={styles.errorText}>
-                Amount cannot exceed {formatCurrency(debt.remaining, debt.currency)} remaining
-              </Text>
-            ) : null}
           </View>
+          <Pressable
+            onPress={() => setPayAmount(String(debt.remaining))}
+            style={styles.fullAmountButton}
+          >
+            <Text style={styles.fullAmountLink}>
+              Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
+            </Text>
+          </Pressable>
+          {parsedAmount > debt.remaining ? (
+            <Text style={styles.errorText}>
+              Amount cannot exceed {formatCurrency(debt.remaining, debt.currency)} remaining
+            </Text>
+          ) : null}
         </View>
 
         <View style={styles.field}>
@@ -195,10 +198,13 @@ const styles = StyleSheet.create((theme) => ({
     fontVariant: ["tabular-nums"],
   },
   fullAmountLink: {
-    marginTop: 8,
     fontSize: 12,
     fontWeight: "700",
     color: theme.colors.primary,
+  },
+  fullAmountButton: {
+    alignSelf: "flex-start",
+    paddingVertical: 2,
   },
   errorText: {
     fontSize: 12,

@@ -22,7 +22,7 @@ function buildActions(debt: DebtCardView | DebtDetailView, dangerColor: ColorVal
   if (debt.remaining > 0) {
     actions.push({
       id: "record-payment",
-      title: "Record Payment",
+      title: "Add Payment",
       image: "plus.circle",
     });
   }

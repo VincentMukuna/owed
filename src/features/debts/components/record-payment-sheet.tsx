@@ -123,8 +123,9 @@ export const RecordPaymentSheet = forwardRef<RecordPaymentSheetRef, RecordPaymen
         snapPoints={snapPoints}
         enableDynamicSizing={false}
         enablePanDownToClose={!recordPayment.isPending}
-        keyboardBehavior="extend"
+        keyboardBehavior="interactive"
         keyboardBlurBehavior="restore"
+        enableBlurKeyboardOnGesture
         android_keyboardInputMode="adjustResize"
         backdropComponent={renderBackdrop}
         containerComponent={SHEET_CONTAINER}
@@ -166,19 +167,22 @@ export const RecordPaymentSheet = forwardRef<RecordPaymentSheetRef, RecordPaymen
                   value={payAmount}
                 />
               </View>
-              {debt ? (
-                <PressableScale onPress={() => setPayAmount(String(debt.remaining))}>
-                  <Text style={styles.fullAmountLink}>
-                    Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
-                  </Text>
-                </PressableScale>
-              ) : null}
-              {isOverRemaining && debt ? (
-                <Text style={styles.errorText}>
-                  Amount cannot exceed {formatCurrency(debt.remaining, debt.currency)} remaining
-                </Text>
-              ) : null}
             </View>
+            {debt ? (
+              <PressableScale
+                onPress={() => setPayAmount(String(debt.remaining))}
+                style={styles.fullAmountButton}
+              >
+                <Text style={styles.fullAmountLink}>
+                  Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
+                </Text>
+              </PressableScale>
+            ) : null}
+            {isOverRemaining && debt ? (
+              <Text style={styles.errorText}>
+                Amount cannot exceed {formatCurrency(debt.remaining, debt.currency)} remaining
+              </Text>
+            ) : null}
           </View>
 
           <View style={styles.field}>
@@ -278,10 +282,13 @@ const styles = StyleSheet.create((theme) => ({
     fontVariant: ["tabular-nums"],
   },
   fullAmountLink: {
-    marginTop: 8,
     fontSize: 12,
     fontWeight: "700",
     color: theme.colors.primary,
+  },
+  fullAmountButton: {
+    alignSelf: "flex-start",
+    paddingVertical: 2,
   },
   errorText: {
     fontSize: 12,
