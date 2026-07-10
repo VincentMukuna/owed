@@ -213,7 +213,6 @@ export function SettingsScreen() {
       const files = createBackupFileClient();
       const file = await files.createFile();
       await files.share(file);
-      Alert.alert("Backup created", "Your data has been saved successfully.", [{ text: "Done" }]);
     } catch (error) {
       if (__DEV__) {
         console.error("[SettingsScreen] failed to create backup", error);
