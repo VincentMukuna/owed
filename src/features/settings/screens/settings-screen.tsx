@@ -425,7 +425,8 @@ export function SettingsScreen() {
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Data</Text>
             <Text style={styles.sectionHint}>
-              Owed is local-first. Back up your data anytime for extra peace of mind.
+              Your backups are created locally and stored wherever you choose. Owed never uploads
+              your backup files.
             </Text>
             <View style={styles.card}>
               <PressableScale
@@ -435,11 +436,17 @@ export function SettingsScreen() {
                 }}
                 style={styles.row}
               >
-                <Text style={styles.icon}>📤</Text>
-                <Text style={styles.label}>Backup Data</Text>
+                <Text style={styles.icon}>💾</Text>
+                <View style={styles.toggleCopy}>
+                  <Text style={styles.label}>Create backup</Text>
+                  <Text style={styles.subLabel}>Export debts, people, and payments to a file</Text>
+                </View>
                 <View style={styles.valueWrap}>
-                  <Text style={styles.value}>{backupBusy ? "Creating" : "Save"}</Text>
-                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
+                  {backupBusy ? (
+                    <Text style={styles.value}>Creating…</Text>
+                  ) : (
+                    <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
+                  )}
                 </View>
               </PressableScale>
 
@@ -450,11 +457,17 @@ export function SettingsScreen() {
                 }}
                 style={[styles.row, styles.rowBorder]}
               >
-                <Text style={styles.icon}>📥</Text>
-                <Text style={styles.label}>Restore Backup</Text>
+                <Text style={styles.icon}>📂</Text>
+                <View style={styles.toggleCopy}>
+                  <Text style={styles.label}>Restore from backup</Text>
+                  <Text style={styles.subLabel}>Replace current data with a saved file</Text>
+                </View>
                 <View style={styles.valueWrap}>
-                  <Text style={styles.value}>{restoreBusy ? "Restoring" : "Choose"}</Text>
-                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
+                  {restoreBusy ? (
+                    <Text style={styles.value}>Restoring…</Text>
+                  ) : (
+                    <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
+                  )}
                 </View>
               </PressableScale>
 
@@ -464,16 +477,15 @@ export function SettingsScreen() {
                 style={[styles.row, styles.rowBorder]}
               >
                 <Text style={styles.icon}>🗑️</Text>
-                <Text style={styles.label}>Delete All Data</Text>
-                <Text style={[styles.value, styles.dangerValue]}>
-                  {resetDatabase.isPending ? "Deleting" : "Delete"}
-                </Text>
+                <View style={styles.toggleCopy}>
+                  <Text style={[styles.label, styles.dangerLabel]}>Erase all data</Text>
+                  <Text style={styles.subLabel}>Permanently remove everything on this device</Text>
+                </View>
+                {resetDatabase.isPending ? (
+                  <Text style={[styles.value, styles.dangerValue]}>Deleting…</Text>
+                ) : null}
               </PressableScale>
             </View>
-            <Text style={styles.sectionHint}>
-              Your backups are created locally and stored wherever you choose. Owed never uploads
-              your backup files.
-            </Text>
           </View>
 
           <View style={styles.section}>
@@ -610,6 +622,9 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.muted,
   },
   dangerValue: {
+    color: theme.colors.danger,
+  },
+  dangerLabel: {
     color: theme.colors.danger,
   },
   segmented: {
