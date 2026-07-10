@@ -4,6 +4,7 @@ import { describe, expect, it } from "vitest";
 
 import { DefaultBackupClient } from "@/features/backup-restore/application/default-backup-client";
 import type { BackupDocument } from "@/features/backup-restore/domain/backup-document";
+import { BackupError } from "@/features/backup-restore/domain/backup-error";
 import { type BackupPayloadV1 } from "@/features/backup-restore/domain/backup-payload-v1";
 import { JsonBackupCodec } from "@/features/backup-restore/infrastructure/codecs/json-backup-codec";
 import { ZodBackupValidator } from "@/features/backup-restore/infrastructure/validation/backup-validator";
@@ -155,6 +156,33 @@ describe("backup client", () => {
     const created = await client.create();
 
     expect(created.document.payload.payments[0]?.paidAt).toBe("2026-07-05T10:00:00.000Z");
+  });
+
+  it("reports validation paths when a payload is invalid", async () => {
+    const payload = payloadWithPaymentTimestamp();
+    payload.payments[0] = {
+      ...payload.payments[0]!,
+      paidAt: "2026-07-05",
+    };
+    const client = createTestClient(payload);
+
+    await expect(client.create()).rejects.toMatchObject({
+      code: "INVALID_PAYLOAD",
+      message: expect.stringContaining("payments.0.paidAt"),
+    });
+
+    try {
+      await client.create();
+    } catch (error) {
+      expect(error).toBeInstanceOf(BackupError);
+      expect((error as BackupError).details).toEqual({
+        issues: expect.arrayContaining([
+          expect.objectContaining({
+            path: "payments.0.paidAt",
+          }),
+        ]),
+      });
+    }
   });
 
   it("inspects a created backup without modifying application state", async () => {
