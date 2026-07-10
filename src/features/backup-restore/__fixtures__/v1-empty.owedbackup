@@ -7,13 +7,13 @@
     "databaseSchemaVersion": 5
   },
   "data": {
-    "sqlite": {
+    "database": {
       "people": [],
       "debts": [],
       "payments": [],
-      "activity_events": [],
+      "activityEvents": [],
       "reminders": [],
-      "schema_migrations": [
+      "schemaMigrations": [
         { "version": 1 },
         { "version": 2 },
         { "version": 3 },
@@ -21,14 +21,16 @@
         { "version": 5 }
       ]
     },
-    "settings": {
-      "defaultCurrency": "KES",
-      "themePreference": "auto",
-      "brandColorTheme": "default",
-      "defaultReminderTime": "09:00",
-      "overdueReminderEnabled": false,
-      "notificationsPermissionAsked": false
-    },
-    "onboardingComplete": false
+    "preferences": {
+      "settings": {
+        "defaultCurrency": "KES",
+        "themePreference": "auto",
+        "brandColorTheme": "default",
+        "defaultReminderTime": "09:00",
+        "overdueReminderEnabled": false,
+        "notificationsPermissionAsked": false
+      },
+      "onboardingComplete": false
+    }
   }
 }

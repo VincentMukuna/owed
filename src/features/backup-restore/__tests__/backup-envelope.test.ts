@@ -16,8 +16,8 @@ describe("backup envelope validation", () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.backup.data.sqlite.people).toEqual([]);
-      expect(result.backup.data.onboardingComplete).toBe(false);
+      expect(result.backup.data.database.people).toEqual([]);
+      expect(result.backup.data.preferences.onboardingComplete).toBe(false);
     }
   });
 
@@ -26,9 +26,9 @@ describe("backup envelope validation", () => {
 
     expect(result.ok).toBe(true);
     if (result.ok) {
-      expect(result.backup.data.sqlite.people).toHaveLength(1);
-      expect(result.backup.data.sqlite.debts[0]?.direction).toBe("they_owe_me");
-      expect(result.backup.data.settings.overdueReminderEnabled).toBe(true);
+      expect(result.backup.data.database.people).toHaveLength(1);
+      expect(result.backup.data.database.debts[0]?.direction).toBe("they_owe_me");
+      expect(result.backup.data.preferences.settings.overdueReminderEnabled).toBe(true);
     }
   });
 

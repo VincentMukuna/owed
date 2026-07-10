@@ -35,6 +35,8 @@ Frozen decisions:
 - Backup v1 uses a logical JSON envelope, not a raw SQLite database file copy.
 - The user-facing file uses a custom `.owedbackup` extension with JSON contents.
 - The filename pattern is `owed-backup-YYYY-MM-DD.owedbackup`.
+- The envelope groups state under `data.database` and `data.preferences`; storage-engine names such as `sqlite` do not appear in the backup contract.
+- Envelope collection names are logical camelCase names, with import/export mappers translating to concrete table and storage-key names.
 - Backup export reads raw SQLite table rows directly, table-by-table, instead of using UI summary repositories.
 - Restore validates the envelope identity, supported backup schema, and required sections before destructive confirmation.
 - Restore does not perform manual domain/data integrity auditing of backed-up rows; transactional import and SQLite constraints are the integrity boundary.

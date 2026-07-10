@@ -17,16 +17,18 @@ const metadataSchema = z.object({
 export const backupEnvelopeSchema = z.object({
   metadata: metadataSchema,
   data: z.object({
-    sqlite: z.object({
+    database: z.object({
       people: z.array(backupRowSchema),
       debts: z.array(backupRowSchema),
       payments: z.array(backupRowSchema),
-      activity_events: z.array(backupRowSchema),
+      activityEvents: z.array(backupRowSchema),
       reminders: z.array(backupRowSchema),
-      schema_migrations: z.array(backupRowSchema),
+      schemaMigrations: z.array(backupRowSchema),
     }),
-    settings: z.record(z.string(), z.unknown()),
-    onboardingComplete: z.boolean(),
+    preferences: z.object({
+      settings: z.record(z.string(), z.unknown()),
+      onboardingComplete: z.boolean(),
+    }),
   }),
 });
 

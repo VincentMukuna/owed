@@ -7,15 +7,17 @@
     "databaseSchemaVersion": 999
   },
   "data": {
-    "sqlite": {
+    "database": {
       "people": [],
       "debts": [],
       "payments": [],
-      "activity_events": [],
+      "activityEvents": [],
       "reminders": [],
-      "schema_migrations": []
+      "schemaMigrations": []
     },
-    "settings": {},
-    "onboardingComplete": false
+    "preferences": {
+      "settings": {},
+      "onboardingComplete": false
+    }
   }
 }
