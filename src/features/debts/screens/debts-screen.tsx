@@ -11,7 +11,7 @@ import {
 
 import { Platform, Pressable, Text, View } from "react-native";
 
-import { router, useLocalSearchParams } from "expo-router";
+import { type Href, router, useLocalSearchParams } from "expo-router";
 
 import {
   BottomSheetBackdrop,
@@ -32,8 +32,15 @@ import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { IconButton } from "@/components/shared/icon-button";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { TabListScreenSkeleton } from "@/components/ui/screen-skeletons";
+import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import { DueDatePickerModal } from "@/features/debts/components/due-date-picker-modal";
+import {
+  RecordPaymentSheet,
+  type RecordPaymentSheetRef,
+} from "@/features/debts/components/record-payment-sheet";
+import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebts } from "@/features/debts/hooks/use-debts";
+import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import {
   type DebtDateRangeFilter,
   type DebtDirectionFilter,
@@ -90,6 +97,7 @@ function parseDirectionParam(value: string | string[] | undefined): DebtDirectio
 export function DebtsScreen() {
   const { theme } = useUnistyles();
   const queryClient = useQueryClient();
+  const archiveDebt = useArchiveDebt();
   const { data: debts = [], isPending } = useDebts();
   const params = useLocalSearchParams<{
     focusDate?: string;
@@ -112,6 +120,8 @@ export function DebtsScreen() {
   const listRef = useRef<FlashListRef<DebtCardView>>(null);
   const searchRef = useRef<DebtSearchBarRef>(null);
   const filtersSheetRef = useRef<BottomSheetModal>(null);
+  const paymentSheetRef = useRef<RecordPaymentSheetRef>(null);
+  const [paymentDebt, setPaymentDebt] = useState<DebtCardView | null>(null);
   const filterSheetSnapPoints = useMemo(() => ["56%"], []);
   const todayIso = useMemo(() => toISODate(new Date()), []);
 
@@ -196,6 +206,26 @@ export function DebtsScreen() {
     clearFocus();
     setSearchOpen(true);
   }, [clearFocus]);
+
+  const handleDebtAction = useCallback(
+    (action: DebtAction, debt: DebtCardView) => {
+      if (action === "record-payment") {
+        setPaymentDebt(debt);
+        requestAnimationFrame(() => paymentSheetRef.current?.present());
+        return;
+      }
+
+      if (action === "edit-debt") {
+        router.push(`/edit-debt?debtId=${debt.id}` as Href);
+        return;
+      }
+
+      confirmArchiveDebt(debt, () => {
+        archiveDebt.mutate({ debtId: debt.id });
+      });
+    },
+    [archiveDebt],
+  );
 
   const toggleFilters = useCallback(() => {
     selectionChange();
@@ -416,6 +446,7 @@ export function DebtsScreen() {
           contentContainerStyle={styles.scroll}
           debts={visibleDebts}
           ListEmptyComponent={emptyState}
+          onDebtAction={handleDebtAction}
           onDebtPress={openDebt}
           refreshControlProps={refreshControlProps}
           showDirectionCue={direction === "all"}
@@ -523,6 +554,7 @@ export function DebtsScreen() {
         value={datePickerValue}
         visible={datePickerTarget !== null}
       />
+      <RecordPaymentSheet ref={paymentSheetRef} debt={paymentDebt} />
     </BottomSheetModalProvider>
   );
 }

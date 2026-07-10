@@ -12,6 +12,10 @@ function toActivityViewType(type: ActivityEventType): ActivityViewType {
       return "payment";
     case "debt_paid":
       return "paid";
+    case "debt_amount_changed":
+    case "debt_due_date_changed":
+    case "debt_archived":
+      return "update";
   }
 }
 
@@ -68,6 +72,20 @@ export function buildActivityView(
       sub = reason
         ? `${formatCurrency(amount, currency)} · ${reason}`
         : formatCurrency(amount, currency);
+      break;
+    case "debt_amount_changed":
+      text = `Amount changed for ${event.personName}`;
+      sub = reason
+        ? `${formatCurrency(amount, currency)} · ${reason}`
+        : `New amount: ${formatCurrency(amount, currency)}`;
+      break;
+    case "debt_due_date_changed":
+      text = `Due date changed for ${event.personName}`;
+      sub = reason || "Debt terms updated";
+      break;
+    case "debt_archived":
+      text = `Debt archived for ${event.personName}`;
+      sub = reason || "Payment history kept";
       break;
   }
 

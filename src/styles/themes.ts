@@ -130,6 +130,7 @@ const neutralLightColors = {
     payment: { bg: "#ECFDF5", text: "#059669" },
     add: { bg: "#F1F5F9", text: "#64748B" },
     paid: { bg: "#ECFDF5", text: "#059669" },
+    update: { bg: "#FFF7ED", text: "#C2410C" },
   },
   reminder: {
     due: { bg: "#FEF3C7", text: "#D97706" },
@@ -186,6 +187,7 @@ const neutralDarkColors = {
     payment: { bg: "#103528", text: "#6EE7B7" },
     add: { bg: "#1F2937", text: "#CBD5E1" },
     paid: { bg: "#103528", text: "#6EE7B7" },
+    update: { bg: "#3A2718", text: "#FDBA74" },
   },
   reminder: {
     due: { bg: "#3B2A10", text: "#FCD34D" },

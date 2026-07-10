@@ -68,7 +68,13 @@ export interface Reminder {
   updatedAt: string;
 }
 
-export type ActivityEventType = "debt_created" | "payment_recorded" | "debt_paid";
+export type ActivityEventType =
+  | "debt_created"
+  | "payment_recorded"
+  | "debt_paid"
+  | "debt_amount_changed"
+  | "debt_due_date_changed"
+  | "debt_archived";
 
 export interface ActivityEvent {
   id: string;

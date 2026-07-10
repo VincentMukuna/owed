@@ -204,13 +204,23 @@ export default function RootLayout() {
               }}
             />
             <Stack.Screen
+              name="edit-debt"
+              options={{
+                ...modalOptions,
+                presentation: "modal",
+                animation: "slide_from_bottom",
+                headerShown: true,
+                title: "Edit Debt",
+              }}
+            />
+            <Stack.Screen
               name="record-payment"
               options={{
                 ...modalOptions,
                 presentation: "modal",
                 animation: "slide_from_bottom",
                 headerShown: true,
-                title: "Add payment",
+                title: "Add Payment",
                 sheetGrabberVisible: true,
                 sheetAllowedDetents: [0.55, 1],
               }}

@@ -1,9 +1,10 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { FlashList } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
 import { Wallet } from "lucide-react-native";
@@ -18,8 +19,15 @@ import { HomeScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
 import { useRecentActivities } from "@/features/activity/hooks/use-recent-activities";
 import { HomeDebtSection } from "@/features/dashboard/components/home-debt-section";
+import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
+import {
+  RecordPaymentSheet,
+  type RecordPaymentSheetRef,
+} from "@/features/debts/components/record-payment-sheet";
+import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import { usePaidThisMonth } from "@/features/debts/hooks/use-paid-this-month";
+import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import { type DebtFilterKey, bucketHomeDebts } from "@/features/debts/lib/debt-list-utils";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { BellBadgeButton } from "@/features/reminders/components/bell-badge-button";
@@ -57,9 +65,12 @@ function buildHomeSections(
 export function HomeScreen() {
   const { theme } = useUnistyles();
   const queryClient = useQueryClient();
+  const archiveDebt = useArchiveDebt();
   const { data: debts = [], isPending } = useDebts();
   const { data: paidThisMonth = 0 } = usePaidThisMonth();
   const { data: recentActivity = [] } = useRecentActivities(HOME_RECENT_ACTIVITY_LIMIT);
+  const paymentSheetRef = useRef<RecordPaymentSheetRef>(null);
+  const [paymentDebt, setPaymentDebt] = useState<DebtCardView | null>(null);
 
   const handleRefresh = useCallback(() => invalidateHomeQueries(queryClient), [queryClient]);
   const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
@@ -70,6 +81,26 @@ export function HomeScreen() {
   const openDebt = useCallback((debtId: string) => {
     router.push(`/debt/${debtId}`);
   }, []);
+
+  const handleDebtAction = useCallback(
+    (action: DebtAction, debt: DebtCardView) => {
+      if (action === "record-payment") {
+        setPaymentDebt(debt);
+        requestAnimationFrame(() => paymentSheetRef.current?.present());
+        return;
+      }
+
+      if (action === "edit-debt") {
+        router.push(`/edit-debt?debtId=${debt.id}` as Href);
+        return;
+      }
+
+      confirmArchiveDebt(debt, () => {
+        archiveDebt.mutate({ debtId: debt.id });
+      });
+    },
+    [archiveDebt],
+  );
 
   const openAdd = useCallback(() => {
     router.push("/add-debt");
@@ -110,6 +141,7 @@ export function HomeScreen() {
       <HomeDebtSection
         debts={item.debts}
         filter={item.filter}
+        onDebtAction={handleDebtAction}
         onDebtPress={openDebt}
         onTitlePress={openDebtsFilter}
         showDirectionCue
@@ -117,7 +149,7 @@ export function HomeScreen() {
         titleColor={item.titleColor}
       />
     ),
-    [openDebt, openDebtsFilter],
+    [handleDebtAction, openDebt, openDebtsFilter],
   );
 
   const keyExtractor = useCallback((item: HomeSectionRow) => item.key, []);
@@ -255,29 +287,32 @@ export function HomeScreen() {
   }
 
   return (
-    <TabScreen>
-      <View style={styles.header}>
-        <View>
-          <Text style={styles.kicker}>Good morning</Text>
-          <Text style={styles.pageTitleLg}>{"Here's what's unsettled"}</Text>
+    <BottomSheetModalProvider>
+      <TabScreen>
+        <View style={styles.header}>
+          <View>
+            <Text style={styles.kicker}>Good morning</Text>
+            <Text style={styles.pageTitleLg}>{"Here's what's unsettled"}</Text>
+          </View>
+          <BellBadgeButton onPress={openNotifications} />
         </View>
-        <BellBadgeButton onPress={openNotifications} />
-      </View>
 
-      <FlashList
-        contentContainerStyle={styles.scroll}
-        data={sections}
-        ItemSeparatorComponent={HomeSectionSeparator}
-        keyExtractor={keyExtractor}
-        ListFooterComponent={listFooter}
-        ListHeaderComponent={listHeader}
-        refreshControl={<RefreshControl {...refreshControlProps} />}
-        renderItem={renderItem}
-        showsVerticalScrollIndicator={false}
-      />
+        <FlashList
+          contentContainerStyle={styles.scroll}
+          data={sections}
+          ItemSeparatorComponent={HomeSectionSeparator}
+          keyExtractor={keyExtractor}
+          ListFooterComponent={listFooter}
+          ListHeaderComponent={listHeader}
+          refreshControl={<RefreshControl {...refreshControlProps} />}
+          renderItem={renderItem}
+          showsVerticalScrollIndicator={false}
+        />
 
-      <FabButton onPress={openAdd} />
-    </TabScreen>
+        <FabButton onPress={openAdd} />
+      </TabScreen>
+      <RecordPaymentSheet ref={paymentSheetRef} debt={paymentDebt} />
+    </BottomSheetModalProvider>
   );
 }
 

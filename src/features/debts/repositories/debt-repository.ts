@@ -1,5 +1,10 @@
 import { APP_CONFIG } from "@/constants/config";
-import type { CreateDebtInput, PersonRef, RecordPaymentInput } from "@/features/debts/view-models";
+import type {
+  CreateDebtInput,
+  PersonRef,
+  RecordPaymentInput,
+  UpdateDebtInput,
+} from "@/features/debts/view-models";
 import { getDb } from "@/lib/db/client";
 import {
   type DebtSummary,
@@ -354,6 +359,9 @@ export const debtRepository = {
         [debtId],
       );
       const remaining = debtRow.original_amount - (paidTotalRow?.paid_total ?? 0);
+      if (remaining < 0) {
+        throw new Error("Payment amount cannot exceed remaining balance");
+      }
       const eventType = remaining <= 0 ? "debt_paid" : "payment_recorded";
 
       await activityRepository.createWithDb(db, {
@@ -373,5 +381,113 @@ export const debtRepository = {
     }
 
     return updated;
+  },
+
+  async update(debtId: string, input: UpdateDebtInput): Promise<DebtWithRelations> {
+    const db = await getDb();
+    const now = new Date().toISOString();
+    const reason = input.reason?.trim() || null;
+    const reminderTime = input.reminderEnabled
+      ? (input.reminderTime ?? APP_CONFIG.defaultReminderTime)
+      : null;
+
+    await db.withTransactionAsync(async () => {
+      const existing = await db.getFirstAsync<{
+        person_id: string;
+        original_amount: number;
+        due_date: string;
+      }>(`SELECT person_id, original_amount, due_date FROM debts WHERE id = ?`, [debtId]);
+
+      if (!existing) {
+        throw new Error(`Debt not found: ${debtId}`);
+      }
+
+      const paidTotalRow = await db.getFirstAsync<{ paid_total: number }>(
+        `SELECT COALESCE(SUM(amount), 0) AS paid_total FROM payments WHERE debt_id = ?`,
+        [debtId],
+      );
+      const totalPaid = paidTotalRow?.paid_total ?? 0;
+
+      if (input.originalAmount < totalPaid) {
+        throw new Error("Debt amount cannot be less than payments already recorded");
+      }
+
+      await db.runAsync(
+        `UPDATE debts
+         SET original_amount = ?,
+             due_date = ?,
+             reason = ?,
+             reminder_enabled = ?,
+             reminder_time = ?,
+             updated_at = ?
+         WHERE id = ?`,
+        [
+          input.originalAmount,
+          input.dueDate,
+          reason,
+          input.reminderEnabled ? 1 : 0,
+          reminderTime,
+          now,
+          debtId,
+        ],
+      );
+
+      if (input.originalAmount !== existing.original_amount) {
+        await activityRepository.createWithDb(db, {
+          type: "debt_amount_changed",
+          debtId,
+          personId: existing.person_id,
+          amount: input.originalAmount,
+          occurredAt: now,
+        });
+      }
+
+      if (input.dueDate !== existing.due_date) {
+        await activityRepository.createWithDb(db, {
+          type: "debt_due_date_changed",
+          debtId,
+          personId: existing.person_id,
+          occurredAt: now,
+        });
+      }
+    });
+
+    const updated = await this.getById(debtId);
+
+    if (!updated) {
+      throw new Error("Debt not found after updating");
+    }
+
+    return updated;
+  },
+
+  async archive(debtId: string): Promise<void> {
+    const db = await getDb();
+    const now = new Date().toISOString();
+
+    await db.withTransactionAsync(async () => {
+      const existing = await db.getFirstAsync<{ person_id: string }>(
+        `SELECT person_id FROM debts WHERE id = ?`,
+        [debtId],
+      );
+
+      if (!existing) {
+        throw new Error(`Debt not found: ${debtId}`);
+      }
+
+      await db.runAsync(
+        `UPDATE debts
+         SET archived_at = ?, updated_at = ?
+         WHERE id = ?`,
+        [now, now, debtId],
+      );
+
+      await activityRepository.createWithDb(db, {
+        type: "debt_archived",
+        debtId,
+        personId: existing.person_id,
+        occurredAt: now,
+      });
+    });
   },
 };
