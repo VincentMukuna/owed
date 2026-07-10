@@ -32,13 +32,16 @@ Define the backup compatibility boundary before implementing flows.
 
 Frozen decisions:
 
-- Backup v1 uses a logical JSON envelope, not a raw SQLite database file copy.
+- Backup v1 uses a logical JSON backup document, not a raw SQLite database file copy.
 - The user-facing file uses a custom `.owedbackup` extension with JSON contents.
 - The filename pattern is `owed-backup-YYYY-MM-DD.owedbackup`.
-- The envelope groups state under `data.database` and `data.preferences`; storage-engine names such as `sqlite` do not appear in the backup contract.
-- Envelope collection names are logical camelCase names, with import/export mappers translating to concrete table and storage-key names.
+- The backup document uses `manifest` and `payload`; storage-engine names such as `sqlite` do not appear in the backup contract.
+- Payload collection names are domain-oriented camelCase names, with import/export mappers translating to concrete table and storage-key names.
+- Implementation uses a small internal SDK, not scattered helper functions. App code imports `createBackupClient` and `createBackupFileClient` from the feature public surface.
+- Public API names use generic backup terminology (`BackupClient`, `BackupDocument`, `BackupPayloadV1`) and do not repeat the app name. App identity remains data in the manifest and filename.
+- Core backup logic is separated from Expo, SQLite, and UI concerns through ports and infrastructure adapters.
 - Backup export reads raw SQLite table rows directly, table-by-table, instead of using UI summary repositories.
-- Restore validates the envelope identity, supported backup schema, and required sections before destructive confirmation.
+- Restore validates the backup identity, supported backup schema, and required sections before destructive confirmation.
 - Restore does not perform manual domain/data integrity auditing of backed-up rows; transactional import and SQLite constraints are the integrity boundary.
 - Restore does not run ad hoc data manipulation/backfill logic; defaulting and data-shape upgrades belong in the existing database migration stack.
 - Restore imports rows in dependency order inside transactional SQLite work.

@@ -1,22 +1,47 @@
 {
-  "metadata": {
-    "appId": "owed",
-    "backupSchemaVersion": 999,
+  "manifest": {
+    "format": "owed.backup",
+    "formatVersion": 999,
+    "backupId": "backup_newer",
     "createdAt": "2026-07-10T12:00:00.000Z",
-    "appVersion": "99.0.0",
-    "databaseSchemaVersion": 999
-  },
-  "data": {
-    "database": {
-      "people": [],
-      "debts": [],
-      "payments": [],
-      "activityEvents": [],
-      "reminders": [],
-      "schemaMigrations": []
+    "producer": {
+      "appId": "com.vincentmukuna.owed",
+      "appVersion": "99.0.0",
+      "buildVersion": null,
+      "sdkVersion": "1.0.0"
     },
+    "source": {
+      "databaseSchemaVersion": 999
+    },
+    "payload": {
+      "encoding": "json",
+      "hashAlgorithm": "sha256",
+      "hash": "fixture-hash",
+      "byteLength": 398,
+      "counts": {
+        "people": 0,
+        "debts": 0,
+        "payments": 0,
+        "activityEvents": 0,
+        "reminders": 0
+      }
+    }
+  },
+  "payload": {
+    "people": [],
+    "debts": [],
+    "payments": [],
+    "activityEvents": [],
+    "reminders": [],
     "preferences": {
-      "settings": {},
+      "settings": {
+        "defaultCurrency": "KES",
+        "themePreference": "auto",
+        "brandColorTheme": "default",
+        "defaultReminderTime": "09:00",
+        "overdueReminderEnabled": false,
+        "notificationsPermissionAsked": false
+      },
       "onboardingComplete": false
     }
   }

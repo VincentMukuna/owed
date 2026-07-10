@@ -1,26 +1,38 @@
 {
-  "metadata": {
-    "appId": "owed",
-    "backupSchemaVersion": 1,
+  "manifest": {
+    "format": "owed.backup",
+    "formatVersion": 1,
+    "backupId": "backup_empty",
     "createdAt": "2026-07-10T12:00:00.000Z",
-    "appVersion": "1.0.0",
-    "databaseSchemaVersion": 5
-  },
-  "data": {
-    "database": {
-      "people": [],
-      "debts": [],
-      "payments": [],
-      "activityEvents": [],
-      "reminders": [],
-      "schemaMigrations": [
-        { "version": 1 },
-        { "version": 2 },
-        { "version": 3 },
-        { "version": 4 },
-        { "version": 5 }
-      ]
+    "producer": {
+      "appId": "com.vincentmukuna.owed",
+      "appVersion": "1.0.0",
+      "buildVersion": null,
+      "sdkVersion": "1.0.0"
     },
+    "source": {
+      "databaseSchemaVersion": 5
+    },
+    "payload": {
+      "encoding": "json",
+      "hashAlgorithm": "sha256",
+      "hash": "fixture-hash",
+      "byteLength": 398,
+      "counts": {
+        "people": 0,
+        "debts": 0,
+        "payments": 0,
+        "activityEvents": 0,
+        "reminders": 0
+      }
+    }
+  },
+  "payload": {
+    "people": [],
+    "debts": [],
+    "payments": [],
+    "activityEvents": [],
+    "reminders": [],
     "preferences": {
       "settings": {
         "defaultCurrency": "KES",
