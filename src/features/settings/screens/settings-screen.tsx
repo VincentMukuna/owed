@@ -1,37 +1,16 @@
 import type { ComponentType } from "react";
 import { useCallback, useRef, useState } from "react";
 
-import { Alert, AppState, ScrollView, Switch, Text, View } from "react-native";
+import { Linking, ScrollView, Text, View } from "react-native";
 
-import { type Href, router, useFocusEffect } from "expo-router";
-import * as Sharing from "expo-sharing";
+import Constants from "expo-constants";
+import { type Href, router } from "expo-router";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
-import { ChevronRight } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
-import { PressableScale } from "@/components/shared/pressable-scale";
-import {
-  BACKUP_MIME_TYPE,
-  createBackupClient,
-  createBackupStore,
-  suggestBackupFileName,
-} from "@/features/backup-restore";
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
-import { useUiStore } from "@/features/debts/store/ui-store";
-import {
-  type NotificationPermissionState,
-  getNotificationPermissionState,
-  openOsNotificationSettings,
-  requestOsNotificationPermissions,
-} from "@/features/reminders/lib/notification-permissions";
-import {
-  saveDefaultReminderTime,
-  saveOverdueReminderEnabled,
-  saveThemePreference,
-} from "@/features/reminders/lib/reminder-storage";
-import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 import {
   CurrencyConversionSheet,
   type CurrencyConversionSheetRef,
@@ -40,26 +19,21 @@ import {
   CurrencyPickerSheet,
   type CurrencyPickerSheetRef,
 } from "@/features/settings/components/currency-picker-sheet";
-import { ReminderTimePickerModal } from "@/features/settings/components/reminder-time-picker-modal";
+import {
+  SettingsCard,
+  SettingsFooterText,
+  SettingsNavRow,
+  SettingsSection,
+} from "@/features/settings/components/settings-ui";
 import {
   useChangeCurrency,
   useCurrentCurrency,
 } from "@/features/settings/hooks/use-change-currency";
-import { useResetDatabase } from "@/features/settings/hooks/use-reset-database";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { formatReminderTimeDisplay } from "@/features/settings/lib/format-reminder-time";
 import { selectionChange } from "@/lib/haptics";
 import { getBrandColorTheme } from "@/styles/brand-themes";
 import type { ThemePreference } from "@/styles/themes";
-
-const THEME_OPTIONS: { label: string; value: ThemePreference }[] = [
-  { label: "Light", value: "light" },
-  { label: "Auto", value: "auto" },
-  { label: "Dark", value: "dark" },
-];
-
-const backups = createBackupClient();
-const backupStore = createBackupStore();
 
 let DevToolsSection: ComponentType | null = null;
 
@@ -69,93 +43,30 @@ if (__DEV__) {
   DevToolsSection = require("@/features/settings/dev/dev-tools-section").DevToolsSection;
 }
 
-function permissionLabel(state: NotificationPermissionState): string {
-  switch (state) {
-    case "allowed":
-      return "Allowed";
-    case "off":
-      return "Off";
-    default:
-      return "Not set";
-  }
-}
+const THEME_LABELS: Record<ThemePreference, string> = {
+  light: "Light",
+  auto: "Auto",
+  dark: "Dark",
+};
+
+const appVersion = Constants.expoConfig?.version ?? "1.0.0";
 
 export function SettingsScreen() {
-  const { theme } = useUnistyles();
+  useUnistyles();
   const tabScrollPadding = useTabScrollPadding();
   const defaultCurrency = useCurrentCurrency();
   const themePreference = useSettingsStore((state) => state.themePreference);
   const brandColorTheme = useSettingsStore((state) => state.brandColorTheme);
-  const brandColorLabel = getBrandColorTheme(brandColorTheme).name;
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
-  const overdueReminderEnabled = useSettingsStore((state) => state.overdueReminderEnabled);
   const changeCurrency = useChangeCurrency();
-  const resetDatabase = useResetDatabase();
-  const showToast = useUiStore((state) => state.showToast);
   const currencyPickerRef = useRef<CurrencyPickerSheetRef>(null);
   const conversionSheetRef = useRef<CurrencyConversionSheetRef>(null);
 
-  const [permissionState, setPermissionState] = useState<NotificationPermissionState>("not-asked");
-  const [timePickerOpen, setTimePickerOpen] = useState(false);
   const [conversionTarget, setConversionTarget] = useState<string | null>(null);
   const [totalRemaining, setTotalRemaining] = useState(0);
-  const [backupBusy, setBackupBusy] = useState(false);
-  const [restoreBusy, setRestoreBusy] = useState(false);
 
-  const refreshPermissionState = useCallback(() => {
-    void getNotificationPermissionState().then(setPermissionState);
-  }, []);
-
-  useFocusEffect(
-    useCallback(() => {
-      refreshPermissionState();
-    }, [refreshPermissionState]),
-  );
-
-  useFocusEffect(
-    useCallback(() => {
-      const subscription = AppState.addEventListener("change", (state) => {
-        if (state === "active") {
-          refreshPermissionState();
-        }
-      });
-
-      return () => subscription.remove();
-    }, [refreshPermissionState]),
-  );
-
-  const handleReminderTimeSave = useCallback(async (time24: string) => {
-    await saveDefaultReminderTime(time24);
-    await runReminderSync();
-  }, []);
-
-  const handleOverdueToggle = useCallback(async (enabled: boolean) => {
-    selectionChange();
-    await saveOverdueReminderEnabled(enabled);
-    await runReminderSync();
-  }, []);
-
-  const handleThemeSelect = useCallback(async (preference: ThemePreference) => {
-    selectionChange();
-    await saveThemePreference(preference);
-  }, []);
-
-  const handleNotificationsPress = useCallback(async () => {
-    selectionChange();
-
-    if (permissionState === "off") {
-      await openOsNotificationSettings();
-      return;
-    }
-
-    if (permissionState === "not-asked") {
-      const state = await requestOsNotificationPermissions();
-      refreshPermissionState();
-      if (state === "allowed") {
-        await runReminderSync();
-      }
-    }
-  }, [permissionState, refreshPermissionState]);
+  const brandColorLabel = getBrandColorTheme(brandColorTheme).name;
+  const appearanceSummary = `${THEME_LABELS[themePreference]} · ${brandColorLabel}`;
 
   const handleCurrencySelect = useCallback(
     async (code: string) => {
@@ -214,109 +125,12 @@ export function SettingsScreen() {
     setConversionTarget(null);
   }, [changeCurrency.isPending]);
 
-  const handleBackupPress = useCallback(async () => {
+  const handleFeedbackPress = useCallback(() => {
     selectionChange();
-    setBackupBusy(true);
-
-    try {
-      const created = await backups.create();
-      const file = await backupStore.write(
-        suggestBackupFileName(created.summary.createdAt),
-        created.bytes,
-      );
-
-      const sharingAvailable = await Sharing.isAvailableAsync();
-      if (!sharingAvailable) {
-        throw new Error("Native sharing is not available on this device.");
-      }
-
-      await Sharing.shareAsync(file.uri, {
-        dialogTitle: "Save Owed backup",
-        mimeType: BACKUP_MIME_TYPE,
-      });
-    } catch (error) {
-      if (__DEV__) {
-        console.error("[SettingsScreen] failed to create backup", error);
-      }
-      showToast("Could not create backup. Try again.");
-    } finally {
-      setBackupBusy(false);
-    }
-  }, [showToast]);
-
-  const handleRestorePress = useCallback(async () => {
-    selectionChange();
-    setRestoreBusy(true);
-
-    try {
-      const file = await backupStore.pick();
-
-      if (!file) {
-        return;
-      }
-
-      const prepared = await backups.prepareRestore(await backupStore.read(file.uri));
-
-      Alert.alert(
-        "Replace current data?",
-        "Restoring a backup will replace all current data in Owed.\n\nThis action cannot be undone.",
-        [
-          {
-            text: "Cancel",
-            style: "cancel",
-            onPress: () => {
-              prepared.dispose();
-            },
-          },
-          {
-            text: "Restore",
-            style: "destructive",
-            onPress: () => {
-              void (async () => {
-                setRestoreBusy(true);
-                try {
-                  await prepared.commit({ allowWarnings: true });
-                  Alert.alert("Backup restored", "Your data has been restored successfully.");
-                } catch (error) {
-                  if (__DEV__) {
-                    console.error("[SettingsScreen] failed to restore backup", error);
-                  }
-                  showToast("Could not restore backup. Try again.");
-                } finally {
-                  setRestoreBusy(false);
-                }
-              })();
-            },
-          },
-        ],
-      );
-    } catch (error) {
-      if (__DEV__) {
-        console.error("[SettingsScreen] selected backup is not valid", error);
-      }
-      Alert.alert("Backup not recognized", "The selected file isn't a valid Owed backup.", [
-        { text: "Choose another file" },
-      ]);
-    } finally {
-      setRestoreBusy(false);
-    }
-  }, [showToast]);
-
-  const handleDeleteAllDataPress = useCallback(() => {
-    selectionChange();
-    Alert.alert(
-      "Delete all data?",
-      "This will permanently delete all debts, people, payments, activity, and reminders from this device.",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Delete",
-          style: "destructive",
-          onPress: () => resetDatabase.mutate(),
-        },
-      ],
-    );
-  }, [resetDatabase]);
+    const subject = encodeURIComponent("Owed Feedback");
+    const body = encodeURIComponent(`App version: ${appVersion}\n\n`);
+    void Linking.openURL(`mailto:?subject=${subject}&body=${body}`);
+  }, []);
 
   return (
     <BottomSheetModalProvider>
@@ -329,194 +143,51 @@ export function SettingsScreen() {
           contentContainerStyle={[styles.scroll, { paddingBottom: tabScrollPadding }]}
           showsVerticalScrollIndicator={false}
         >
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Preferences</Text>
-            <View style={styles.card}>
-              <View style={styles.row}>
-                <Text style={styles.icon}>◐</Text>
-                <Text style={styles.label}>Theme</Text>
-                <View style={styles.segmented}>
-                  {THEME_OPTIONS.map((option) => {
-                    const selected = themePreference === option.value;
-                    return (
-                      <PressableScale
-                        key={option.value}
-                        onPress={() => {
-                          void handleThemeSelect(option.value);
-                        }}
-                        style={[styles.segment, selected && styles.segmentSelected]}
-                      >
-                        <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
-                          {option.label}
-                        </Text>
-                      </PressableScale>
-                    );
-                  })}
-                </View>
-              </View>
-
-              <PressableScale
-                onPress={() => router.push("/brand-color" as Href)}
-                style={[styles.row, styles.rowBorder]}
-              >
-                <Text style={styles.icon}>🎨</Text>
-                <Text style={styles.label}>Brand Color</Text>
-                <View style={styles.valueWrap}>
-                  <Text style={styles.value}>{brandColorLabel}</Text>
-                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
-                </View>
-              </PressableScale>
-
-              <PressableScale
+          <SettingsSection title="General">
+            <SettingsCard>
+              <SettingsNavRow
+                icon="◐"
+                label="Appearance"
+                onPress={() => router.push("/appearance" as Href)}
+                value={appearanceSummary}
+              />
+              <SettingsNavRow
+                bordered
+                icon="💱"
+                label="Currency"
                 onPress={() => {
                   selectionChange();
                   currencyPickerRef.current?.present();
                 }}
-                style={[styles.row, styles.rowBorder]}
-              >
-                <Text style={styles.icon}>💱</Text>
-                <Text style={styles.label}>Currency</Text>
-                <View style={styles.valueWrap}>
-                  <Text style={styles.value}>{defaultCurrency}</Text>
-                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
-                </View>
-              </PressableScale>
-            </View>
-          </View>
+                value={defaultCurrency}
+              />
+              <SettingsNavRow
+                bordered
+                icon="⏰"
+                label="Reminders"
+                onPress={() => router.push("/reminders-settings" as Href)}
+                value={formatReminderTimeDisplay(defaultReminderTime)}
+              />
+            </SettingsCard>
+          </SettingsSection>
 
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Notifications</Text>
-            <View style={styles.card}>
-              <PressableScale
-                onPress={() => {
-                  selectionChange();
-                  setTimePickerOpen(true);
-                }}
-                style={styles.row}
-              >
-                <Text style={styles.icon}>⏰</Text>
-                <View style={styles.toggleCopy}>
-                  <Text style={styles.label}>Notification time</Text>
-                  <Text style={styles.subLabel}>When to notify you on promised dates</Text>
-                </View>
-                <View style={styles.valueWrap}>
-                  <Text style={styles.value}>{formatReminderTimeDisplay(defaultReminderTime)}</Text>
-                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
-                </View>
-              </PressableScale>
+          <SettingsSection title="Data">
+            <SettingsCard>
+              <SettingsNavRow
+                icon="💾"
+                label="Backup & Restore"
+                onPress={() => router.push("/backup-restore" as Href)}
+              />
+            </SettingsCard>
+          </SettingsSection>
 
-              <View style={[styles.row, styles.rowBorder]}>
-                <Text style={styles.icon}>📣</Text>
-                <View style={styles.toggleCopy}>
-                  <Text style={styles.label}>Overdue notifications</Text>
-                  <Text style={styles.subLabel}>Notify you again the day after a missed date</Text>
-                </View>
-                <Switch
-                  onValueChange={(value) => {
-                    void handleOverdueToggle(value);
-                  }}
-                  thumbColor={theme.colors.primaryForeground}
-                  trackColor={{ false: theme.colors.switchTrackOff, true: theme.colors.primary }}
-                  value={overdueReminderEnabled}
-                />
-              </View>
+          <SettingsSection title="About">
+            <SettingsCard>
+              <SettingsNavRow icon="💬" label="Send Feedback" onPress={handleFeedbackPress} />
+            </SettingsCard>
+          </SettingsSection>
 
-              <PressableScale
-                onPress={() => {
-                  void handleNotificationsPress();
-                }}
-                style={[styles.row, styles.rowBorder]}
-              >
-                <Text style={styles.icon}>🔔</Text>
-                <View style={styles.toggleCopy}>
-                  <Text style={styles.label}>Push notifications</Text>
-                  <Text style={styles.subLabel}>Alerts on your phone</Text>
-                </View>
-                <View style={styles.valueWrap}>
-                  <Text style={styles.value}>{permissionLabel(permissionState)}</Text>
-                  <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
-                </View>
-              </PressableScale>
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>Data</Text>
-            <View style={styles.card}>
-              <PressableScale
-                disabled={backupBusy}
-                onPress={() => {
-                  void handleBackupPress();
-                }}
-                style={styles.row}
-              >
-                <Text style={styles.icon}>💾</Text>
-                <View style={styles.toggleCopy}>
-                  <Text style={styles.label}>Create backup</Text>
-                  <Text style={styles.subLabel}>Export debts, people, and payments to a file</Text>
-                </View>
-                <View style={styles.valueWrap}>
-                  {backupBusy ? (
-                    <Text style={styles.value}>Creating…</Text>
-                  ) : (
-                    <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
-                  )}
-                </View>
-              </PressableScale>
-
-              <PressableScale
-                disabled={restoreBusy}
-                onPress={() => {
-                  void handleRestorePress();
-                }}
-                style={[styles.row, styles.rowBorder]}
-              >
-                <Text style={styles.icon}>📂</Text>
-                <View style={styles.toggleCopy}>
-                  <Text style={styles.label}>Restore from backup</Text>
-                  <Text style={styles.subLabel}>Replace current data with a saved file</Text>
-                </View>
-                <View style={styles.valueWrap}>
-                  {restoreBusy ? (
-                    <Text style={styles.value}>Restoring…</Text>
-                  ) : (
-                    <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
-                  )}
-                </View>
-              </PressableScale>
-
-              <PressableScale
-                disabled={resetDatabase.isPending}
-                onPress={handleDeleteAllDataPress}
-                style={[styles.row, styles.rowBorder]}
-              >
-                <Text style={styles.icon}>🗑️</Text>
-                <View style={styles.toggleCopy}>
-                  <Text style={[styles.label, styles.dangerLabel]}>Erase all data</Text>
-                  <Text style={styles.subLabel}>Permanently remove everything on this device</Text>
-                </View>
-                {resetDatabase.isPending ? (
-                  <Text style={[styles.value, styles.dangerValue]}>Deleting…</Text>
-                ) : null}
-              </PressableScale>
-            </View>
-          </View>
-
-          <View style={styles.section}>
-            <Text style={styles.sectionTitle}>About</Text>
-            <View style={styles.card}>
-              <View style={styles.row}>
-                <Text style={styles.icon}>ℹ️</Text>
-                <Text style={styles.label}>App version</Text>
-                <Text style={styles.value}>1.0.0</Text>
-              </View>
-              <View style={[styles.row, styles.rowBorder]}>
-                <Text style={styles.icon}>💬</Text>
-                <Text style={styles.label}>Send feedback</Text>
-                <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
-              </View>
-            </View>
-          </View>
+          <SettingsFooterText>Owed {appVersion}</SettingsFooterText>
 
           {DevToolsSection ? <DevToolsSection /> : null}
         </ScrollView>
@@ -538,18 +209,6 @@ export function SettingsScreen() {
           toCurrency={conversionTarget ?? defaultCurrency}
           totalRemaining={totalRemaining}
         />
-
-        {timePickerOpen ? (
-          <ReminderTimePickerModal
-            key={defaultReminderTime}
-            onClose={() => setTimePickerOpen(false)}
-            onSave={(time24) => {
-              void handleReminderTimeSave(time24);
-            }}
-            value={defaultReminderTime}
-            visible
-          />
-        ) : null}
       </TabScreen>
     </BottomSheetModalProvider>
   );
@@ -569,104 +228,5 @@ const styles = StyleSheet.create((theme) => ({
   scroll: {
     paddingHorizontal: 20,
     gap: 20,
-  },
-  section: {
-    gap: 10,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: theme.colors.muted,
-    textTransform: "uppercase",
-    letterSpacing: 1.6,
-  },
-  sectionHint: {
-    fontSize: 12,
-    lineHeight: 18,
-    color: theme.colors.muted,
-    marginTop: -4,
-  },
-  card: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    overflow: "hidden",
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  rowBorder: {
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
-  },
-  icon: {
-    fontSize: 16,
-  },
-  label: {
-    flex: 1,
-    fontSize: 14,
-    fontWeight: "500",
-    color: theme.colors.text,
-  },
-  toggleCopy: {
-    flex: 1,
-    gap: 2,
-  },
-  subLabel: {
-    fontSize: 12,
-    color: theme.colors.muted,
-  },
-  valueWrap: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
-  },
-  value: {
-    fontSize: 14,
-    color: theme.colors.muted,
-  },
-  dangerValue: {
-    color: theme.colors.danger,
-  },
-  dangerLabel: {
-    color: theme.colors.danger,
-  },
-  segmented: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 2,
-    padding: 3,
-    borderRadius: 12,
-    backgroundColor: theme.colors.surface,
-  },
-  segment: {
-    minWidth: 54,
-    alignItems: "center",
-    borderRadius: 9,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-  },
-  segmentSelected: {
-    backgroundColor: theme.colors.selection,
-    borderWidth: 1,
-    borderColor: theme.colors.primaryBorder,
-  },
-  segmentText: {
-    fontSize: 12,
-    fontWeight: "700",
-    color: theme.colors.muted,
-  },
-  segmentTextSelected: {
-    color: theme.colors.primary,
   },
 }));

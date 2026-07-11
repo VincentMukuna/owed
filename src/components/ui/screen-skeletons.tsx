@@ -3,6 +3,11 @@ import { View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { FAB_SCROLL_PADDING } from "@/components/shared/fab-button";
+import {
+  LIST_LEADING_INSET_AVATAR_MD,
+  LIST_LEADING_INSET_ICON_MD,
+  ListRowContainer,
+} from "@/components/shared/list-inset-divider";
 
 import { Skeleton } from "./skeleton";
 
@@ -84,9 +89,15 @@ export function HomeScreenSkeleton() {
       </View>
 
       <Skeleton height={10} style={styles.sectionLabel} width={64} />
-      <DebtCardSkeleton />
-      <DebtCardSkeleton />
-      <DebtCardSkeleton />
+      <ListRowContainer leadingInset={LIST_LEADING_INSET_AVATAR_MD} showDivider={false}>
+        <DebtCardSkeleton />
+      </ListRowContainer>
+      <ListRowContainer leadingInset={LIST_LEADING_INSET_AVATAR_MD} showDivider>
+        <DebtCardSkeleton />
+      </ListRowContainer>
+      <ListRowContainer leadingInset={LIST_LEADING_INSET_AVATAR_MD} showDivider>
+        <DebtCardSkeleton />
+      </ListRowContainer>
     </View>
   );
 }
@@ -129,9 +140,13 @@ export function TabListScreenSkeleton({
       ) : null}
 
       {Array.from({ length: rowCount }, (_, index) => (
-        <View key={index} style={styles.rowGap}>
+        <ListRowContainer
+          key={index}
+          leadingInset={LIST_LEADING_INSET_AVATAR_MD}
+          showDivider={index > 0}
+        >
           <Row />
-        </View>
+        </ListRowContainer>
       ))}
     </View>
   );
@@ -141,9 +156,13 @@ export function ActivityListScreenSkeleton() {
   return (
     <View style={styles.activityList}>
       {Array.from({ length: 8 }, (_, index) => (
-        <View key={index} style={styles.rowGap}>
+        <ListRowContainer
+          key={index}
+          leadingInset={LIST_LEADING_INSET_ICON_MD}
+          showDivider={index > 0}
+        >
           <ActivityRowSkeleton />
-        </View>
+        </ListRowContainer>
       ))}
     </View>
   );
@@ -160,14 +179,20 @@ export function DetailScreenSkeleton() {
       </View>
 
       <Skeleton height={10} style={styles.sectionLabel} width={80} />
-      <DebtCardSkeleton />
-      <DebtCardSkeleton />
+      <ListRowContainer leadingInset={LIST_LEADING_INSET_AVATAR_MD} showDivider={false}>
+        <DebtCardSkeleton />
+      </ListRowContainer>
+      <ListRowContainer leadingInset={LIST_LEADING_INSET_AVATAR_MD} showDivider>
+        <DebtCardSkeleton />
+      </ListRowContainer>
 
       <Skeleton height={10} width={96} />
-      <View style={styles.gapLg}>
+      <ListRowContainer leadingInset={LIST_LEADING_INSET_ICON_MD} showDivider={false}>
         <ActivityRowSkeleton />
+      </ListRowContainer>
+      <ListRowContainer leadingInset={LIST_LEADING_INSET_ICON_MD} showDivider>
         <ActivityRowSkeleton />
-      </View>
+      </ListRowContainer>
     </View>
   );
 }
@@ -189,9 +214,13 @@ export function NotificationsScreenSkeleton() {
   return (
     <View style={styles.notifications}>
       {Array.from({ length: 5 }, (_, index) => (
-        <View key={index} style={styles.rowGap}>
+        <ListRowContainer
+          key={index}
+          leadingInset={LIST_LEADING_INSET_ICON_MD}
+          showDivider={index > 0}
+        >
           <NotificationRowSkeleton />
-        </View>
+        </ListRowContainer>
       ))}
     </View>
   );
@@ -242,7 +271,7 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: "row",
     alignItems: "center",
     gap: 12,
-    paddingVertical: 12,
+    paddingVertical: 10,
     paddingHorizontal: 10,
     marginBottom: 8,
     backgroundColor: theme.colors.card,

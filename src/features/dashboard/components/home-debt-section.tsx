@@ -3,6 +3,10 @@ import { Text, View } from "react-native";
 import { StyleSheet } from "react-native-unistyles";
 
 import { DebtCard } from "@/components/debts/debt-card";
+import {
+  LIST_LEADING_INSET_AVATAR_MD,
+  ListRowContainer,
+} from "@/components/shared/list-inset-divider";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import type { DebtFilterKey } from "@/features/debts/lib/debt-list-utils";
@@ -41,19 +45,24 @@ export function HomeDebtSection({
         </Text>
       </PressableScale>
       <View style={styles.cards}>
-        {preview.map((debt) => {
+        {preview.map((debt, index) => {
           const needsBreathingRoom = debt.status === "due-soon" || debt.status === "overdue";
 
           return (
-            <DebtCard
+            <ListRowContainer
               key={debt.id}
-              debt={debt}
-              onAction={onDebtAction}
-              onPress={() => onDebtPress(debt.id)}
-              showDirectionCue={showDirectionCue}
-              showStatusCue={false}
-              style={needsBreathingRoom ? styles.statusDebtCard : null}
-            />
+              leadingInset={LIST_LEADING_INSET_AVATAR_MD}
+              showDivider={index > 0}
+            >
+              <DebtCard
+                debt={debt}
+                onAction={onDebtAction}
+                onPress={() => onDebtPress(debt.id)}
+                showDirectionCue={showDirectionCue}
+                showStatusCue={false}
+                style={needsBreathingRoom ? styles.statusDebtCard : null}
+              />
+            </ListRowContainer>
           );
         })}
       </View>
@@ -77,6 +86,6 @@ const styles = StyleSheet.create((theme) => ({
     gap: 0,
   },
   statusDebtCard: {
-    paddingVertical: 14,
+    paddingVertical: 12,
   },
 }));

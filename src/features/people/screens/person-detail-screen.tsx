@@ -12,6 +12,11 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { ActivityRow } from "@/components/activity/activity-list";
 import { DebtCard } from "@/components/debts/debt-card";
+import {
+  LIST_LEADING_INSET_AVATAR_MD,
+  LIST_LEADING_INSET_ICON_MD,
+  ListRowContainer,
+} from "@/components/shared/list-inset-divider";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { DetailScreenSkeleton } from "@/components/ui/screen-skeletons";
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
@@ -148,14 +153,19 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
             >
               {person.debts.length > 0 ? (
                 <View style={styles.cards}>
-                  {person.debts.map((debt) => (
-                    <DebtCard
+                  {person.debts.map((debt, index) => (
+                    <ListRowContainer
                       key={debt.id}
-                      debt={debt}
-                      onAction={handleDebtAction}
-                      onPress={() => openDebt(debt.id)}
-                      showDirectionCue
-                    />
+                      leadingInset={LIST_LEADING_INSET_AVATAR_MD}
+                      showDivider={index > 0}
+                    >
+                      <DebtCard
+                        debt={debt}
+                        onAction={handleDebtAction}
+                        onPress={() => openDebt(debt.id)}
+                        showDirectionCue
+                      />
+                    </ListRowContainer>
                   ))}
                 </View>
               ) : (
@@ -175,8 +185,14 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
             >
               {person.payments.length > 0 ? (
                 <View>
-                  {person.payments.map((payment) => (
-                    <ActivityRow key={payment.id} activity={payment} />
+                  {person.payments.map((payment, index) => (
+                    <ListRowContainer
+                      key={payment.id}
+                      leadingInset={LIST_LEADING_INSET_ICON_MD}
+                      showDivider={index > 0}
+                    >
+                      <ActivityRow activity={payment} />
+                    </ListRowContainer>
                   ))}
                 </View>
               ) : (
@@ -398,7 +414,7 @@ const styles = StyleSheet.create((theme) => ({
     letterSpacing: 1.6,
   },
   cards: {
-    gap: 10,
+    gap: 0,
   },
   sectionEmpty: {
     alignItems: "center",

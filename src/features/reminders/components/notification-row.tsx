@@ -37,9 +37,7 @@ const styles = StyleSheet.create((theme) => ({
   row: {
     flexDirection: "row",
     gap: 14,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    paddingVertical: 12,
   },
   icon: {
     width: 32,
