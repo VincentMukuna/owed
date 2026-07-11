@@ -3,7 +3,6 @@ import { useCallback, useRef, useState } from "react";
 
 import { Text, View } from "react-native";
 
-import Constants from "expo-constants";
 import { type Href, router } from "expo-router";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
@@ -48,8 +47,6 @@ const THEME_LABELS: Record<ThemePreference, string> = {
   auto: "Auto",
   dark: "Dark",
 };
-
-const appVersion = Constants.expoConfig?.version ?? "1.0.0";
 
 export function SettingsScreen() {
   useUnistyles();
@@ -136,12 +133,14 @@ export function SettingsScreen() {
         <SettingsSwiftList bottomInset={tabScrollPadding}>
           <SettingsSwiftSection title="General">
             <SettingsSwiftNavRow
+              iconBackgroundColor="#7C3AED"
               onPress={() => router.push("/appearance" as Href)}
               systemImage="circle.lefthalf.filled"
               title="Appearance"
               value={appearanceSummary}
             />
             <SettingsSwiftNavRow
+              iconBackgroundColor="#059669"
               onPress={() => {
                 selectionChange();
                 currencyPickerRef.current?.present();
@@ -151,6 +150,7 @@ export function SettingsScreen() {
               value={defaultCurrency}
             />
             <SettingsSwiftNavRow
+              iconBackgroundColor="#F97316"
               onPress={() => router.push("/reminders-settings" as Href)}
               systemImage="alarm"
               title="Reminders"
@@ -160,6 +160,7 @@ export function SettingsScreen() {
 
           <SettingsSwiftSection title="Data">
             <SettingsSwiftNavRow
+              iconBackgroundColor="#2563EB"
               onPress={() => router.push("/backup-restore" as Href)}
               systemImage="externaldrive"
               title="Backup & Restore"
@@ -168,16 +169,19 @@ export function SettingsScreen() {
 
           <SettingsSwiftSection title="Get Help">
             <SettingsSwiftNavRow
+              iconBackgroundColor="#DC2626"
               onPress={handleReportIssue}
               systemImage="flag"
               title="Report an issue"
             />
             <SettingsSwiftNavRow
+              iconBackgroundColor="#0D9488"
               onPress={handleHelpCenterPress}
               systemImage="questionmark.circle"
               title="Help Center"
             />
             <SettingsSwiftNavRow
+              iconBackgroundColor="#64748B"
               onPress={handleAboutPress}
               systemImage="info.circle"
               title="About"

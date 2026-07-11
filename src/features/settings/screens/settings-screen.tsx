@@ -3,10 +3,10 @@ import { useCallback, useRef, useState } from "react";
 
 import { ScrollView, Text, View } from "react-native";
 
-import Constants from "expo-constants";
 import { type Href, router } from "expo-router";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { Bell, HardDriveDownload, Palette, WalletCards } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
@@ -22,7 +22,7 @@ import {
 import { GetHelpSection } from "@/features/settings/components/get-help-section";
 import {
   SettingsCard,
-  SettingsFooterText,
+  SettingsIconTile,
   SettingsNavRow,
   SettingsSection,
 } from "@/features/settings/components/settings-ui";
@@ -50,7 +50,7 @@ const THEME_LABELS: Record<ThemePreference, string> = {
   dark: "Dark",
 };
 
-const appVersion = Constants.expoConfig?.version ?? "1.0.0";
+const SETTINGS_ICON_SIZE = 16;
 
 export function SettingsScreen() {
   useUnistyles();
@@ -140,15 +140,23 @@ export function SettingsScreen() {
           <SettingsSection title="General">
             <SettingsCard>
               <SettingsNavRow
-                icon="◐"
                 label="Appearance"
+                leading={
+                  <SettingsIconTile backgroundColor="#7C3AED">
+                    <Palette color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
+                  </SettingsIconTile>
+                }
                 onPress={() => router.push("/appearance" as Href)}
                 value={appearanceSummary}
               />
               <SettingsNavRow
                 bordered
-                icon="💱"
                 label="Currency"
+                leading={
+                  <SettingsIconTile backgroundColor="#059669">
+                    <WalletCards color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
+                  </SettingsIconTile>
+                }
                 onPress={() => {
                   selectionChange();
                   currencyPickerRef.current?.present();
@@ -157,8 +165,12 @@ export function SettingsScreen() {
               />
               <SettingsNavRow
                 bordered
-                icon="⏰"
                 label="Reminders"
+                leading={
+                  <SettingsIconTile backgroundColor="#F97316">
+                    <Bell color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
+                  </SettingsIconTile>
+                }
                 onPress={() => router.push("/reminders-settings" as Href)}
                 value={formatReminderTimeDisplay(defaultReminderTime)}
               />
@@ -168,8 +180,16 @@ export function SettingsScreen() {
           <SettingsSection title="Data">
             <SettingsCard>
               <SettingsNavRow
-                icon="💾"
                 label="Backup & Restore"
+                leading={
+                  <SettingsIconTile backgroundColor="#2563EB">
+                    <HardDriveDownload
+                      color="#FFFFFF"
+                      size={SETTINGS_ICON_SIZE}
+                      strokeWidth={2.2}
+                    />
+                  </SettingsIconTile>
+                }
                 onPress={() => router.push("/backup-restore" as Href)}
               />
             </SettingsCard>

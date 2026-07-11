@@ -1,17 +1,31 @@
 import type { ReactNode } from "react";
 
-import { Button, HStack, Host, Image, Label, List, Section, Spacer, Text } from "@expo/ui/swift-ui";
+import {
+  Button,
+  HStack,
+  Host,
+  Image,
+  Label,
+  List,
+  Section,
+  Spacer,
+  Text,
+  ZStack,
+} from "@expo/ui/swift-ui";
 import {
   background,
   buttonStyle,
+  clipShape,
   contentShape,
   disabled,
   font,
   foregroundStyle,
+  frame,
   kerning,
   listRowBackground,
   listStyle,
   scrollContentBackground,
+  shadow,
   shapes,
   textCase,
 } from "@expo/ui/swift-ui/modifiers";
@@ -99,6 +113,8 @@ export function SettingsSwiftSection({ title, footer, children }: SettingsSwiftS
 
 type SettingsSwiftNavRowProps = {
   systemImage: SFSymbol;
+  iconBackgroundColor?: string;
+  iconColor?: string;
   title: string;
   value?: string;
   showsChevron?: boolean;
@@ -106,8 +122,33 @@ type SettingsSwiftNavRowProps = {
   onPress: () => void;
 };
 
+function SettingsSwiftIconTile({
+  systemImage,
+  backgroundColor,
+  iconColor,
+}: {
+  systemImage: SFSymbol;
+  backgroundColor: string;
+  iconColor: string;
+}) {
+  return (
+    <ZStack
+      modifiers={[
+        frame({ width: 28, height: 28 }),
+        background(backgroundColor, shapes.roundedRectangle({ cornerRadius: 8 })),
+        clipShape("roundedRectangle", 8),
+        shadow({ color: "rgba(0, 0, 0, 0.18)", radius: 5, x: 0, y: 3 }),
+      ]}
+    >
+      <Image color={iconColor} size={15} systemName={systemImage} />
+    </ZStack>
+  );
+}
+
 export function SettingsSwiftNavRow({
   systemImage,
+  iconBackgroundColor,
+  iconColor = "#FFFFFF",
   title,
   value,
   showsChevron = false,
@@ -126,8 +167,13 @@ export function SettingsSwiftNavRow({
         ...(isDisabled ? [disabled(true)] : []),
       ]}
     >
-      <HStack alignment="center" modifiers={[rowHitArea]}>
-        <Label modifiers={rowTitleModifiers} systemImage={systemImage} title={title} />
+      <HStack alignment="center" modifiers={[rowHitArea]} spacing={12}>
+        <SettingsSwiftIconTile
+          backgroundColor={iconBackgroundColor ?? theme.colors.primary}
+          iconColor={iconColor}
+          systemImage={systemImage}
+        />
+        <Text modifiers={rowTitleModifiers}>{title}</Text>
         <Spacer />
         {value ? (
           <Text modifiers={rowValueModifiers}>{value}</Text>

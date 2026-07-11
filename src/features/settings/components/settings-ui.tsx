@@ -11,6 +11,20 @@ import { PressableScale } from "@/components/shared/pressable-scale";
 const ICON_COLUMN_WIDTH = 28;
 const ROW_HORIZONTAL_PADDING = 16;
 
+type SettingsIconTileProps = {
+  children: ReactNode;
+  backgroundColor?: string;
+};
+
+export function SettingsIconTile({ children, backgroundColor = "#2F7DFF" }: SettingsIconTileProps) {
+  return (
+    <View style={[styles.iconTile, { backgroundColor }]}>
+      <View style={styles.iconTileHighlight} />
+      <View style={styles.iconTileContent}>{children}</View>
+    </View>
+  );
+}
+
 type SettingsSectionProps = {
   title?: string;
   children: ReactNode;
@@ -41,7 +55,13 @@ type SettingsRowShellProps = {
 };
 
 function SettingsRowShell({ icon, leading, bordered = false, children }: SettingsRowShellProps) {
-  const iconContent = leading ?? (icon ? <Text style={styles.icon}>{icon}</Text> : null);
+  const iconContent =
+    leading ??
+    (icon ? (
+      <SettingsIconTile backgroundColor="#6366F1">
+        <Text style={styles.icon}>{icon}</Text>
+      </SettingsIconTile>
+    ) : null);
 
   return (
     <View style={styles.row}>
@@ -254,9 +274,35 @@ const styles = StyleSheet.create((theme) => ({
     marginRight: 12,
   },
   icon: {
-    fontSize: 18,
-    lineHeight: 22,
+    fontSize: 15,
+    lineHeight: 18,
     textAlign: "center",
+  },
+  iconTile: {
+    width: 28,
+    height: 28,
+    borderRadius: 8,
+    borderCurve: "continuous",
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.16,
+    shadowRadius: 8,
+    elevation: 3,
+  },
+  iconTileHighlight: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 12,
+    backgroundColor: "rgba(255, 255, 255, 0.24)",
+  },
+  iconTileContent: {
+    alignItems: "center",
+    justifyContent: "center",
   },
   rowBody: {
     flex: 1,
