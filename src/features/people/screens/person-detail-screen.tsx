@@ -421,12 +421,8 @@ const styles = StyleSheet.create((theme) => ({
     paddingVertical: 16,
     paddingHorizontal: 16,
     backgroundColor: theme.name === "light" ? theme.colors.card : theme.colors.surfaceMuted,
-    ...(theme.name === "light"
-      ? {
-          borderWidth: 1,
-          borderColor: theme.colors.borderStrong,
-        }
-      : null),
+    borderWidth: 1,
+    borderColor: theme.name === "light" ? theme.colors.borderStrong : theme.colors.border,
   },
   statColumn: {
     flex: 1,

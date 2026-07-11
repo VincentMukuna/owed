@@ -13,7 +13,6 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { Badge } from "@/components/ui/badge";
 import { DetailScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
 import {
@@ -24,8 +23,10 @@ import { debtKeys } from "@/features/debts/hooks/query-keys";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebt } from "@/features/debts/hooks/use-debt";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
-import type { DebtDetailView } from "@/features/debts/view-models";
+import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
+import type { CardDebtStatus, DebtDetailView } from "@/features/debts/view-models";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
+import { lightImpact } from "@/lib/haptics";
 import { LOADING_DETAIL_HEADER_OPTIONS } from "@/lib/navigation/stack-options";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
@@ -81,6 +82,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
 
   const handleCopy = async () => {
     await Clipboard.setStringAsync(reminderText);
+    lightImpact();
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -151,63 +153,64 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
             showsVerticalScrollIndicator={false}
           >
             {debt.status === "paid" ? (
-              <PaidSummary debt={debt} firstName={firstName} />
+              <PaidOverview debt={debt} firstName={firstName} />
             ) : (
-              <ActiveSummary debt={debt} pct={pct} />
+              <ActiveOverview debt={debt} pct={pct} />
             )}
 
-            <View style={styles.card}>
-              <Text style={styles.cardLabel}>Reason</Text>
-              <Text style={styles.cardBody}>{debt.reason}</Text>
-            </View>
+            {debt.reason ? (
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>Reason</Text>
+                <Text style={styles.sectionBody}>{debt.reason}</Text>
+              </View>
+            ) : null}
 
             {debt.payments.length > 0 ? (
-              <View style={styles.card}>
-                <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>Payment history</Text>
+              <View style={styles.section}>
+                <Text style={styles.sectionLabel}>Payment history ({debt.payments.length})</Text>
                 {debt.payments.map((payment, index) => (
-                  <View key={payment.id} style={styles.timelineRow}>
-                    <View style={styles.timelineRail}>
-                      <View style={styles.timelineDot} />
-                      {index < debt.payments.length - 1 ? (
-                        <View style={styles.timelineLine} />
-                      ) : null}
+                  <View
+                    key={payment.id}
+                    style={[styles.paymentRow, index > 0 && styles.paymentRowBorder]}
+                  >
+                    <View style={styles.paymentMain}>
+                      <Text style={styles.paymentAmount}>
+                        {isUserOwed
+                          ? `${formatCurrency(payment.amount)} paid`
+                          : `You paid ${formatCurrency(payment.amount)}`}
+                      </Text>
+                      <Text style={styles.paymentDate}>{payment.date}</Text>
                     </View>
-                    <View style={styles.timelineBody}>
-                      <View style={styles.timelineTop}>
-                        <Text style={styles.paymentAmount}>
-                          {isUserOwed
-                            ? `${formatCurrency(payment.amount)} paid`
-                            : `You paid ${formatCurrency(payment.amount)}`}
-                        </Text>
-                        <Text style={styles.paymentDate}>{payment.date}</Text>
-                      </View>
-                      {payment.note ? <Text style={styles.paymentNote}>{payment.note}</Text> : null}
-                    </View>
+                    {payment.note ? <Text style={styles.paymentNote}>{payment.note}</Text> : null}
                   </View>
                 ))}
               </View>
             ) : null}
 
             {debt.status !== "paid" ? (
-              <View style={styles.followUpSection}>
-                <Text style={[styles.cardLabel, styles.cardLabelSpaced]}>
+              <View style={styles.lastSection}>
+                <Text style={styles.sectionLabel}>
                   {isUserOwed ? "Follow-up message" : "Payment reminder"}
                 </Text>
-                <View style={styles.messageCard}>
-                  <Text style={styles.messageBox}>{reminderText}</Text>
-                  {isUserOwed ? (
-                    <Pressable onPress={handleCopy} style={styles.copyBtn}>
+                {isUserOwed ? (
+                  <Pressable
+                    onPress={handleCopy}
+                    style={[styles.messageBlock, styles.messageBlockCopyable]}
+                  >
+                    <View style={styles.copyIcon}>
                       {copied ? (
                         <Check color={theme.colors.success} size={14} strokeWidth={2.5} />
                       ) : (
-                        <Copy color={theme.colors.primary} size={14} strokeWidth={2.5} />
+                        <Copy color={theme.colors.mutedLight} size={14} strokeWidth={2.5} />
                       )}
-                      <Text style={[styles.copyText, copied && styles.copyTextSuccess]}>
-                        {copied ? "Copied!" : "Copy message"}
-                      </Text>
-                    </Pressable>
-                  ) : null}
-                </View>
+                    </View>
+                    <Text style={styles.messageText}>{reminderText}</Text>
+                  </Pressable>
+                ) : (
+                  <View style={styles.messageBlock}>
+                    <Text style={styles.messageText}>{reminderText}</Text>
+                  </View>
+                )}
               </View>
             ) : null}
           </ScrollView>
@@ -229,58 +232,55 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   );
 }
 
-function ActiveSummary({ debt, pct }: { debt: DebtDetailView; pct: number }) {
+function StatusPill({ status }: { status: CardDebtStatus }) {
+  const { theme } = useUnistyles();
+  const colors = theme.colors.status[status];
+
   return (
-    <View style={styles.summaryCard}>
-      <View style={styles.summaryTop}>
-        <Text style={styles.summaryHint}>Amount remaining</Text>
-        <Badge status={debt.status} />
+    <View style={[styles.statusPill, { backgroundColor: colors.bg }]}>
+      <Text style={[styles.statusPillText, { color: colors.text }]}>
+        {DEBT_STATUS_LABELS[status]}
+      </Text>
+    </View>
+  );
+}
+
+function ActiveOverview({ debt, pct }: { debt: DebtDetailView; pct: number }) {
+  return (
+    <View style={styles.statsStrip}>
+      <View style={styles.overviewTop}>
+        <Text style={styles.overviewAmount}>{formatCurrency(debt.remaining)}</Text>
+        <StatusPill status={debt.status} />
       </View>
-      <Text style={styles.summaryAmount}>{formatCurrency(debt.remaining)}</Text>
-      <View style={styles.partialBlock}>
-        <View style={styles.partialMeta}>
-          <Text style={styles.partialMetaText}>Original: {formatCurrency(debt.amount)}</Text>
-          <Text style={styles.partialMetaText}>{Math.round(pct)}% paid</Text>
-        </View>
-        <View style={styles.progressTrackLg}>
-          <View style={[styles.progressFillLg, { width: `${pct}%` }]} />
-        </View>
-      </View>
-      <View style={styles.summaryFooter}>
-        <View>
-          <Text style={styles.summaryFooterLabel}>Due</Text>
-          <Text style={styles.summaryFooterValue}>{debt.dueDate}</Text>
-        </View>
-        <View>
-          <Text style={styles.summaryFooterLabel}>Added</Text>
-          <Text style={styles.summaryFooterValue}>{debt.addedDate}</Text>
-        </View>
+      <Text style={styles.overviewMeta}>
+        Due {debt.dueDate} · {formatCurrency(debt.amount)} original
+        {pct > 0 ? ` · ${Math.round(pct)}% paid` : null}
+      </Text>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${pct}%` }]} />
       </View>
     </View>
   );
 }
 
-function PaidSummary({ debt, firstName }: { debt: DebtDetailView; firstName: string }) {
+function PaidOverview({ debt, firstName }: { debt: DebtDetailView; firstName: string }) {
   const { theme } = useUnistyles();
   const lastPayment = debt.payments[debt.payments.length - 1];
 
   return (
-    <View style={styles.paidCard}>
-      <View style={styles.paidTop}>
-        <View />
-        <Badge status={debt.status} />
+    <View style={styles.statsStrip}>
+      <View style={styles.paidRow}>
+        <Check color={theme.colors.success} size={16} strokeWidth={2.5} />
+        <Text style={styles.paidLabel}>Settled</Text>
+        <StatusPill status={debt.status} />
       </View>
-      <View style={styles.paidIcon}>
-        <Check color={theme.colors.success} size={24} strokeWidth={2.5} />
-      </View>
-      <Text style={styles.paidTitle}>Settled</Text>
-      <Text style={styles.paidCopy}>
+      <Text style={styles.overviewAmount}>{formatCurrency(debt.amount)}</Text>
+      <Text style={styles.overviewMeta}>
         {debt.direction === "i_owe_them"
           ? `You fully paid this amount to ${firstName}.`
           : `${firstName} has fully paid this amount.`}
+        {lastPayment ? ` Paid ${lastPayment.date}.` : null}
       </Text>
-      <Text style={styles.paidAmount}>{formatCurrency(debt.amount)}</Text>
-      {lastPayment ? <Text style={styles.paidDate}>Paid {lastPayment.date}</Text> : null}
     </View>
   );
 }
@@ -303,8 +303,8 @@ const styles = StyleSheet.create((theme) => ({
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: 8,
-    gap: 24,
+    paddingTop: 16,
+    gap: 28,
   },
   headerMenuTrigger: {
     width: 36,
@@ -327,228 +327,143 @@ const styles = StyleSheet.create((theme) => ({
   headerDirectionIcon: {
     flexShrink: 0,
   },
-  summaryCard: {
-    backgroundColor: theme.colors.card,
+  statsStrip: {
+    gap: 6,
     borderRadius: 16,
-    padding: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: theme.name === "light" ? theme.colors.card : theme.colors.surfaceMuted,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
-    shadowRadius: theme.name === "light" ? 1.5 : 2,
-    elevation: theme.name === "light" ? 0 : 1,
+    borderColor: theme.name === "light" ? theme.colors.borderStrong : theme.colors.border,
   },
-  summaryTop: {
+  overviewTop: {
     flexDirection: "row",
-    alignItems: "flex-start",
+    alignItems: "center",
     justifyContent: "space-between",
     gap: 12,
+    minHeight: 32,
   },
-  summaryHint: {
-    fontSize: 11,
-    color: theme.colors.muted,
-    fontWeight: "700",
-    letterSpacing: 1.6,
-    textTransform: "uppercase",
-  },
-  summaryAmount: {
-    fontSize: 40,
+  overviewAmount: {
+    flex: 1,
+    fontSize: 28,
     fontWeight: "600",
     color: theme.colors.text,
-    lineHeight: 44,
-    marginTop: 8,
+    lineHeight: 32,
     fontVariant: ["tabular-nums"],
   },
-  partialBlock: {
-    marginTop: 16,
-  },
-  partialMeta: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 8,
-  },
-  partialMetaText: {
-    fontSize: 12,
+  overviewMeta: {
+    fontSize: 14,
     color: theme.colors.muted,
+    lineHeight: 20,
   },
-  progressTrackLg: {
-    height: 6,
+  progressTrack: {
+    height: 4,
     backgroundColor: theme.colors.progressTrack,
     borderRadius: 999,
     overflow: "hidden",
+    marginTop: 8,
   },
-  progressFillLg: {
+  progressFill: {
     height: "100%",
     backgroundColor: theme.colors.progressFill,
     borderRadius: 999,
   },
-  summaryFooter: {
+  paidRow: {
     flexDirection: "row",
-    gap: 20,
-    marginTop: 16,
-    paddingTop: 16,
+    alignItems: "center",
+    gap: 8,
+    minHeight: 20,
+  },
+  paidLabel: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "600",
+    color: theme.colors.success,
+  },
+  statusPill: {
+    flexShrink: 0,
+    alignSelf: "center",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  statusPillText: {
+    fontSize: 10,
+    fontWeight: "600",
+    lineHeight: 12,
+  },
+  section: {
+    paddingBottom: 0,
+  },
+  lastSection: {
+    paddingBottom: 8,
+  },
+  sectionLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: theme.colors.mutedLight,
+    textTransform: "uppercase",
+    letterSpacing: 1.2,
+    marginBottom: 12,
+  },
+  sectionBody: {
+    fontSize: 15,
+    color: theme.colors.text,
+    lineHeight: 22,
+  },
+  paymentRow: {
+    paddingVertical: 12,
+  },
+  paymentRowBorder: {
     borderTopWidth: 1,
     borderTopColor: theme.colors.border,
   },
-  summaryFooterLabel: {
-    fontSize: 11,
-    color: theme.colors.mutedLight,
-    fontWeight: "700",
-    letterSpacing: 1,
-    textTransform: "uppercase",
-  },
-  summaryFooterValue: {
-    fontSize: 14,
-    fontWeight: "500",
-    color: theme.colors.text,
-    marginTop: 4,
-  },
-  paidCard: {
-    backgroundColor: theme.colors.paidSurface,
-    borderRadius: 16,
-    padding: 20,
-    borderWidth: 1,
-    borderColor: theme.colors.paidBorder,
-    alignItems: "center",
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
-    shadowRadius: theme.name === "light" ? 1.5 : 2,
-    elevation: theme.name === "light" ? 0 : 1,
-  },
-  paidTop: {
-    alignSelf: "stretch",
+  paymentMain: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  paidIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 999,
-    backgroundColor: theme.colors.paidIcon,
-    alignItems: "center",
-    justifyContent: "center",
-    marginBottom: 12,
-  },
-  paidTitle: {
-    fontSize: 18,
-    fontWeight: "700",
-    color: theme.colors.paidTitle,
-  },
-  paidCopy: {
-    fontSize: 14,
-    color: theme.colors.paidText,
-    marginTop: 4,
-  },
-  paidAmount: {
-    fontSize: 24,
-    fontWeight: "700",
-    color: theme.colors.paidAmount,
-    marginTop: 12,
-    fontVariant: ["tabular-nums"],
-  },
-  paidDate: {
-    fontSize: 12,
-    color: theme.colors.paidMuted,
-    marginTop: 4,
-  },
-  card: {
-    paddingBottom: 22,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  cardLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: theme.colors.mutedLight,
-    textTransform: "uppercase",
-    letterSpacing: 1.6,
-  },
-  cardLabelSpaced: {
-    marginBottom: 16,
-  },
-  cardBody: {
-    fontSize: 14,
-    color: theme.colors.text,
-    lineHeight: 22,
-    marginTop: 10,
-  },
-  timelineRow: {
-    flexDirection: "row",
+    alignItems: "baseline",
     gap: 12,
   },
-  timelineRail: {
-    width: 20,
-    alignItems: "center",
-  },
-  timelineDot: {
-    width: 10,
-    height: 10,
-    borderRadius: 999,
-    backgroundColor: theme.colors.success,
-    marginTop: 4,
-  },
-  timelineLine: {
-    width: 1,
-    flex: 1,
-    backgroundColor: theme.colors.surface,
-    marginVertical: 4,
-  },
-  timelineBody: {
-    flex: 1,
-    paddingBottom: 16,
-  },
-  timelineTop: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "flex-start",
-  },
   paymentAmount: {
-    fontSize: 14,
-    fontWeight: "700",
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "600",
     color: theme.colors.text,
     fontVariant: ["tabular-nums"],
   },
   paymentDate: {
-    fontSize: 12,
+    fontSize: 13,
     color: theme.colors.mutedLight,
   },
   paymentNote: {
-    fontSize: 12,
+    fontSize: 13,
     color: theme.colors.muted,
     marginTop: 2,
   },
-  followUpSection: {
-    paddingBottom: 4,
+  messageBlock: {
+    backgroundColor: theme.name === "light" ? theme.colors.card : theme.colors.surfaceMuted,
+    borderRadius: 12,
+    padding: 14,
+    position: "relative",
+    ...(theme.name === "light"
+      ? {
+          borderWidth: 1,
+          borderColor: theme.colors.borderStrong,
+        }
+      : null),
   },
-  messageCard: {
-    backgroundColor: theme.colors.card,
-    borderRadius: 16,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    padding: 16,
-    gap: 14,
+  messageBlockCopyable: {
+    paddingRight: 36,
   },
-  messageBox: {
+  copyIcon: {
+    position: "absolute",
+    top: 14,
+    right: 14,
+  },
+  messageText: {
     fontSize: 14,
     color: theme.colors.text,
-    lineHeight: 23,
-  },
-  copyBtn: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 8,
-    alignSelf: "flex-start",
-  },
-  copyText: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: theme.colors.primary,
-  },
-  copyTextSuccess: {
-    color: theme.colors.success,
+    lineHeight: 22,
   },
   footer: {
     position: "absolute",
