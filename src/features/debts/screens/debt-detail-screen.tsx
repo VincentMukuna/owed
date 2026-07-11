@@ -26,6 +26,7 @@ import { useDebt } from "@/features/debts/hooks/use-debt";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import type { DebtDetailView } from "@/features/debts/view-models";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
+import { LOADING_DETAIL_HEADER_OPTIONS } from "@/lib/navigation/stack-options";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
 type DebtDetailScreenProps = {
@@ -48,7 +49,12 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
   if (isPending) {
-    return <DetailScreenSkeleton />;
+    return (
+      <>
+        <Stack.Screen options={LOADING_DETAIL_HEADER_OPTIONS} />
+        <DetailScreenSkeleton />
+      </>
+    );
   }
 
   if (!debt) {

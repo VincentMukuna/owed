@@ -29,6 +29,7 @@ import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
+import { LOADING_DETAIL_HEADER_OPTIONS } from "@/lib/navigation/stack-options";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
 import { PersonStatusBadge } from "../components/person-status-badge";
@@ -57,7 +58,12 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
   if (isPending) {
-    return <DetailScreenSkeleton />;
+    return (
+      <>
+        <Stack.Screen options={LOADING_DETAIL_HEADER_OPTIONS} />
+        <DetailScreenSkeleton />
+      </>
+    );
   }
 
   if (!person) {

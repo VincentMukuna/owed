@@ -14,6 +14,11 @@ export function getStackScreenOptions(theme: AppTheme): NativeStackNavigationOpt
   };
 }
 
+/** Avoid flashing route paths like `debt/[id]` while detail data loads. */
+export const LOADING_DETAIL_HEADER_OPTIONS: NativeStackNavigationOptions = {
+  title: "",
+};
+
 export function getModalScreenOptions(theme: AppTheme): NativeStackNavigationOptions {
   return {
     ...getStackScreenOptions(theme),

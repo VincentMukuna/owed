@@ -29,7 +29,11 @@ import { reminderRepository } from "@/features/reminders/repositories/reminder-r
 import { bootstrapCurrency } from "@/features/settings/lib/bootstrap-currency";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
-import { getModalScreenOptions, getStackScreenOptions } from "@/lib/navigation/stack-options";
+import {
+  LOADING_DETAIL_HEADER_OPTIONS,
+  getModalScreenOptions,
+  getStackScreenOptions,
+} from "@/lib/navigation/stack-options";
 
 export default function RootLayout() {
   const { theme } = useUnistyles();
@@ -151,6 +155,7 @@ export default function RootLayout() {
                 name="debt/[id]"
                 options={{
                   ...stackOptions,
+                  ...LOADING_DETAIL_HEADER_OPTIONS,
                   headerShown: true,
                   headerLargeTitleEnabled: false,
                   animation: "slide_from_right",
@@ -160,6 +165,7 @@ export default function RootLayout() {
                 name="person/[id]"
                 options={{
                   ...stackOptions,
+                  ...LOADING_DETAIL_HEADER_OPTIONS,
                   headerShown: true,
                   headerLargeTitleEnabled: false,
                   animation: "slide_from_right",
