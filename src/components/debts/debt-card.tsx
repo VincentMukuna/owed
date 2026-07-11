@@ -30,8 +30,6 @@ export const DebtCard = memo(
     style,
   }: DebtCardProps) => {
     const { theme } = useUnistyles();
-    const isPaid = debt.status === "paid";
-    const paidColors = theme.colors.status.paid;
     const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
     const DirectionIcon = debt.direction === "they_owe_me" ? ArrowDownLeft : ArrowUpRight;
     const directionColor =
@@ -70,22 +68,17 @@ export const DebtCard = memo(
                   adjustsFontSizeToFit
                   minimumFontScale={0.78}
                   numberOfLines={1}
-                  style={[styles.amount, isPaid ? { color: paidColors.text } : null]}
+                  style={styles.amount}
                 >
-                  {formatCurrency(isPaid ? debt.amount : debt.remaining, debt.currency)}
+                  {formatCurrency(
+                    debt.status === "paid" ? debt.amount : debt.remaining,
+                    debt.currency,
+                  )}
                 </Text>
                 <View style={styles.dueRow}>
-                  <Text
-                    style={[
-                      styles.dueDate,
-                      isPaid ? { color: theme.colors.paidMuted } : null,
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {isPaid
-                      ? debt.lastPaymentAt
-                        ? `Paid · ${formatRelativeDay(debt.lastPaymentAt)}`
-                        : "Paid"
+                  <Text style={styles.dueDate} numberOfLines={1}>
+                    {debt.status === "paid"
+                      ? formatPaidWhen(debt.lastPaymentAt)
                       : debt.dueDate}
                   </Text>
                 </View>
@@ -109,6 +102,22 @@ export const DebtCard = memo(
 );
 
 DebtCard.displayName = "DebtCard";
+
+function formatPaidWhen(lastPaymentAt?: string): string {
+  if (!lastPaymentAt) {
+    return "Paid";
+  }
+
+  const when = formatRelativeDay(lastPaymentAt);
+  if (when === "Today") {
+    return "Paid today";
+  }
+  if (when === "Yesterday") {
+    return "Paid yesterday";
+  }
+
+  return `Paid ${when}`;
+}
 
 const styles = StyleSheet.create((theme) => ({
   card: {
