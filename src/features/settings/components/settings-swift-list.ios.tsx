@@ -126,10 +126,12 @@ function SettingsSwiftIconTile({
   systemImage,
   backgroundColor,
   iconColor,
+  elevated,
 }: {
   systemImage: SFSymbol;
   backgroundColor: string;
   iconColor: string;
+  elevated: boolean;
 }) {
   return (
     <ZStack
@@ -137,7 +139,7 @@ function SettingsSwiftIconTile({
         frame({ width: 28, height: 28 }),
         background(backgroundColor, shapes.roundedRectangle({ cornerRadius: 8 })),
         clipShape("roundedRectangle", 8),
-        shadow({ color: "rgba(0, 0, 0, 0.18)", radius: 5, x: 0, y: 3 }),
+        ...(elevated ? [shadow({ color: "rgba(0, 0, 0, 0.18)", radius: 5, x: 0, y: 3 })] : []),
       ]}
     >
       <Image color={iconColor} size={15} systemName={systemImage} />
@@ -170,6 +172,7 @@ export function SettingsSwiftNavRow({
       <HStack alignment="center" modifiers={[rowHitArea]} spacing={12}>
         <SettingsSwiftIconTile
           backgroundColor={iconBackgroundColor ?? theme.colors.primary}
+          elevated={theme.name === "dark"}
           iconColor={iconColor}
           systemImage={systemImage}
         />

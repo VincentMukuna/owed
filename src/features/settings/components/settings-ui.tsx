@@ -288,9 +288,9 @@ const styles = StyleSheet.create((theme) => ({
     overflow: "hidden",
     shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.16,
-    shadowRadius: 8,
-    elevation: 3,
+    shadowOpacity: theme.name === "dark" ? 0.16 : 0,
+    shadowRadius: theme.name === "dark" ? 8 : 0,
+    elevation: theme.name === "dark" ? 3 : 0,
   },
   iconTileHighlight: {
     position: "absolute",
