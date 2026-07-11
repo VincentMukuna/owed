@@ -415,14 +415,14 @@ export function DebtsScreen() {
                 <IconButton onPress={toggleFilters}>
                   <SlidersHorizontal
                     color={
-                      hasActiveFilters || filtersOpen ? theme.colors.primary : theme.colors.icon
+                      hasActiveFilters || filtersOpen ? theme.colors.primary : theme.colors.text
                     }
-                    size={16}
-                    strokeWidth={1.7}
+                    size={17}
+                    strokeWidth={2}
                   />
                 </IconButton>
                 <IconButton onPress={openSearch}>
-                  <Search color={theme.colors.icon} size={16} strokeWidth={1.5} />
+                  <Search color={theme.colors.text} size={17} strokeWidth={2} />
                 </IconButton>
               </View>
             </>

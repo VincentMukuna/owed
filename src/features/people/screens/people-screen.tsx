@@ -126,7 +126,7 @@ export function PeopleScreen() {
           <>
             <Text style={styles.title}>People</Text>
             <IconButton onPress={openSearch}>
-              <Search color={theme.colors.icon} size={16} strokeWidth={1.5} />
+              <Search color={theme.colors.text} size={17} strokeWidth={2} />
             </IconButton>
           </>
         )}
