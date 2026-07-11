@@ -9,7 +9,7 @@ import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
 import { Text } from "@/components/ui/text";
 import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
-import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
+import { formatRelativeDay } from "@/features/debts/lib/format-dates";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { formatCurrency } from "@/lib/utils/formatters";
 
@@ -18,7 +18,6 @@ type DebtCardProps = {
   onPress: () => void;
   onAction?: (action: DebtAction, debt: DebtCardView) => void;
   showDirectionCue?: boolean;
-  showStatusCue?: boolean;
   style?: StyleProp<ViewStyle>;
 };
 
@@ -28,12 +27,12 @@ export const DebtCard = memo(
     onPress,
     onAction,
     showDirectionCue = false,
-    showStatusCue = true,
     style,
   }: DebtCardProps) => {
     const { theme } = useUnistyles();
+    const isPaid = debt.status === "paid";
+    const paidColors = theme.colors.status.paid;
     const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
-    const statusColors = theme.colors.status[debt.status];
     const DirectionIcon = debt.direction === "they_owe_me" ? ArrowDownLeft : ArrowUpRight;
     const directionColor =
       debt.direction === "they_owe_me" ? theme.colors.success : theme.colors.danger;
@@ -41,7 +40,11 @@ export const DebtCard = memo(
     const content = (
       <PressableScale onPress={onPress} style={[styles.card, style]}>
         <View style={styles.row}>
-          <Avatar initials={debt.initials} status={debt.status} />
+          <Avatar
+            initials={debt.initials}
+            progress={debt.status === "partial" ? pct : undefined}
+            status={debt.status}
+          />
           <View style={styles.body}>
             <View style={styles.topRow}>
               <View style={styles.meta}>
@@ -61,40 +64,29 @@ export const DebtCard = memo(
                 <Text muted style={styles.reason} numberOfLines={1}>
                   {debt.reason}
                 </Text>
-                {debt.status === "partial" ? (
-                  <View style={styles.progressRow}>
-                    <View style={styles.progressTrack}>
-                      <View style={[styles.progressFill, { width: `${pct}%` }]} />
-                    </View>
-                    <Text muted style={styles.progressText}>
-                      {Math.round(pct)}%
-                    </Text>
-                  </View>
-                ) : null}
               </View>
               <View style={styles.amountCol}>
-                {showStatusCue ? (
-                  <View style={styles.statusRow}>
-                    <View style={[styles.statusDot, { backgroundColor: statusColors.dot }]} />
-                    <Text
-                      style={[styles.statusText, { color: statusColors.text }]}
-                      numberOfLines={1}
-                    >
-                      {DEBT_STATUS_LABELS[debt.status]}
-                    </Text>
-                  </View>
-                ) : null}
                 <Text
                   adjustsFontSizeToFit
                   minimumFontScale={0.78}
                   numberOfLines={1}
-                  style={styles.amount}
+                  style={[styles.amount, isPaid ? { color: paidColors.text } : null]}
                 >
-                  {formatCurrency(debt.remaining)}
+                  {formatCurrency(isPaid ? debt.amount : debt.remaining, debt.currency)}
                 </Text>
                 <View style={styles.dueRow}>
-                  <Text style={styles.dueDate} numberOfLines={1}>
-                    {debt.dueDate}
+                  <Text
+                    style={[
+                      styles.dueDate,
+                      isPaid ? { color: theme.colors.paidMuted } : null,
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {isPaid
+                      ? debt.lastPaymentAt
+                        ? `Paid · ${formatRelativeDay(debt.lastPaymentAt)}`
+                        : "Paid"
+                      : debt.dueDate}
                   </Text>
                 </View>
               </View>
@@ -165,20 +157,6 @@ const styles = StyleSheet.create((theme) => ({
     flexShrink: 0,
     maxWidth: "45%",
   },
-  statusRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "flex-end",
-    gap: 5,
-    marginBottom: 1,
-  },
-  statusText: {
-    fontSize: 10,
-    fontWeight: "600",
-    lineHeight: 13,
-    textTransform: "uppercase",
-    letterSpacing: 0.8,
-  },
   amount: {
     fontSize: 16,
     fontWeight: "500",
@@ -188,39 +166,10 @@ const styles = StyleSheet.create((theme) => ({
   dueRow: {
     alignItems: "flex-end",
   },
-  statusDot: {
-    width: 4,
-    height: 4,
-    borderRadius: 999,
-  },
   dueDate: {
     fontSize: 12,
     fontWeight: "500",
     color: theme.colors.muted,
     lineHeight: 17,
-  },
-  progressRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 7,
-    marginTop: 7,
-  },
-  progressTrack: {
-    width: 68,
-    height: 4,
-    backgroundColor: theme.colors.surfaceMuted,
-    borderRadius: 999,
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    backgroundColor: theme.colors.progressFill,
-    borderRadius: 999,
-  },
-  progressText: {
-    fontSize: 10,
-    fontWeight: "500",
-    lineHeight: 12,
-    fontVariant: ["tabular-nums"],
   },
 }));

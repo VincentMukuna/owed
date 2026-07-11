@@ -59,7 +59,6 @@ export function HomeDebtSection({
                 onAction={onDebtAction}
                 onPress={() => onDebtPress(debt.id)}
                 showDirectionCue={showDirectionCue}
-                showStatusCue={false}
                 style={needsBreathingRoom ? styles.statusDebtCard : null}
               />
             </ListRowContainer>
