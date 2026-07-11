@@ -386,7 +386,6 @@ export function SettingsScreen() {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Notifications</Text>
-            <Text style={styles.sectionHint}>For you only. Never sent to the person who owes.</Text>
             <View style={styles.card}>
               <PressableScale
                 onPress={() => {
@@ -443,10 +442,6 @@ export function SettingsScreen() {
 
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Data</Text>
-            <Text style={styles.sectionHint}>
-              Your backups are created locally and stored wherever you choose. Owed never uploads
-              your backup files.
-            </Text>
             <View style={styles.card}>
               <PressableScale
                 disabled={backupBusy}
