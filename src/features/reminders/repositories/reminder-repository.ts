@@ -251,6 +251,18 @@ export const reminderRepository = {
     );
   },
 
+  async archiveInbox(): Promise<void> {
+    const db = await getDb();
+    const now = new Date().toISOString();
+    await db.runAsync(
+      `UPDATE reminders
+       SET archived_at = ?, updated_at = ?
+       WHERE status = 'sent' AND archived_at IS NULL`,
+      now,
+      now,
+    );
+  },
+
   async clearScheduledNotificationIds(): Promise<void> {
     const db = await getDb();
     const now = new Date().toISOString();
