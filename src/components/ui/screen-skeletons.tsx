@@ -41,12 +41,14 @@ function ActivityRowSkeleton() {
 function PersonRowSkeleton() {
   return (
     <View style={styles.personRow}>
-      <Skeleton borderRadius={999} height={44} width={44} />
+      <Skeleton borderRadius={999} height={40} width={40} />
       <View style={styles.personBody}>
         <Skeleton height={15} width="50%" />
-        <Skeleton height={12} style={styles.gapSm} width="35%" />
+        <Skeleton height={12} style={styles.gapSm} width="38%" />
       </View>
-      <Skeleton height={14} width={64} />
+      <View style={styles.personTrailing}>
+        <Skeleton height={15} width={72} />
+      </View>
     </View>
   );
 }
@@ -303,6 +305,11 @@ const styles = StyleSheet.create((theme) => ({
   personBody: {
     flex: 1,
     minWidth: 0,
+  },
+  personTrailing: {
+    alignItems: "flex-end",
+    flexShrink: 0,
+    gap: 4,
   },
   notificationRow: {
     flexDirection: "row",

@@ -124,10 +124,7 @@ export function PeopleScreen() {
           </>
         ) : (
           <>
-            <View>
-              <Text style={styles.title}>People</Text>
-              <Text style={styles.subtitle}>See money between you and each person.</Text>
-            </View>
+            <Text style={styles.title}>People</Text>
             <IconButton onPress={openSearch}>
               <Search color={theme.colors.icon} size={16} strokeWidth={1.5} />
             </IconButton>
@@ -163,11 +160,6 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 28,
     fontWeight: "700",
     color: theme.colors.text,
-  },
-  subtitle: {
-    fontSize: 13,
-    color: theme.colors.muted,
-    marginTop: 2,
   },
   cancel: {
     flexShrink: 0,

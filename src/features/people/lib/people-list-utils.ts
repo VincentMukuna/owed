@@ -1,37 +1,15 @@
 import { normalizePersonName } from "@/features/debts/lib/person-name";
 
 import type { PersonListItemView } from "../view-models";
-import type { PersonStatus } from "./person-status";
 
-const PERSON_SORT_ORDER: Record<PersonStatus, number> = {
-  overdue: 0,
-  "due-soon": 1,
-  active: 2,
-  none: 3,
-  settled: 4,
-};
-
-/**
- * Smart default order: overdue first, then due-soon, then active by highest
- * remaining, then most recently active; settled people sink to the bottom.
- */
+/** Alphabetical order by name (accent-folded for consistent sorting). */
 export function sortPeople(people: PersonListItemView[]): PersonListItemView[] {
-  return [...people].sort((a, b) => {
-    const byStatus = PERSON_SORT_ORDER[a.status] - PERSON_SORT_ORDER[b.status];
-    if (byStatus !== 0) {
-      return byStatus;
-    }
-    if (b.outstanding !== a.outstanding) {
-      return b.outstanding - a.outstanding;
-    }
-    if (a.lastActivityAt !== b.lastActivityAt) {
-      return a.lastActivityAt < b.lastActivityAt ? 1 : -1;
-    }
-    return a.name.localeCompare(b.name);
-  });
+  return [...people].sort((a, b) =>
+    normalizePersonName(a.name).localeCompare(normalizePersonName(b.name)),
+  );
 }
 
-/** Filters by name (accent-folded) or phone digits, then applies the smart sort. */
+/** Filters by name (accent-folded) or phone digits, then sorts alphabetically. */
 export function filterAndSortPeople(
   people: PersonListItemView[],
   query: string,
