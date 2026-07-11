@@ -2,100 +2,28 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
-import { DefaultBackupClient } from "@/features/backup-restore/application/default-backup-client";
-import type { BackupDocument } from "@/features/backup-restore/domain/backup-document";
 import { BackupError } from "@/features/backup-restore/domain/backup-error";
-import { type BackupPayloadV1 } from "@/features/backup-restore/domain/backup-payload-v1";
-import { JsonBackupCodec } from "@/features/backup-restore/infrastructure/codecs/json-backup-codec";
-import { ZodBackupValidator } from "@/features/backup-restore/infrastructure/validation/backup-validator";
-import type { BackupIntegrity } from "@/features/backup-restore/ports/backup-integrity";
-import type { BackupPayloadRestoreDestination } from "@/features/backup-restore/ports/backup-restore-destination";
+import {
+  type BackupPayloadV1,
+  suggestBackupFileName,
+} from "@/features/backup-restore/domain/backup-payload-v1";
+import type {
+  BackupPayloadRestoreDestination,
+  BackupRestoreHook,
+} from "@/features/backup-restore/ports/backup-restore-destination";
+
+import {
+  InMemoryBackupStore,
+  createTestClient,
+  emptyPayload,
+  encodeTamperedDocument,
+  populatedPayload,
+} from "./test-utils";
 
 const fixturesDir = join(__dirname, "../__fixtures__");
 
 function loadFixture(name: string): Uint8Array {
   return readFileSync(join(fixturesDir, name));
-}
-
-class StaticIntegrity implements BackupIntegrity {
-  async calculateHash(_contents: Uint8Array): Promise<string> {
-    return "fixture-hash";
-  }
-
-  async verifyHash(_contents: Uint8Array, expectedHash: string): Promise<boolean> {
-    return expectedHash === "fixture-hash";
-  }
-}
-
-function createTestClient(payload: BackupPayloadV1, destination?: BackupPayloadRestoreDestination) {
-  return new DefaultBackupClient({
-    app: {
-      appId: "com.vincentmukuna.owed",
-      getAppVersion: () => "1.0.0",
-      getBuildVersion: () => null,
-    },
-    source: {
-      async getSourceMetadata() {
-        return { databaseSchemaVersion: 5 };
-      },
-      async exportSnapshot() {
-        return payload;
-      },
-    },
-    destination: destination ?? {
-      async getCurrentRecordCounts() {
-        return {
-          people: 0,
-          debts: 0,
-          payments: 0,
-          activityEvents: 0,
-          reminders: 0,
-        };
-      },
-      async replaceSnapshot(restoredPayload) {
-        return {
-          people: restoredPayload.people.length,
-          debts: restoredPayload.debts.length,
-          payments: restoredPayload.payments.length,
-          activityEvents: restoredPayload.activityEvents.length,
-          reminders: restoredPayload.reminders.length,
-        };
-      },
-    },
-    codec: new JsonBackupCodec(),
-    validator: new ZodBackupValidator(),
-    integrity: new StaticIntegrity(),
-    hooks: [],
-    clock: {
-      now: () => new Date("2026-07-10T12:00:00.000Z"),
-    },
-    idGenerator: {
-      generate: () => "backup_1",
-    },
-  });
-}
-
-function populatedPayload(): BackupPayloadV1 {
-  return {
-    people: [
-      {
-        id: "person_1",
-        name: "Avery Stone",
-        phoneNumber: null,
-        notes: null,
-        createdAt: "2026-07-01T09:00:00.000Z",
-        updatedAt: "2026-07-01T09:00:00.000Z",
-      },
-    ],
-    debts: [],
-    payments: [],
-    activityEvents: [],
-    reminders: [],
-    preferences: {
-      settings: {},
-      onboardingComplete: true,
-    },
-  };
 }
 
 function payloadWithPaymentTimestamp(): BackupPayloadV1 {
@@ -111,20 +39,6 @@ function payloadWithPaymentTimestamp(): BackupPayloadV1 {
         createdAt: "2026-07-05T10:00:00.000Z",
       },
     ],
-  };
-}
-
-function emptyPayload(): BackupPayloadV1 {
-  return {
-    people: [],
-    debts: [],
-    payments: [],
-    activityEvents: [],
-    reminders: [],
-    preferences: {
-      settings: {},
-      onboardingComplete: false,
-    },
   };
 }
 
@@ -200,6 +114,88 @@ describe("backup client", () => {
     ]);
   });
 
+  it("inspects backup documents and json strings directly", async () => {
+    const client = createTestClient(populatedPayload());
+    const created = await client.create();
+    const json = new TextDecoder().decode(created.bytes);
+
+    await expect(client.inspect(created.document)).resolves.toMatchObject({
+      summary: { backupId: "backup_1" },
+    });
+    await expect(client.inspect(json)).resolves.toMatchObject({
+      summary: { backupId: "backup_1" },
+    });
+  });
+
+  it("stores caller metadata on created backups", async () => {
+    const client = createTestClient(emptyPayload());
+    const created = await client.create({
+      metadata: {
+        purpose: "manual_export",
+      },
+    });
+
+    expect(created.document.manifest.metadata).toEqual({
+      purpose: "manual_export",
+    });
+  });
+
+  it("rejects malformed backup documents before restore", async () => {
+    const client = createTestClient(emptyPayload());
+    const malformed = new TextEncoder().encode(JSON.stringify({ unexpected: true }));
+
+    await expect(client.inspect(malformed)).rejects.toMatchObject({
+      code: "INVALID_DOCUMENT",
+    });
+    await expect(client.canRestore(malformed)).resolves.toMatchObject({
+      canRestore: false,
+      error: { code: "INVALID_DOCUMENT" },
+    });
+  });
+
+  it("round-trips backup bytes through create, store, and restore", async () => {
+    let currentPayload = populatedPayload();
+    const destination: BackupPayloadRestoreDestination = {
+      async getCurrentRecordCounts() {
+        return {
+          people: currentPayload.people.length,
+          debts: currentPayload.debts.length,
+          payments: currentPayload.payments.length,
+          activityEvents: currentPayload.activityEvents.length,
+          reminders: currentPayload.reminders.length,
+        };
+      },
+      async replaceSnapshot(payload) {
+        currentPayload = payload;
+        return {
+          people: payload.people.length,
+          debts: payload.debts.length,
+          payments: payload.payments.length,
+          activityEvents: payload.activityEvents.length,
+          reminders: payload.reminders.length,
+        };
+      },
+    };
+
+    const backups = createTestClient(currentPayload, {
+      destination,
+      exportSnapshot: async () => currentPayload,
+    });
+    const store = new InMemoryBackupStore();
+    const exported = await backups.create();
+    const stored = await store.write(
+      suggestBackupFileName(exported.summary.createdAt),
+      exported.bytes,
+    );
+
+    currentPayload = emptyPayload();
+    const prepared = await backups.prepareRestore(await store.read(stored.uri));
+    await prepared.commit({ createSafetyBackup: false });
+
+    const reexported = await backups.create();
+    expect(reexported.document.payload).toEqual(exported.document.payload);
+  });
+
   it("returns non-throwing restore compatibility for invalid input", async () => {
     const client = createTestClient(emptyPayload());
     const result = await client.canRestore("{not json");
@@ -224,22 +220,56 @@ describe("backup client", () => {
     expect(result.error?.code).toBe("INVALID_MANIFEST");
   });
 
-  it("accepts a populated v1 fixture", async () => {
+  it("accepts populated and empty v1 fixtures", async () => {
     const client = createTestClient(emptyPayload());
-    const result = await client.canRestore(loadFixture("v1-populated.owedbackup"));
 
-    expect(result.canRestore).toBe(true);
-    expect(result.summary?.counts.people).toBe(1);
-    expect(result.summary?.counts.debts).toBe(1);
+    await expect(client.canRestore(loadFixture("v1-populated.owedbackup"))).resolves.toMatchObject({
+      canRestore: true,
+      summary: { counts: { people: 1, debts: 1 } },
+    });
+    await expect(client.canRestore(loadFixture("v1-empty.owedbackup"))).resolves.toMatchObject({
+      canRestore: true,
+      warnings: [
+        {
+          code: "EMPTY_BACKUP",
+          message: "The backup contains no records.",
+        },
+      ],
+    });
   });
 
   it("encodes existing backup documents", async () => {
     const client = createTestClient(emptyPayload());
     const created = await client.create();
-    const document: BackupDocument = created.document;
-    const encoded = await client.encode(document);
+    const encoded = await client.encode(created.document);
 
     expect(encoded.byteLength).toBe(created.bytes.byteLength);
+  });
+
+  it("rejects tampered checksums, payload lengths, and record counts", async () => {
+    const client = createTestClient(populatedPayload());
+    const created = await client.create();
+
+    const checksumMismatch = await encodeTamperedDocument(created.document, (doc) => {
+      doc.manifest.payload.hash = "not-the-real-hash";
+    });
+    await expect(client.inspect(checksumMismatch)).rejects.toMatchObject({
+      code: "CHECKSUM_MISMATCH",
+    });
+
+    const lengthMismatch = await encodeTamperedDocument(created.document, (doc) => {
+      doc.manifest.payload.byteLength = 1;
+    });
+    await expect(client.inspect(lengthMismatch)).rejects.toMatchObject({
+      code: "PAYLOAD_LENGTH_MISMATCH",
+    });
+
+    const countMismatch = await encodeTamperedDocument(created.document, (doc) => {
+      doc.manifest.payload.counts.people = 99;
+    });
+    await expect(client.inspect(countMismatch)).rejects.toMatchObject({
+      code: "COUNT_MISMATCH",
+    });
   });
 
   it("prepares restore without replacing data", async () => {
@@ -265,7 +295,7 @@ describe("backup client", () => {
         };
       },
     };
-    const client = createTestClient(populatedPayload(), destination);
+    const client = createTestClient(populatedPayload(), { destination });
     const created = await client.create();
     const prepared = await client.prepareRestore(created.bytes);
 
@@ -287,6 +317,14 @@ describe("backup client", () => {
         reminders: 0,
       },
       postRestoreActions: [],
+    });
+  });
+
+  it("throws when preparing restore from invalid backups", async () => {
+    const client = createTestClient(emptyPayload());
+
+    await expect(client.prepareRestore("{not json")).rejects.toMatchObject({
+      code: "INVALID_JSON",
     });
   });
 
@@ -313,7 +351,7 @@ describe("backup client", () => {
         };
       },
     };
-    const client = createTestClient(populatedPayload(), destination);
+    const client = createTestClient(populatedPayload(), { destination });
     const created = await client.create();
     const prepared = await client.prepareRestore(created.bytes);
     const result = await prepared.commit();
@@ -335,5 +373,161 @@ describe("backup client", () => {
     await expect(prepared.commit()).rejects.toMatchObject({
       code: "PREPARED_RESTORE_DISPOSED",
     });
+  });
+
+  it("does not commit after dispose", async () => {
+    const client = createTestClient(populatedPayload());
+    const created = await client.create();
+    const prepared = await client.prepareRestore(created.bytes);
+
+    prepared.dispose();
+
+    await expect(prepared.commit()).rejects.toMatchObject({
+      code: "PREPARED_RESTORE_DISPOSED",
+    });
+  });
+
+  it("rejects empty backups unless warnings are explicitly allowed", async () => {
+    const client = createTestClient(emptyPayload());
+    const created = await client.create();
+    const prepared = await client.prepareRestore(created.bytes);
+
+    await expect(prepared.commit()).rejects.toMatchObject({
+      code: "WARNINGS_NOT_ALLOWED",
+    });
+
+    const allowed = await prepared.commit({ allowWarnings: true });
+    expect(allowed.status).toBe("restored");
+  });
+
+  it("can skip safety backups and restore in one step", async () => {
+    const client = createTestClient(populatedPayload());
+    const created = await client.create();
+    const prepared = await client.prepareRestore(created.bytes);
+
+    const result = await prepared.commit({ createSafetyBackup: false });
+    expect(result.safetyBackup).toBeUndefined();
+
+    const restored = await client.restore(created.bytes, { createSafetyBackup: false });
+    expect(restored.status).toBe("restored");
+    expect(restored.safetyBackup).toBeUndefined();
+  });
+
+  it("surfaces post-restore hook failures as warnings without rolling back", async () => {
+    const hook: BackupRestoreHook = {
+      name: "failing-hook",
+      async afterRestore() {
+        throw new Error("hook failed");
+      },
+    };
+    const client = createTestClient(populatedPayload(), { hooks: [hook] });
+    const created = await client.create();
+    const prepared = await client.prepareRestore(created.bytes);
+    const result = await prepared.commit();
+
+    expect(result.status).toBe("restored");
+    expect(result.warnings).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          code: "POST_RESTORE_HOOK_FAILED",
+          message: "Post-restore hook failed: failing-hook",
+        }),
+      ]),
+    );
+  });
+
+  it("fails restore when the database replacement fails", async () => {
+    const destination: BackupPayloadRestoreDestination = {
+      async getCurrentRecordCounts() {
+        return {
+          people: 0,
+          debts: 0,
+          payments: 0,
+          activityEvents: 0,
+          reminders: 0,
+        };
+      },
+      async replaceSnapshot() {
+        throw new Error("sqlite locked");
+      },
+    };
+    const client = createTestClient(populatedPayload(), { destination });
+    const created = await client.create();
+    const prepared = await client.prepareRestore(created.bytes);
+
+    await expect(prepared.commit()).rejects.toMatchObject({
+      code: "DATABASE_RESTORE_FAILED",
+    });
+  });
+
+  it("fails restore when the safety backup cannot be created", async () => {
+    let exportCalls = 0;
+    const client = createTestClient(populatedPayload(), {
+      exportSnapshot: async () => {
+        exportCalls += 1;
+        if (exportCalls > 1) {
+          throw new Error("export failed");
+        }
+        return populatedPayload();
+      },
+    });
+    const created = await client.create();
+    const prepared = await client.prepareRestore(created.bytes);
+
+    await expect(prepared.commit()).rejects.toMatchObject({
+      code: "SAFETY_BACKUP_FAILED",
+    });
+  });
+
+  it("restores through the store read and write path used by settings", async () => {
+    const restoredPayloads: BackupPayloadV1[] = [];
+    const destination: BackupPayloadRestoreDestination = {
+      async getCurrentRecordCounts() {
+        return {
+          people: 0,
+          debts: 0,
+          payments: 0,
+          activityEvents: 0,
+          reminders: 0,
+        };
+      },
+      async replaceSnapshot(payload) {
+        restoredPayloads.push(payload);
+        return {
+          people: payload.people.length,
+          debts: payload.debts.length,
+          payments: payload.payments.length,
+          activityEvents: payload.activityEvents.length,
+          reminders: payload.reminders.length,
+        };
+      },
+    };
+    const backups = createTestClient(populatedPayload(), { destination });
+    const store = new InMemoryBackupStore();
+
+    const created = await backups.create();
+    const file = await store.write(suggestBackupFileName(created.summary.createdAt), created.bytes);
+    const prepared = await backups.prepareRestore(await store.read(file.uri));
+
+    await prepared.commit({ allowWarnings: true });
+
+    expect(restoredPayloads[0]?.people).toHaveLength(1);
+  });
+
+  it("restores from a picked store file", async () => {
+    const backups = createTestClient(populatedPayload());
+    const store = new InMemoryBackupStore();
+    const created = await backups.create();
+    const file = await store.write("picked-backup.owedbackup", created.bytes);
+
+    store.seedPickable(file, created.bytes);
+
+    const picked = await store.pick();
+    expect(picked).toEqual(file);
+
+    const prepared = await backups.prepareRestore(await store.read(picked!.uri));
+    const result = await prepared.commit();
+
+    expect(result.status).toBe("restored");
   });
 });
