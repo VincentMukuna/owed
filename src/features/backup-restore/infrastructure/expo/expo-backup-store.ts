@@ -1,16 +1,11 @@
 import * as DocumentPicker from "expo-document-picker";
 import { File, Paths } from "expo-file-system";
-import * as Sharing from "expo-sharing";
 
 import { BackupError } from "../../domain/backup-error";
-import type {
-  BackupFileInfo,
-  BackupFileStore,
-  StoredBackupFile,
-} from "../../ports/backup-file-store";
+import type { BackupStore, StoredBackup, StoredBackupInfo } from "../../ports/backup-store";
 
-export class ExpoBackupFileStore implements BackupFileStore {
-  async write(name: string, contents: Uint8Array): Promise<StoredBackupFile> {
+export class ExpoBackupStore implements BackupStore {
+  async write(name: string, contents: Uint8Array): Promise<StoredBackup> {
     try {
       const file = new File(Paths.cache, name);
 
@@ -40,7 +35,7 @@ export class ExpoBackupFileStore implements BackupFileStore {
     }
   }
 
-  async pick(): Promise<StoredBackupFile | null> {
+  async pick(): Promise<StoredBackup | null> {
     const result = await DocumentPicker.getDocumentAsync({
       type: ["application/json", "*/*"],
       copyToCacheDirectory: true,
@@ -63,7 +58,7 @@ export class ExpoBackupFileStore implements BackupFileStore {
     };
   }
 
-  async getInfo(uri: string): Promise<BackupFileInfo> {
+  async getInfo(uri: string): Promise<StoredBackupInfo> {
     const file = new File(uri);
 
     return {
@@ -72,18 +67,5 @@ export class ExpoBackupFileStore implements BackupFileStore {
       sizeBytes: file.size,
       exists: file.exists,
     };
-  }
-
-  async share(uri: string, options: { mimeType: string; dialogTitle?: string }): Promise<void> {
-    const available = await Sharing.isAvailableAsync();
-
-    if (!available) {
-      throw new BackupError("FILE_STORE_FAILED", "Native sharing is not available on this device.");
-    }
-
-    await Sharing.shareAsync(uri, {
-      dialogTitle: options.dialogTitle,
-      mimeType: options.mimeType,
-    });
   }
 }

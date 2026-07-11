@@ -7,33 +7,48 @@ This feature is implemented as a small internal SDK. App code should use the pub
 Import from the feature root:
 
 ```ts
-import { createBackupClient, createBackupFileClient } from "@/features/backup-restore";
+import { createBackupClient, createBackupStore } from "@/features/backup-restore";
 ```
 
 Create a programmatic backup:
 
 ```ts
-const backup = createBackupClient();
-const created = await backup.create();
+const backups = createBackupClient();
+const created = await backups.create();
 
 console.log(created.summary);
 console.log(created.bytes);
 ```
 
-Create and share a backup file:
+Write a backup file and share it (sharing is composed by the caller):
 
 ```ts
-const files = createBackupFileClient();
-const file = await files.createFile();
+import * as Sharing from "expo-sharing";
 
-await files.share(file);
+import {
+  BACKUP_MIME_TYPE,
+  createBackupClient,
+  createBackupStore,
+  suggestBackupFileName,
+} from "@/features/backup-restore";
+
+const backups = createBackupClient();
+const store = createBackupStore();
+
+const created = await backups.create();
+const file = await store.write(suggestBackupFileName(created.summary.createdAt), created.bytes);
+
+await Sharing.shareAsync(file.uri, {
+  dialogTitle: "Save Owed backup",
+  mimeType: BACKUP_MIME_TYPE,
+});
 ```
 
 Inspect a backup without modifying app data:
 
 ```ts
-const backup = createBackupClient();
-const inspection = await backup.inspect(bytes);
+const backups = createBackupClient();
+const inspection = await backups.inspect(bytes);
 
 console.log(inspection.summary);
 console.log(inspection.compatibility);
@@ -42,8 +57,8 @@ console.log(inspection.compatibility);
 Prepare and commit a restore:
 
 ```ts
-const backup = createBackupClient();
-const prepared = await backup.prepareRestore(bytes);
+const backups = createBackupClient();
+const prepared = await backups.prepareRestore(bytes);
 
 console.log(prepared.plan);
 
@@ -56,11 +71,12 @@ await prepared.commit({
 Restore from a picked file:
 
 ```ts
-const files = createBackupFileClient();
-const file = await files.pickFile();
+const backups = createBackupClient();
+const store = createBackupStore();
+const file = await store.pick();
 
 if (file) {
-  const prepared = await files.prepareRestoreFile(file.uri);
+  const prepared = await backups.prepareRestore(await store.read(file.uri));
   await prepared.commit({ allowWarnings: true });
 }
 ```
@@ -138,7 +154,7 @@ Hook failures do not roll back a completed database restore. They are returned a
 
 Future cloud or encrypted backups should plug into ports instead of changing app UI code:
 
-- `BackupFileStore` for local, cloud, or remote storage
+- `BackupStore` for local, cloud, or remote blob storage
 - `BackupCodec` for compression/encryption wrappers
 - `BackupIntegrity` for different integrity implementations
 - `BackupSource` / `BackupRestoreDestination` for different persistence engines

@@ -37,7 +37,7 @@ Frozen decisions:
 - The filename pattern is `owed-backup-YYYY-MM-DD.owedbackup`.
 - The backup document uses `manifest` and `payload`; storage-engine names such as `sqlite` do not appear in the backup contract.
 - Payload collection names are domain-oriented camelCase names, with import/export mappers translating to concrete table and storage-key names.
-- Implementation uses a small internal SDK, not scattered helper functions. App code imports `createBackupClient` and `createBackupFileClient` from the feature public surface.
+- Implementation uses a small internal SDK, not scattered helper functions. App code imports `createBackupClient` and `createBackupStore` from the feature public surface.
 - Public API names use generic backup terminology (`BackupClient`, `BackupDocument`, `BackupPayloadV1`) and do not repeat the app name. App identity remains data in the manifest and filename.
 - Core backup logic is separated from Expo, SQLite, and UI concerns through ports and infrastructure adapters.
 - Backup export reads raw SQLite table rows directly, table-by-table, instead of using UI summary repositories.

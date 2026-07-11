@@ -4,6 +4,7 @@ import { useCallback, useRef, useState } from "react";
 import { Alert, AppState, ScrollView, Switch, Text, View } from "react-native";
 
 import { type Href, router, useFocusEffect } from "expo-router";
+import * as Sharing from "expo-sharing";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { ChevronRight } from "lucide-react-native";
@@ -11,7 +12,12 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { createBackupFileClient } from "@/features/backup-restore";
+import {
+  BACKUP_MIME_TYPE,
+  createBackupClient,
+  createBackupStore,
+  suggestBackupFileName,
+} from "@/features/backup-restore";
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
 import {
@@ -51,6 +57,9 @@ const THEME_OPTIONS: { label: string; value: ThemePreference }[] = [
   { label: "Auto", value: "auto" },
   { label: "Dark", value: "dark" },
 ];
+
+const backups = createBackupClient();
+const backupStore = createBackupStore();
 
 let DevToolsSection: ComponentType | null = null;
 
@@ -210,9 +219,21 @@ export function SettingsScreen() {
     setBackupBusy(true);
 
     try {
-      const files = createBackupFileClient();
-      const file = await files.createFile();
-      await files.share(file);
+      const created = await backups.create();
+      const file = await backupStore.write(
+        suggestBackupFileName(created.summary.createdAt),
+        created.bytes,
+      );
+
+      const sharingAvailable = await Sharing.isAvailableAsync();
+      if (!sharingAvailable) {
+        throw new Error("Native sharing is not available on this device.");
+      }
+
+      await Sharing.shareAsync(file.uri, {
+        dialogTitle: "Save Owed backup",
+        mimeType: BACKUP_MIME_TYPE,
+      });
     } catch (error) {
       if (__DEV__) {
         console.error("[SettingsScreen] failed to create backup", error);
@@ -228,14 +249,13 @@ export function SettingsScreen() {
     setRestoreBusy(true);
 
     try {
-      const files = createBackupFileClient();
-      const file = await files.pickFile();
+      const file = await backupStore.pick();
 
       if (!file) {
         return;
       }
 
-      const prepared = await files.prepareRestoreFile(file.uri);
+      const prepared = await backups.prepareRestore(await backupStore.read(file.uri));
 
       Alert.alert(
         "Replace current data?",

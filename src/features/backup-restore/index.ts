@@ -1,18 +1,18 @@
-export { createBackupClient, createBackupFileClient } from "./public/factories";
+export { createBackupClient, createBackupStore } from "./public/factories";
 export { BackupError } from "./domain/backup-error";
+export { BACKUP_MIME_TYPE, suggestBackupFileName } from "./domain/backup-payload-v1";
 
 export type {
   BackupClient,
   BackupCompatibility,
   BackupDocument,
   BackupFailure,
-  BackupFile,
-  BackupFileClient,
   BackupInput,
   BackupInspection,
   BackupManifest,
   BackupPayloadV1,
   BackupRecordCounts,
+  BackupStore,
   BackupSummary,
   BackupWarning,
   CanRestoreResult,
@@ -24,4 +24,6 @@ export type {
   RestoreOptions,
   RestorePlan,
   RestoreResult,
+  StoredBackup,
+  StoredBackupInfo,
 } from "./public/types";

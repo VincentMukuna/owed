@@ -73,21 +73,7 @@ export type BackupClient = {
   restore(input: BackupInput, options?: RestoreOptions): Promise<RestoreResult>;
 };
 
-export type BackupFile = {
-  uri: string;
-  name: string;
-  sizeBytes: number;
-  summary: BackupSummary;
-};
-
-export type BackupFileClient = {
-  createFile(options?: CreateBackupOptions): Promise<BackupFile>;
-  pickFile(): Promise<BackupFile | null>;
-  share(file: BackupFile): Promise<void>;
-  inspectFile(uri: string): Promise<BackupInspection>;
-  prepareRestoreFile(uri: string, options?: PrepareRestoreOptions): Promise<PreparedRestore>;
-  restoreFile(uri: string, options?: RestoreOptions): Promise<RestoreResult>;
-};
+export type { BackupStore, StoredBackup, StoredBackupInfo } from "../ports/backup-store";
 
 export type {
   BackupCompatibility,

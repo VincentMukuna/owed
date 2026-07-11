@@ -94,6 +94,11 @@ export type BackupRecordCounts = {
   reminders: number;
 };
 
+export function suggestBackupFileName(createdAt: string): string {
+  const timestamp = new Date(createdAt).toISOString().replace(/[:.]/g, "-");
+  return `owed-backup-${timestamp}.${BACKUP_FILE_EXTENSION}`;
+}
+
 export function calculateRecordCounts(payload: BackupPayloadV1): BackupRecordCounts {
   return {
     people: payload.people.length,
