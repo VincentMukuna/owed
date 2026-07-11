@@ -9,8 +9,9 @@ import {
   useState,
 } from "react";
 
-import { Platform, Pressable, Text, View } from "react-native";
+import { type LayoutChangeEvent, Platform, Pressable, Text, View } from "react-native";
 
+import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
 import { type Href, router, useLocalSearchParams } from "expo-router";
 
 import {
@@ -22,6 +23,7 @@ import {
 import type { FlashListRef } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
 import { Calendar, List, Search, SlidersHorizontal, X } from "lucide-react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { FullWindowOverlay } from "react-native-screens";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
@@ -64,6 +66,11 @@ const SHEET_CONTAINER = (Platform.OS === "ios" ? FullWindowOverlay : undefined) 
   | ComponentType<{ children?: ReactNode }>
   | undefined;
 
+type OptimisticParam<TKey extends string> = {
+  baseParam: TKey | null;
+  value: TKey;
+};
+
 function parseFilterParam(value: string | string[] | undefined): DebtFilterKey | null {
   if (typeof value !== "string" || value.length === 0) {
     return null;
@@ -94,6 +101,92 @@ function parseDirectionParam(value: string | string[] | undefined): DebtDirectio
   return null;
 }
 
+type FilterTabItem<TKey extends string> = {
+  key: TKey;
+  label: string;
+  count?: number;
+};
+
+type FilterTabsProps<TKey extends string> = {
+  canUseLiquidGlass: boolean;
+  items: FilterTabItem<TKey>[];
+  onSelect: (key: TKey) => void;
+  selected: TKey;
+};
+
+function FilterTabs<TKey extends string>({
+  canUseLiquidGlass,
+  items,
+  onSelect,
+  selected,
+}: FilterTabsProps<TKey>) {
+  const { theme } = useUnistyles();
+  const [containerWidth, setContainerWidth] = useState(0);
+  const selectedIndex = Math.max(
+    items.findIndex((item) => item.key === selected),
+    0,
+  );
+  const indicatorIndex = useSharedValue(selectedIndex);
+
+  useEffect(() => {
+    indicatorIndex.value = withTiming(selectedIndex, { duration: 220 });
+  }, [indicatorIndex, selectedIndex]);
+
+  const handleLayout = useCallback((event: LayoutChangeEvent) => {
+    setContainerWidth(event.nativeEvent.layout.width);
+  }, []);
+
+  const indicatorStyle = useAnimatedStyle(() => {
+    const itemWidth = items.length > 0 ? Math.max(containerWidth - 8, 0) / items.length : 0;
+
+    return {
+      width: itemWidth,
+      transform: [{ translateX: indicatorIndex.value * itemWidth }],
+    };
+  });
+
+  return (
+    <View onLayout={handleLayout} style={[styles.tabs, canUseLiquidGlass && styles.tabsGlass]}>
+      {canUseLiquidGlass ? (
+        <GlassView
+          colorScheme={theme.name}
+          glassEffectStyle="clear"
+          style={styles.tabsGlassBackdrop}
+          tintColor={theme.colors.surface}
+        />
+      ) : null}
+      {canUseLiquidGlass && containerWidth > 0 ? (
+        <Animated.View pointerEvents="none" style={[styles.tabGlassIndicator, indicatorStyle]}>
+          <GlassView
+            colorScheme={theme.name}
+            glassEffectStyle="regular"
+            style={styles.tabGlassBackdrop}
+            tintColor={theme.colors.card}
+          />
+        </Animated.View>
+      ) : null}
+      {items.map((tab, index) => {
+        const active = selected === tab.key;
+
+        return (
+          <Pressable
+            key={tab.key}
+            onPress={() => onSelect(tab.key)}
+            onPressIn={() => {
+              if (canUseLiquidGlass) {
+                indicatorIndex.value = withTiming(index, { duration: 220 });
+              }
+            }}
+            style={[styles.tab, active && !canUseLiquidGlass && styles.tabActive]}
+          >
+            <Text style={[styles.tabText, active && styles.tabTextActive]}>{tab.label}</Text>
+          </Pressable>
+        );
+      })}
+    </View>
+  );
+}
+
 export function DebtsScreen() {
   const { theme } = useUnistyles();
   const queryClient = useQueryClient();
@@ -107,11 +200,21 @@ export function DebtsScreen() {
   }>();
   const paramFilter = useMemo(() => parseFilterParam(params.filter), [params.filter]);
   const paramDirection = useMemo(() => parseDirectionParam(params.direction), [params.direction]);
-  const [userFilter, setUserFilter] = useState<DebtFilterKey>("all");
-  const [userDirection, setUserDirection] = useState<DebtDirectionFilter>("all");
+  const [optimisticFilter, setOptimisticFilter] = useState<OptimisticParam<DebtFilterKey> | null>(
+    null,
+  );
+  const [optimisticDirection, setOptimisticDirection] =
+    useState<OptimisticParam<DebtDirectionFilter> | null>(null);
   const [dateRange, setDateRange] = useState<DebtDateRangeFilter>({});
-  const filter = paramFilter ?? userFilter;
-  const direction = paramDirection ?? userDirection;
+  const filter =
+    optimisticFilter && (paramFilter === null || paramFilter === optimisticFilter.baseParam)
+      ? optimisticFilter.value
+      : (paramFilter ?? "all");
+  const direction =
+    optimisticDirection &&
+    (paramDirection === null || paramDirection === optimisticDirection.baseParam)
+      ? optimisticDirection.value
+      : (paramDirection ?? "all");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [datePickerTarget, setDatePickerTarget] = useState<DateRangeTarget | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -124,6 +227,8 @@ export function DebtsScreen() {
   const [paymentDebt, setPaymentDebt] = useState<DebtCardView | null>(null);
   const filterSheetSnapPoints = useMemo(() => ["56%"], []);
   const todayIso = useMemo(() => toISODate(new Date()), []);
+  const canUseLiquidGlass =
+    Platform.OS === "ios" && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
   const focus = useMemo<DebtFocus | null>(() => {
     if (params.focusType === "paid-this-month") {
@@ -256,20 +361,20 @@ export function DebtsScreen() {
     (key: DebtFilterKey) => {
       selectionChange();
       clearFocus();
-      setUserFilter(key);
+      setOptimisticFilter({ baseParam: paramFilter, value: key });
       router.setParams({ filter: "" });
     },
-    [clearFocus],
+    [clearFocus, paramFilter],
   );
 
   const selectDirection = useCallback(
     (key: DebtDirectionFilter) => {
       selectionChange();
       clearFocus();
-      setUserDirection(key);
+      setOptimisticDirection({ baseParam: paramDirection, value: key });
       router.setParams({ direction: "" });
     },
-    [clearFocus],
+    [clearFocus, paramDirection],
   );
 
   const openDatePicker = useCallback(
@@ -316,11 +421,11 @@ export function DebtsScreen() {
   const resetFilters = useCallback(() => {
     selectionChange();
     clearFocus();
-    setUserDirection("all");
-    setUserFilter("all");
+    setOptimisticDirection({ baseParam: paramDirection, value: "all" });
+    setOptimisticFilter({ baseParam: paramFilter, value: "all" });
     setDateRange({});
     router.setParams({ direction: "", filter: "" });
-  }, [clearFocus]);
+  }, [clearFocus, paramDirection, paramFilter]);
 
   const closeSearch = useCallback(() => {
     setSearchQuery("");
@@ -483,48 +588,22 @@ export function DebtsScreen() {
 
           <View style={styles.tabsWrap}>
             <Text style={styles.filterLabel}>Direction</Text>
-            <View style={styles.tabs}>
-              {directionTabs.map((tab) => {
-                const active = direction === tab.key;
-                return (
-                  <Pressable
-                    key={tab.key}
-                    onPress={() => selectDirection(tab.key)}
-                    style={[styles.tab, active && styles.tabActive]}
-                  >
-                    <Text style={[styles.tabText, active && styles.tabTextActive]}>
-                      {tab.label}
-                      {tab.count > 0 && !active ? (
-                        <Text style={styles.tabCount}> {tab.count}</Text>
-                      ) : null}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <FilterTabs
+              canUseLiquidGlass={canUseLiquidGlass}
+              items={directionTabs}
+              onSelect={selectDirection}
+              selected={direction}
+            />
           </View>
 
           <View style={styles.tabsWrap}>
             <Text style={styles.filterLabel}>Status</Text>
-            <View style={styles.tabs}>
-              {tabs.map((tab) => {
-                const active = filter === tab.key;
-                return (
-                  <Pressable
-                    key={tab.key}
-                    onPress={() => selectFilter(tab.key)}
-                    style={[styles.tab, active && styles.tabActive]}
-                  >
-                    <Text style={[styles.tabText, active && styles.tabTextActive]}>
-                      {tab.label}
-                      {tab.count > 0 && !active ? (
-                        <Text style={styles.tabCount}> {tab.count}</Text>
-                      ) : null}
-                    </Text>
-                  </Pressable>
-                );
-              })}
-            </View>
+            <FilterTabs
+              canUseLiquidGlass={canUseLiquidGlass}
+              items={tabs}
+              onSelect={selectFilter}
+              selected={filter}
+            />
           </View>
 
           <View style={styles.tabsWrap}>
@@ -700,11 +779,26 @@ const styles = StyleSheet.create((theme) => ({
     padding: 4,
     borderRadius: 12,
   },
+  tabsGlass: {
+    backgroundColor: "transparent",
+    overflow: "hidden",
+  },
+  tabsGlassBackdrop: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderRadius: 12,
+    overflow: "hidden",
+  },
   tab: {
     flex: 1,
-    paddingVertical: 6,
+    paddingVertical: 8,
     borderRadius: 9,
     alignItems: "center",
+    overflow: "hidden",
+    zIndex: 1,
   },
   tabActive: {
     backgroundColor: theme.colors.card,
@@ -714,6 +808,23 @@ const styles = StyleSheet.create((theme) => ({
     shadowRadius: 2,
     elevation: 1,
   },
+  tabGlassIndicator: {
+    position: "absolute",
+    top: 4,
+    bottom: 4,
+    left: 4,
+    borderRadius: 9,
+    overflow: "hidden",
+  },
+  tabGlassBackdrop: {
+    position: "absolute",
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    borderRadius: 9,
+    overflow: "hidden",
+  },
   tabText: {
     fontSize: 11,
     fontWeight: "700",
@@ -721,10 +832,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   tabTextActive: {
     color: theme.colors.text,
-  },
-  tabCount: {
-    fontSize: 10,
-    opacity: 0.7,
   },
   dateRangeRow: {
     flexDirection: "row",
