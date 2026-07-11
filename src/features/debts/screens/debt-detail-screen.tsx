@@ -8,7 +8,7 @@ import { type Href, Stack, router } from "expo-router";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, Copy, MoreHorizontal } from "lucide-react-native";
+import { ArrowDownLeft, ArrowUpRight, Check, Copy, MoreHorizontal } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
@@ -65,6 +65,8 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
   const firstName = getFirstName(debt.name);
   const isUserOwed = debt.direction === "they_owe_me";
+  const DirectionIcon = isUserOwed ? ArrowDownLeft : ArrowUpRight;
+  const directionColor = isUserOwed ? theme.colors.success : theme.colors.danger;
   const reminderText = isUserOwed
     ? `Hey ${firstName}, just a reminder about the ${formatCurrency(debt.remaining)} you said you'd send on ${debt.dueDate}.`
     : debt.reason
@@ -110,6 +112,19 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
     <>
       <Stack.Screen
         options={{
+          headerTitle: () => (
+            <View style={styles.headerTitleRow}>
+              <Text numberOfLines={1} style={styles.headerTitleText}>
+                {debt.name}
+              </Text>
+              <DirectionIcon
+                color={directionColor}
+                size={14}
+                strokeWidth={2.3}
+                style={styles.headerDirectionIcon}
+              />
+            </View>
+          ),
           headerRight: () => (
             <DebtActionsMenu debt={debt} onAction={handleDebtAction}>
               <Pressable hitSlop={10} style={styles.headerMenuTrigger}>
@@ -117,7 +132,6 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
               </Pressable>
             </DebtActionsMenu>
           ),
-          title: debt.name,
         }}
       />
       <BottomSheetModalProvider>
@@ -291,6 +305,21 @@ const styles = StyleSheet.create((theme) => ({
     height: 36,
     alignItems: "center",
     justifyContent: "center",
+  },
+  headerTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 5,
+    maxWidth: "100%",
+  },
+  headerTitleText: {
+    flexShrink: 1,
+    fontSize: 17,
+    fontWeight: "600",
+    color: theme.colors.text,
+  },
+  headerDirectionIcon: {
+    flexShrink: 0,
   },
   summaryCard: {
     backgroundColor: theme.colors.card,
