@@ -267,6 +267,16 @@ export default function RootLayout() {
                   title: "Notifications",
                 }}
               />
+              <Stack.Screen
+                name="about"
+                options={{
+                  ...stackOptions,
+                  headerShown: true,
+                  headerLargeTitleEnabled: false,
+                  animation: "slide_from_right",
+                  title: "About",
+                }}
+              />
             </Stack>
           </BottomSheetModalProvider>
         ) : null}

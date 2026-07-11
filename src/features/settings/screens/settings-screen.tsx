@@ -1,7 +1,7 @@
 import type { ComponentType } from "react";
 import { useCallback, useRef, useState } from "react";
 
-import { Linking, ScrollView, Text, View } from "react-native";
+import { ScrollView, Text, View } from "react-native";
 
 import Constants from "expo-constants";
 import { type Href, router } from "expo-router";
@@ -19,6 +19,7 @@ import {
   CurrencyPickerSheet,
   type CurrencyPickerSheetRef,
 } from "@/features/settings/components/currency-picker-sheet";
+import { GetHelpSection } from "@/features/settings/components/get-help-section";
 import {
   SettingsCard,
   SettingsFooterText,
@@ -125,13 +126,6 @@ export function SettingsScreen() {
     setConversionTarget(null);
   }, [changeCurrency.isPending]);
 
-  const handleFeedbackPress = useCallback(() => {
-    selectionChange();
-    const subject = encodeURIComponent("Owed Feedback");
-    const body = encodeURIComponent(`App version: ${appVersion}\n\n`);
-    void Linking.openURL(`mailto:?subject=${subject}&body=${body}`);
-  }, []);
-
   return (
     <BottomSheetModalProvider>
       <TabScreen>
@@ -181,13 +175,7 @@ export function SettingsScreen() {
             </SettingsCard>
           </SettingsSection>
 
-          <SettingsSection title="About">
-            <SettingsCard>
-              <SettingsNavRow icon="💬" label="Send Feedback" onPress={handleFeedbackPress} />
-            </SettingsCard>
-          </SettingsSection>
-
-          <SettingsFooterText>Owed {appVersion}</SettingsFooterText>
+          <GetHelpSection />
 
           {DevToolsSection ? <DevToolsSection /> : null}
         </ScrollView>

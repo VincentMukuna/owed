@@ -35,18 +35,17 @@ export function SettingsCard({ children }: SettingsCardProps) {
 
 type SettingsRowShellProps = {
   icon?: string;
+  leading?: ReactNode;
   bordered?: boolean;
   children: ReactNode;
 };
 
-function SettingsRowShell({ icon, bordered = false, children }: SettingsRowShellProps) {
+function SettingsRowShell({ icon, leading, bordered = false, children }: SettingsRowShellProps) {
+  const iconContent = leading ?? (icon ? <Text style={styles.icon}>{icon}</Text> : null);
+
   return (
     <View style={styles.row}>
-      {icon ? (
-        <View style={styles.iconColumn}>
-          <Text style={styles.icon}>{icon}</Text>
-        </View>
-      ) : null}
+      {iconContent ? <View style={styles.iconColumn}>{iconContent}</View> : null}
       <View style={styles.rowBody}>
         {bordered ? <ListInsetDivider trailingInset={ROW_HORIZONTAL_PADDING} /> : null}
         <View style={styles.rowBodyContent}>{children}</View>
@@ -57,6 +56,7 @@ function SettingsRowShell({ icon, bordered = false, children }: SettingsRowShell
 
 type SettingsNavRowProps = {
   icon?: string;
+  leading?: ReactNode;
   label: string;
   value?: string;
   disabled?: boolean;
@@ -68,6 +68,7 @@ type SettingsNavRowProps = {
 
 export function SettingsNavRow({
   icon,
+  leading,
   label,
   value,
   disabled = false,
@@ -79,8 +80,12 @@ export function SettingsNavRow({
   const { theme } = useUnistyles();
 
   return (
-    <PressableScale disabled={disabled} onPress={onPress} style={disabled && styles.rowDisabled}>
-      <SettingsRowShell bordered={bordered} icon={icon}>
+    <PressableScale
+      disabled={disabled}
+      onPress={onPress}
+      style={[styles.pressableRow, disabled && styles.rowDisabled]}
+    >
+      <SettingsRowShell bordered={bordered} icon={icon} leading={leading}>
         <View style={styles.rowContent}>
           <Text numberOfLines={1} style={[styles.label, danger && styles.dangerLabel]}>
             {label}
@@ -107,6 +112,7 @@ export function SettingsNavRow({
 
 type SettingsDetailRowProps = {
   icon?: string;
+  leading?: ReactNode;
   label: string;
   description?: string;
   value?: string;
@@ -117,6 +123,7 @@ type SettingsDetailRowProps = {
 
 export function SettingsDetailRow({
   icon,
+  leading,
   label,
   description,
   value,
@@ -127,7 +134,7 @@ export function SettingsDetailRow({
   const { theme } = useUnistyles();
 
   const content = (
-    <SettingsRowShell bordered={bordered} icon={icon}>
+    <SettingsRowShell bordered={bordered} icon={icon} leading={leading}>
       <View style={styles.rowContent}>
         <View style={styles.detailCopy}>
           <Text numberOfLines={1} style={styles.label}>
@@ -159,7 +166,11 @@ export function SettingsDetailRow({
     return content;
   }
 
-  return <PressableScale onPress={onPress}>{content}</PressableScale>;
+  return (
+    <PressableScale onPress={onPress} style={styles.pressableRow}>
+      {content}
+    </PressableScale>
+  );
 }
 
 type SettingsTrailingRowProps = {
@@ -228,6 +239,9 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: "row",
     alignItems: "stretch",
     paddingLeft: ROW_HORIZONTAL_PADDING,
+  },
+  pressableRow: {
+    alignSelf: "stretch",
   },
   rowDisabled: {
     opacity: 0.6,

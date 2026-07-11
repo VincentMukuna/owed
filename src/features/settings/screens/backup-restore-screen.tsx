@@ -16,7 +16,6 @@ import {
 import { useUiStore } from "@/features/debts/store/ui-store";
 import {
   SettingsCard,
-  SettingsDetailRow,
   SettingsHelperText,
   SettingsNavRow,
   SettingsSection,
@@ -26,6 +25,9 @@ import { selectionChange } from "@/lib/haptics";
 
 const backups = createBackupClient();
 const backupStore = createBackupStore();
+
+const BACKUP_FOOTER =
+  "Export a copy of your debts, people, and payments, or restore from a saved file.";
 
 export function BackupRestoreScreen() {
   const resetDatabase = useResetDatabase();
@@ -144,28 +146,26 @@ export function BackupRestoreScreen() {
 
       <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
         <SettingsSection>
-          <SettingsHelperText>
-            Export a copy of your debts, people, and payments, or restore from a saved file.
-          </SettingsHelperText>
           <SettingsCard>
-            <SettingsDetailRow
-              description="Save a copy of your debts to Files or cloud storage"
-              label="Export Backup"
+            <SettingsNavRow
+              busyLabel={backupBusy ? "Creating…" : undefined}
+              disabled={backupBusy}
+              label="Backup"
               onPress={() => {
                 void handleBackupPress();
               }}
-              value={backupBusy ? "Creating…" : undefined}
             />
-            <SettingsDetailRow
+            <SettingsNavRow
               bordered
-              description="Replace this device's data with a saved backup file"
-              label="Restore Backup"
+              busyLabel={restoreBusy ? "Restoring…" : undefined}
+              disabled={restoreBusy}
+              label="Restore"
               onPress={() => {
                 void handleRestorePress();
               }}
-              value={restoreBusy ? "Restoring…" : undefined}
             />
           </SettingsCard>
+          <SettingsHelperText>{BACKUP_FOOTER}</SettingsHelperText>
         </SettingsSection>
 
         <SettingsSection title="Danger Zone">
