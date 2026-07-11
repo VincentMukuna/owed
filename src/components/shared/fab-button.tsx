@@ -10,7 +10,10 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { PressableScale } from "@/components/shared/pressable-scale";
 
 const TAB_BAR_HEIGHT = Platform.OS === "ios" ? 49 : 56;
-const FAB_GAP = 10;
+const FAB_SIZE = Platform.OS === "ios" ? 50 : 56;
+const FAB_GAP = 16;
+const FAB_BOTTOM_INSET_ESTIMATE = Platform.OS === "ios" ? 34 : 16;
+const FAB_LIST_CLEARANCE = 18;
 
 type FabButtonProps = {
   onPress?: () => void;
@@ -84,8 +87,8 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.fab,
   },
   fabIos: {
-    width: 50,
-    height: 50,
+    width: FAB_SIZE,
+    height: FAB_SIZE,
     borderRadius: 25,
   },
   fabAndroid: {
@@ -105,4 +108,5 @@ const styles = StyleSheet.create((theme) => ({
 }));
 
 /** Extra scroll padding so list content clears the FAB. */
-export const FAB_SCROLL_PADDING = 88;
+export const FAB_SCROLL_PADDING =
+  TAB_BAR_HEIGHT + FAB_BOTTOM_INSET_ESTIMATE + FAB_GAP + FAB_SIZE + FAB_LIST_CLEARANCE;

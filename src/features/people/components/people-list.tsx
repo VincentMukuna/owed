@@ -4,13 +4,12 @@ import { RefreshControl, type RefreshControlProps } from "react-native";
 
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 
-import {
-  LIST_LEADING_INSET_AVATAR_MD,
-  ListRowContainer,
-} from "@/components/shared/list-inset-divider";
+import { ListRowContainer } from "@/components/shared/list-inset-divider";
 
 import type { PersonListItemView } from "../view-models";
 import { PersonCard } from "./person-card";
+
+const PEOPLE_LIST_TEXT_INSET = 54;
 
 type PeopleListProps = {
   people: PersonListItemView[];
@@ -35,7 +34,7 @@ const PeopleListInner = forwardRef<FlashListRef<PersonListItemView>, PeopleListP
   ) => {
     const renderItem = useCallback(
       ({ item, index }: { item: PersonListItemView; index: number }) => (
-        <ListRowContainer leadingInset={LIST_LEADING_INSET_AVATAR_MD} showDivider={index > 0}>
+        <ListRowContainer leadingInset={PEOPLE_LIST_TEXT_INSET} showDivider={index > 0}>
           <PersonCard person={item} onPress={() => onPersonPress(item.id)} />
         </ListRowContainer>
       ),

@@ -92,12 +92,12 @@ PersonCard.displayName = "PersonCard";
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    paddingVertical: 11,
+    paddingVertical: 12,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 14,
   },
   avatar: {
     width: 40,
@@ -119,12 +119,12 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    gap: 12,
+    gap: 14,
   },
   meta: {
     flex: 1,
     minWidth: 0,
-    gap: 2,
+    gap: 3,
   },
   name: {
     fontSize: 15,

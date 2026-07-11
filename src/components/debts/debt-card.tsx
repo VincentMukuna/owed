@@ -22,13 +22,7 @@ type DebtCardProps = {
 };
 
 export const DebtCard = memo(
-  ({
-    debt,
-    onPress,
-    onAction,
-    showDirectionCue = false,
-    style,
-  }: DebtCardProps) => {
+  ({ debt, onPress, onAction, showDirectionCue = false, style }: DebtCardProps) => {
     const { theme } = useUnistyles();
     const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
     const DirectionIcon = debt.direction === "they_owe_me" ? ArrowDownLeft : ArrowUpRight;
@@ -77,9 +71,7 @@ export const DebtCard = memo(
                 </Text>
                 <View style={styles.dueRow}>
                   <Text style={styles.dueDate} numberOfLines={1}>
-                    {debt.status === "paid"
-                      ? formatPaidWhen(debt.lastPaymentAt)
-                      : debt.dueDate}
+                    {debt.status === "paid" ? formatPaidWhen(debt.lastPaymentAt) : debt.dueDate}
                   </Text>
                 </View>
               </View>
@@ -121,12 +113,12 @@ function formatPaidWhen(lastPaymentAt?: string): string {
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    paddingVertical: 10,
+    paddingVertical: 12,
   },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 12,
+    gap: 14,
   },
   body: {
     flex: 1,
@@ -136,7 +128,7 @@ const styles = StyleSheet.create((theme) => ({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
-    gap: 10,
+    gap: 12,
   },
   meta: {
     flex: 1,
@@ -164,7 +156,7 @@ const styles = StyleSheet.create((theme) => ({
   amountCol: {
     alignItems: "flex-end",
     flexShrink: 0,
-    maxWidth: "45%",
+    maxWidth: "42%",
   },
   amount: {
     fontSize: 16,
