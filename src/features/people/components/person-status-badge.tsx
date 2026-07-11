@@ -4,28 +4,14 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PERSON_STATUS_LABELS, type PersonStatus } from "../lib/person-status";
 
-type PilledStatus = "overdue" | "due-soon" | "settled";
+type PilledStatus = "due-soon" | "settled";
 
 function hasPill(status: PersonStatus): status is PilledStatus {
-  return status === "overdue" || status === "due-soon" || status === "settled";
+  return status === "due-soon" || status === "settled";
 }
 
-function formatBadgeLabel(status: PilledStatus, overdueCount?: number): string {
-  if (status === "overdue" && overdueCount && overdueCount > 0) {
-    const countLabel = overdueCount >= 10 ? "9+" : String(overdueCount);
-    return `${countLabel} Overdue`;
-  }
-  return PERSON_STATUS_LABELS[status];
-}
-
-/** Calm, relationship-first pill. Active and debt-less people show no pill. */
-export function PersonStatusBadge({
-  status,
-  overdueCount,
-}: {
-  status: PersonStatus;
-  overdueCount?: number;
-}) {
+/** Calm, relationship-first pill. Overdue is shown per promise instead. */
+export function PersonStatusBadge({ status }: { status: PersonStatus }) {
   const { theme } = useUnistyles();
 
   if (!hasPill(status)) {
@@ -36,9 +22,7 @@ export function PersonStatusBadge({
 
   return (
     <View style={[styles.badge, { backgroundColor: config.bg }]}>
-      <Text style={[styles.label, { color: config.text }]}>
-        {formatBadgeLabel(status, overdueCount)}
-      </Text>
+      <Text style={[styles.label, { color: config.text }]}>{PERSON_STATUS_LABELS[status]}</Text>
     </View>
   );
 }

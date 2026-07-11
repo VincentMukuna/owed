@@ -1,38 +1,35 @@
-import { type ReactNode, useCallback, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 
+import { LinearGradient } from "expo-linear-gradient";
 import { type Href, Stack, router } from "expo-router";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useQueryClient } from "@tanstack/react-query";
-import { ChevronDown, ChevronUp, Receipt, Wallet } from "lucide-react-native";
+import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
-import { ActivityRow } from "@/components/activity/activity-list";
-import { DebtCard } from "@/components/debts/debt-card";
-import {
-  LIST_LEADING_INSET_AVATAR_MD,
-  LIST_LEADING_INSET_ICON_MD,
-  ListRowContainer,
-} from "@/components/shared/list-inset-divider";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { DetailScreenSkeleton } from "@/components/ui/screen-skeletons";
-import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
+import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
 import {
   RecordPaymentSheet,
   type RecordPaymentSheetRef,
 } from "@/features/debts/components/record-payment-sheet";
+import { formatRelativeDay, toISODate } from "@/features/debts/lib/format-dates";
 import { peopleKeys } from "@/features/debts/hooks/query-keys";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
-import type { DebtCardView } from "@/features/debts/view-models";
+import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
+import type { ActivityView, DebtCardView } from "@/features/debts/view-models";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
+import { selectionChange } from "@/lib/haptics";
 import { LOADING_DETAIL_HEADER_OPTIONS } from "@/lib/navigation/stack-options";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
+import type { DebtDirection } from "@/types";
 
-import { PersonStatusBadge } from "../components/person-status-badge";
 import { usePersonDetail } from "../hooks/use-person-detail";
 import type { PersonDetailView } from "../view-models";
 
@@ -46,10 +43,9 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   const queryClient = useQueryClient();
   const archiveDebt = useArchiveDebt();
   const { data: person, isPending } = usePersonDetail(personId);
-  const [debtsExpanded, setDebtsExpanded] = useState(true);
-  const [paymentsExpanded, setPaymentsExpanded] = useState(true);
   const paymentSheetRef = useRef<RecordPaymentSheetRef>(null);
   const [paymentDebt, setPaymentDebt] = useState<DebtCardView | null>(null);
+  const [directionFilter, setDirectionFilter] = useState<DebtDirection | null>(null);
 
   const handleRefresh = useCallback(
     () => queryClient.invalidateQueries({ queryKey: peopleKeys.detail(personId) }),
@@ -111,6 +107,14 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   };
 
   const hasDetails = Boolean(person.phoneNumber) || Boolean(person.notes);
+  const filteredDebts = directionFilter
+    ? person.debts.filter((debt) => debt.direction === directionFilter)
+    : person.debts;
+
+  const handleDirectionPress = (direction: DebtDirection) => {
+    selectionChange();
+    setDirectionFilter((current) => (current === direction ? null : direction));
+  };
 
   return (
     <>
@@ -131,19 +135,22 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
             refreshControl={<RefreshControl {...refreshControlProps} />}
             showsVerticalScrollIndicator={false}
           >
-            <PersonSummary person={person} />
+            <PersonOverview
+              onDirectionPress={handleDirectionPress}
+              person={person}
+              selectedDirection={directionFilter}
+            />
 
             {hasDetails ? (
-              <View style={styles.card}>
-                <Text style={styles.cardLabel}>Details</Text>
+              <View style={styles.detailsSection}>
                 {person.phoneNumber ? (
-                  <View style={styles.detailRow}>
+                  <View>
                     <Text style={styles.detailKey}>Phone</Text>
                     <Text style={styles.detailValue}>{person.phoneNumber}</Text>
                   </View>
                 ) : null}
                 {person.notes ? (
-                  <View style={styles.detailRow}>
+                  <View>
                     <Text style={styles.detailKey}>Notes</Text>
                     <Text style={[styles.detailValue, styles.detailNotes]}>{person.notes}</Text>
                   </View>
@@ -151,71 +158,63 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
               </View>
             ) : null}
 
-            <CollapsibleSection
-              count={person.debts.length}
-              expanded={debtsExpanded}
-              onToggle={() => setDebtsExpanded((value) => !value)}
-              title="Promises"
-            >
-              {person.debts.length > 0 ? (
-                <View style={styles.cards}>
-                  {person.debts.map((debt, index) => (
-                    <ListRowContainer
-                      key={debt.id}
-                      leadingInset={LIST_LEADING_INSET_AVATAR_MD}
-                      showDivider={index > 0}
-                    >
-                      <DebtCard
-                        debt={debt}
-                        onAction={handleDebtAction}
-                        onPress={() => openDebt(debt.id)}
-                        showDirectionCue
-                      />
-                    </ListRowContainer>
-                  ))}
-                </View>
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>
+                Promises ({filteredDebts.length}
+                {directionFilter && filteredDebts.length !== person.debts.length
+                  ? ` of ${person.debts.length}`
+                  : ""}
+                )
+              </Text>
+              {filteredDebts.length > 0 ? (
+                filteredDebts.map((debt, index) => (
+                  <PromiseRow
+                    key={debt.id}
+                    debt={debt}
+                    onAction={handleDebtAction}
+                    onPress={() => openDebt(debt.id)}
+                    showBorder={index > 0}
+                  />
+                ))
+              ) : person.debts.length > 0 ? (
+                <Text style={styles.emptyCopy}>
+                  {directionFilter === "they_owe_me"
+                    ? `Nothing ${firstName} owes you right now.`
+                    : `Nothing you owe ${firstName} right now.`}
+                </Text>
               ) : (
-                <SectionEmpty
-                  copy={`Add the first promise between you and ${firstName}.`}
-                  icon={<Wallet color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
-                  title="No promises yet"
-                />
+                <Text style={styles.emptyCopy}>
+                  Add the first promise between you and {firstName}.
+                </Text>
               )}
-            </CollapsibleSection>
+            </View>
 
-            <CollapsibleSection
-              count={person.payments.length}
-              expanded={paymentsExpanded}
-              onToggle={() => setPaymentsExpanded((value) => !value)}
-              title="Payment history"
-            >
+            <View style={styles.lastSection}>
+              <Text style={styles.sectionLabel}>Payment history ({person.payments.length})</Text>
               {person.payments.length > 0 ? (
-                <View>
-                  {person.payments.map((payment, index) => (
-                    <ListRowContainer
-                      key={payment.id}
-                      leadingInset={LIST_LEADING_INSET_ICON_MD}
-                      showDivider={index > 0}
-                    >
-                      <ActivityRow activity={payment} />
-                    </ListRowContainer>
-                  ))}
-                </View>
+                person.payments.map((payment, index) => (
+                  <PaymentRow
+                    key={payment.id}
+                    activity={payment}
+                    showBorder={index > 0}
+                  />
+                ))
               ) : (
-                <SectionEmpty
-                  copy={`Payments between you and ${firstName} will show up here.`}
-                  icon={<Receipt color={theme.colors.mutedLight} size={20} strokeWidth={1.5} />}
-                  title="No payments yet"
-                />
+                <Text style={styles.emptyCopy}>
+                  Payments between you and {firstName} will show up here.
+                </Text>
               )}
-            </CollapsibleSection>
+            </View>
           </ScrollView>
 
-          <View style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}>
+          <LinearGradient
+            colors={theme.colors.footerGradient}
+            style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
+          >
             <PressableScale onPress={openAddDebt} style={styles.primaryBtn}>
               <Text style={styles.primaryBtnText}>Add promise for {firstName}</Text>
             </PressableScale>
-          </View>
+          </LinearGradient>
         </View>
         <RecordPaymentSheet ref={paymentSheetRef} debt={paymentDebt} />
       </BottomSheetModalProvider>
@@ -223,77 +222,170 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   );
 }
 
-function PersonSummary({ person }: { person: PersonDetailView }) {
-  const promiseCount = person.openDebtCount;
-  const supporting =
-    person.status === "none"
-      ? "No debts yet"
-      : person.status === "settled"
-        ? "All settled up"
-        : `Across ${promiseCount} active ${promiseCount === 1 ? "promise" : "promises"}`;
+function formatAcrossCaption(count: number): string {
+  const label = count >= 10 ? "9+" : String(count);
+  return `across ${label} ${count === 1 ? "promise" : "promises"}`;
+}
 
+function StatColumn({
+  label,
+  amount,
+  count,
+  selected,
+  onPress,
+}: {
+  label: string;
+  amount: string;
+  count: number;
+  selected: boolean;
+  onPress: () => void;
+}) {
   return (
-    <View style={styles.summaryCard}>
-      <View style={styles.summaryTop}>
-        <Text style={styles.summaryHint}>Total unsettled</Text>
-        <PersonStatusBadge overdueCount={person.overdueCount} status={person.status} />
-      </View>
-      <Text style={styles.summaryAmount}>{formatCurrency(person.outstanding)}</Text>
-      <Text style={styles.summarySupport}>{supporting}</Text>
-      <View style={styles.directionBreakdown}>
-        <View>
-          <Text style={styles.summaryFooterLabel}>Owed to you</Text>
-          <Text style={styles.summaryFooterValue}>{formatCurrency(person.owedToYou)}</Text>
-        </View>
-        <View>
-          <Text style={styles.summaryFooterLabel}>You owe</Text>
-          <Text style={styles.summaryFooterValue}>{formatCurrency(person.youOwe)}</Text>
-        </View>
-      </View>
+    <PressableScale
+      onPress={onPress}
+      style={[styles.statColumn, selected && styles.statColumnSelected]}
+    >
+      <Text style={styles.balanceLabel}>{label}</Text>
+      <Text
+        adjustsFontSizeToFit
+        minimumFontScale={0.75}
+        numberOfLines={1}
+        style={styles.balanceAmount}
+      >
+        {amount}
+      </Text>
+      <Text style={styles.balanceCaption}>{formatAcrossCaption(count)}</Text>
+    </PressableScale>
+  );
+}
+
+function PersonOverview({
+  person,
+  selectedDirection,
+  onDirectionPress,
+}: {
+  person: PersonDetailView;
+  selectedDirection: DebtDirection | null;
+  onDirectionPress: (direction: DebtDirection) => void;
+}) {
+  return (
+    <View style={styles.statsStrip}>
+      <StatColumn
+        amount={formatCurrency(person.owedToYou)}
+        count={person.owedToYouOpenCount}
+        label="They owe"
+        onPress={() => onDirectionPress("they_owe_me")}
+        selected={selectedDirection === "they_owe_me"}
+      />
+      <View style={styles.statsDivider} />
+      <StatColumn
+        amount={formatCurrency(person.youOwe)}
+        count={person.youOweOpenCount}
+        label="You owe"
+        onPress={() => onDirectionPress("i_owe_them")}
+        selected={selectedDirection === "i_owe_them"}
+      />
     </View>
   );
 }
 
-function CollapsibleSection({
-  title,
-  count,
-  expanded,
-  onToggle,
-  children,
+function OverdueBadge() {
+  const { theme } = useUnistyles();
+  const colors = theme.colors.status.overdue;
+
+  return (
+    <View style={[styles.overdueBadge, { backgroundColor: colors.bg }]}>
+      <Text style={[styles.overdueBadgeText, { color: colors.text }]}>
+        {DEBT_STATUS_LABELS.overdue}
+      </Text>
+    </View>
+  );
+}
+
+function PromiseRow({
+  debt,
+  onPress,
+  onAction,
+  showBorder,
 }: {
-  title: string;
-  count: number;
-  expanded: boolean;
-  onToggle: () => void;
-  children: ReactNode;
+  debt: DebtCardView;
+  onPress: () => void;
+  onAction: (action: DebtAction, debt: DebtCardView) => void;
+  showBorder: boolean;
 }) {
   const { theme } = useUnistyles();
+  const isUserOwed = debt.direction === "they_owe_me";
+  const DirectionIcon = isUserOwed ? ArrowDownLeft : ArrowUpRight;
+  const directionColor = isUserOwed ? theme.colors.success : theme.colors.danger;
+  const isPaid = debt.status === "paid";
+  const amount = formatCurrency(isPaid ? debt.amount : debt.remaining, debt.currency);
+  const dueLabel = isPaid ? formatPaidWhen(debt.lastPaymentAt) : debt.dueDate;
+
+  const row = (
+    <PressableScale onPress={onPress} style={[styles.promiseRow, showBorder && styles.rowBorder]}>
+      <View style={styles.promiseMain}>
+        <View style={styles.promiseLeft}>
+          <View style={styles.promiseTitleRow}>
+            <DirectionIcon color={directionColor} size={14} strokeWidth={2.3} />
+            <Text numberOfLines={1} style={styles.promiseReason}>
+              {debt.reason || "No reason"}
+            </Text>
+            {isPromiseOverdue(debt) ? <OverdueBadge /> : null}
+          </View>
+          <Text style={styles.promiseDue}>{dueLabel}</Text>
+        </View>
+        <Text style={styles.promiseAmount}>{amount}</Text>
+      </View>
+    </PressableScale>
+  );
 
   return (
-    <View style={styles.section}>
-      <PressableScale hitSlop={8} onPress={onToggle} style={styles.sectionHeaderRow}>
-        <Text style={styles.sectionLabel}>
-          {title} ({count})
-        </Text>
-        {expanded ? (
-          <ChevronUp color={theme.colors.muted} size={16} strokeWidth={2} />
-        ) : (
-          <ChevronDown color={theme.colors.muted} size={16} strokeWidth={2} />
-        )}
-      </PressableScale>
-      {expanded ? children : null}
+    <DebtActionsMenu debt={debt} onAction={onAction} openOnLongPress>
+      {row}
+    </DebtActionsMenu>
+  );
+}
+
+function PaymentRow({
+  activity,
+  showBorder,
+}: {
+  activity: ActivityView;
+  showBorder: boolean;
+}) {
+  return (
+    <View style={[styles.paymentRow, showBorder && styles.rowBorder]}>
+      <View style={styles.paymentMain}>
+        <Text style={styles.paymentText}>{activity.text}</Text>
+        <Text style={styles.paymentTime}>{activity.time}</Text>
+      </View>
+      {activity.sub ? <Text style={styles.paymentSub}>{activity.sub}</Text> : null}
     </View>
   );
 }
 
-function SectionEmpty({ icon, title, copy }: { icon: ReactNode; title: string; copy: string }) {
-  return (
-    <View style={styles.sectionEmpty}>
-      <View style={styles.sectionEmptyIcon}>{icon}</View>
-      <Text style={styles.sectionEmptyTitle}>{title}</Text>
-      <Text style={styles.sectionEmptyCopy}>{copy}</Text>
-    </View>
-  );
+function isPromiseOverdue(debt: DebtCardView): boolean {
+  if (debt.status === "paid" || debt.remaining <= 0) {
+    return false;
+  }
+
+  return debt.dueDateISO < toISODate(new Date());
+}
+
+function formatPaidWhen(lastPaymentAt?: string): string {
+  if (!lastPaymentAt) {
+    return "Paid";
+  }
+
+  const when = formatRelativeDay(lastPaymentAt);
+  if (when === "Today") {
+    return "Paid today";
+  }
+  if (when === "Yesterday") {
+    return "Paid yesterday";
+  }
+
+  return `Paid ${when}`;
 }
 
 const styles = StyleSheet.create((theme) => ({
@@ -319,133 +411,180 @@ const styles = StyleSheet.create((theme) => ({
   },
   content: {
     paddingHorizontal: 20,
-    paddingTop: 8,
-    gap: 14,
+    paddingTop: 16,
+    gap: 28,
   },
-  summaryCard: {
-    backgroundColor: theme.colors.card,
+  statsStrip: {
+    flexDirection: "row",
+    alignItems: "stretch",
     borderRadius: 16,
-    padding: 20,
+    paddingVertical: 16,
+    paddingHorizontal: 16,
+    backgroundColor: theme.name === "light" ? theme.colors.card : theme.colors.surfaceMuted,
+    ...(theme.name === "light"
+      ? {
+          borderWidth: 1,
+          borderColor: theme.colors.borderStrong,
+        }
+      : null),
+  },
+  statColumn: {
+    flex: 1,
+    minWidth: 0,
+    gap: 4,
+    borderRadius: 10,
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+  },
+  statColumnSelected: {
+    backgroundColor: theme.name === "light" ? theme.colors.surface : theme.colors.card,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
-    shadowRadius: theme.name === "light" ? 1.5 : 2,
-    elevation: theme.name === "light" ? 0 : 1,
+    borderColor: theme.name === "light" ? theme.colors.borderStrong : theme.colors.border,
   },
-  summaryTop: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  statsDivider: {
+    width: 1,
+    alignSelf: "stretch",
+    marginHorizontal: 12,
+    backgroundColor: theme.name === "light" ? theme.colors.listDivider : theme.colors.border,
+    opacity: theme.name === "light" ? 1 : 0.6,
   },
-  summaryHint: {
-    fontSize: 12,
-    color: theme.colors.mutedLight,
-    fontWeight: "500",
-  },
-  summaryAmount: {
-    fontSize: 34,
-    fontWeight: "700",
-    color: theme.colors.text,
-    lineHeight: 36,
-    marginTop: 6,
-    fontVariant: ["tabular-nums"],
-  },
-  summarySupport: {
-    fontSize: 13,
-    color: theme.colors.muted,
-    marginTop: 4,
-  },
-  directionBreakdown: {
-    flexDirection: "row",
-    gap: 20,
-    marginTop: 16,
-  },
-  summaryFooterLabel: {
-    fontSize: 11,
-    color: theme.colors.mutedLight,
-    fontWeight: "500",
-  },
-  summaryFooterValue: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: theme.colors.text,
-    marginTop: 2,
-    fontVariant: ["tabular-nums"],
-  },
-  card: {
-    paddingBottom: 20,
-    borderBottomWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  cardLabel: {
-    fontSize: 11,
-    fontWeight: "700",
-    color: theme.colors.muted,
-    textTransform: "uppercase",
-    letterSpacing: 1.6,
-  },
-  detailRow: {
-    marginTop: 14,
-  },
-  detailKey: {
+  balanceLabel: {
     fontSize: 11,
     fontWeight: "600",
-    color: theme.colors.muted,
+    color: theme.colors.mutedLight,
     textTransform: "uppercase",
-    letterSpacing: 1,
+    letterSpacing: 1.2,
   },
-  detailValue: {
-    fontSize: 14,
+  balanceAmount: {
+    fontSize: 28,
+    fontWeight: "600",
+    lineHeight: 32,
     color: theme.colors.text,
-    marginTop: 4,
+    fontVariant: ["tabular-nums"],
   },
-  detailNotes: {
-    lineHeight: 20,
+  balanceCaption: {
+    fontSize: 11,
+    color: theme.colors.mutedLight,
+    lineHeight: 14,
+    marginTop: 4,
   },
   section: {
-    gap: 10,
+    paddingBottom: 24,
   },
-  sectionHeaderRow: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
+  lastSection: {
+    paddingBottom: 8,
   },
   sectionLabel: {
     fontSize: 11,
     fontWeight: "600",
-    color: theme.colors.muted,
+    color: theme.colors.mutedLight,
     textTransform: "uppercase",
-    letterSpacing: 1.6,
-  },
-  cards: {
-    gap: 0,
-  },
-  sectionEmpty: {
-    alignItems: "center",
-    paddingVertical: 28,
-    paddingHorizontal: 24,
-  },
-  sectionEmptyIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 16,
-    backgroundColor: theme.colors.surface,
-    alignItems: "center",
-    justifyContent: "center",
+    letterSpacing: 1.2,
     marginBottom: 12,
   },
-  sectionEmptyTitle: {
-    fontSize: 14,
-    fontWeight: "600",
-    color: theme.colors.icon,
+  detailsSection: {
+    gap: 8,
   },
-  sectionEmptyCopy: {
-    fontSize: 12,
+  detailKey: {
+    fontSize: 11,
+    fontWeight: "600",
     color: theme.colors.mutedLight,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  detailValue: {
+    fontSize: 15,
+    color: theme.colors.text,
     marginTop: 4,
-    textAlign: "center",
+    lineHeight: 22,
+  },
+  detailNotes: {
+    lineHeight: 22,
+  },
+  promiseRow: {
+    paddingVertical: 12,
+  },
+  promiseMain: {
+    flexDirection: "row",
+    alignItems: "flex-start",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  promiseLeft: {
+    flex: 1,
+    minWidth: 0,
+    gap: 4,
+  },
+  promiseTitleRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+    minWidth: 0,
+    minHeight: 20,
+  },
+  promiseReason: {
+    flexShrink: 1,
+    fontSize: 15,
+    fontWeight: "600",
+    color: theme.colors.text,
+    lineHeight: 20,
+  },
+  overdueBadge: {
+    flexShrink: 0,
+    alignSelf: "center",
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 999,
+  },
+  overdueBadgeText: {
+    fontSize: 10,
+    fontWeight: "600",
+    lineHeight: 12,
+  },
+  promiseDue: {
+    fontSize: 13,
+    color: theme.colors.mutedLight,
+    marginLeft: 20,
+  },
+  promiseAmount: {
+    fontSize: 15,
+    fontWeight: "600",
+    color: theme.colors.text,
+    fontVariant: ["tabular-nums"],
+  },
+  paymentRow: {
+    paddingVertical: 12,
+  },
+  paymentMain: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "baseline",
+    gap: 12,
+  },
+  paymentText: {
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "600",
+    color: theme.colors.text,
+  },
+  paymentTime: {
+    fontSize: 13,
+    color: theme.colors.mutedLight,
+  },
+  paymentSub: {
+    fontSize: 13,
+    color: theme.colors.muted,
+    marginTop: 2,
+  },
+  rowBorder: {
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
+  },
+  emptyCopy: {
+    fontSize: 14,
+    color: theme.colors.muted,
+    lineHeight: 20,
+    paddingTop: 4,
   },
   footer: {
     position: "absolute",
@@ -454,7 +593,6 @@ const styles = StyleSheet.create((theme) => ({
     bottom: 0,
     paddingHorizontal: 20,
     paddingTop: 20,
-    backgroundColor: theme.colors.background,
   },
   primaryBtn: {
     backgroundColor: theme.colors.primary,
