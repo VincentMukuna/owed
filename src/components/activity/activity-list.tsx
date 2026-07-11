@@ -5,6 +5,10 @@ import { RefreshControl, type RefreshControlProps, Text, View } from "react-nati
 import { FlashList } from "@shopify/flash-list";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
+import {
+  LIST_LEADING_INSET_ICON_MD,
+  ListRowContainer,
+} from "@/components/shared/list-inset-divider";
 import type { ActivityView } from "@/features/debts/view-models";
 
 const TYPE_SYMBOL: Record<ActivityView["type"], string> = {
@@ -43,7 +47,11 @@ ActivityRow.displayName = "ActivityRow";
 export const ActivityList = memo(
   ({ activities, contentContainerStyle, refreshControlProps }: ActivityListProps) => {
     const renderItem = useCallback(
-      ({ item }: { item: ActivityView }) => <ActivityRow activity={item} />,
+      ({ item, index }: { item: ActivityView; index: number }) => (
+        <ListRowContainer leadingInset={LIST_LEADING_INSET_ICON_MD} showDivider={index > 0}>
+          <ActivityRow activity={item} />
+        </ListRowContainer>
+      ),
       [],
     );
 
@@ -70,9 +78,7 @@ const styles = StyleSheet.create((theme) => ({
   row: {
     flexDirection: "row",
     gap: 14,
-    paddingVertical: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
+    paddingVertical: 12,
   },
   icon: {
     width: 32,

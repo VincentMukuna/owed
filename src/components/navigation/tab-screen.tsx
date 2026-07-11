@@ -3,7 +3,7 @@ import type { ReactNode } from "react";
 import { Platform, View, type ViewStyle } from "react-native";
 
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
-import { StyleSheet as UnistylesStyleSheet } from "react-native-unistyles";
+import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 export const TAB_BAR_HEIGHT = Platform.OS === "ios" ? 49 : 56;
 
@@ -19,17 +19,23 @@ type TabScreenProps = {
 };
 
 export function TabScreen({ children, style }: TabScreenProps) {
+  const { theme } = useUnistyles();
+
   return (
-    <SafeAreaView edges={["top", "left", "right"]} style={styles.safe}>
-      <View style={[styles.content, style]}>{children}</View>
+    <SafeAreaView
+      edges={["top", "left", "right"]}
+      style={[styles.safe, { backgroundColor: theme.colors.background }]}
+    >
+      <View style={[styles.content, style, { backgroundColor: theme.colors.background }]}>
+        {children}
+      </View>
     </SafeAreaView>
   );
 }
 
-const styles = UnistylesStyleSheet.create((theme) => ({
+const styles = StyleSheet.create(() => ({
   safe: {
     flex: 1,
-    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,

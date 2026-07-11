@@ -1,0 +1,106 @@
+{
+  "manifest": {
+    "format": "owed.backup",
+    "formatVersion": 1,
+    "backupId": "backup_populated",
+    "createdAt": "2026-07-10T12:00:00.000Z",
+    "producer": {
+      "appId": "com.vincentmukuna.owed",
+      "appVersion": "1.0.0",
+      "buildVersion": null,
+      "sdkVersion": "1.0.0"
+    },
+    "source": {
+      "databaseSchemaVersion": 5
+    },
+    "payload": {
+      "encoding": "json",
+      "hashAlgorithm": "sha256",
+      "hash": "fixture-hash",
+      "byteLength": 1911,
+      "counts": {
+        "people": 1,
+        "debts": 1,
+        "payments": 1,
+        "activityEvents": 1,
+        "reminders": 1
+      }
+    }
+  },
+  "payload": {
+    "people": [
+      {
+        "id": "person_1",
+        "name": "Avery Stone",
+        "phoneNumber": "+15551234567",
+        "notes": "Prefers weekday reminders",
+        "createdAt": "2026-07-01T09:00:00.000Z",
+        "updatedAt": "2026-07-01T09:00:00.000Z"
+      }
+    ],
+    "debts": [
+      {
+        "id": "debt_1",
+        "personId": "person_1",
+        "originalAmount": 25000,
+        "currency": "KES",
+        "reason": "Lunch and transport",
+        "dueDate": "2026-07-15",
+        "lentDate": "2026-07-01",
+        "reminderEnabled": true,
+        "reminderTime": "09:00",
+        "archivedAt": null,
+        "createdAt": "2026-07-01T09:05:00.000Z",
+        "updatedAt": "2026-07-01T09:05:00.000Z",
+        "direction": "they_owe_me"
+      }
+    ],
+    "payments": [
+      {
+        "id": "payment_1",
+        "debtId": "debt_1",
+        "amount": 5000,
+        "paidAt": "2026-07-05T10:00:00.000Z",
+        "note": "Partial payment",
+        "createdAt": "2026-07-05T10:00:00.000Z"
+      }
+    ],
+    "activityEvents": [
+      {
+        "id": "activity_1",
+        "type": "payment_recorded",
+        "debtId": "debt_1",
+        "paymentId": "payment_1",
+        "personId": "person_1",
+        "amount": 5000,
+        "occurredAt": "2026-07-05T10:00:00.000Z",
+        "createdAt": "2026-07-05T10:00:00.000Z"
+      }
+    ],
+    "reminders": [
+      {
+        "id": "reminder_1",
+        "debtId": "debt_1",
+        "type": "due",
+        "remindAt": "2026-07-15T09:00:00.000Z",
+        "status": "scheduled",
+        "readAt": null,
+        "createdAt": "2026-07-01T09:05:00.000Z",
+        "updatedAt": "2026-07-01T09:05:00.000Z",
+        "groupKey": "due:2026-07-15:KES",
+        "archivedAt": null
+      }
+    ],
+    "preferences": {
+      "settings": {
+        "defaultCurrency": "KES",
+        "themePreference": "dark",
+        "brandColorTheme": "default",
+        "defaultReminderTime": "09:00",
+        "overdueReminderEnabled": true,
+        "notificationsPermissionAsked": true
+      },
+      "onboardingComplete": true
+    }
+  }
+}

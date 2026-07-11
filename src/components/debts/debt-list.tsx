@@ -5,6 +5,10 @@ import { RefreshControl, type RefreshControlProps } from "react-native";
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 
 import { DebtCard } from "@/components/debts/debt-card";
+import {
+  LIST_LEADING_INSET_AVATAR_MD,
+  ListRowContainer,
+} from "@/components/shared/list-inset-divider";
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import type { DebtCardView } from "@/features/debts/view-models";
 
@@ -34,13 +38,15 @@ const DebtListInner = forwardRef<FlashListRef<DebtCardView>, DebtListProps>(
     ref,
   ) => {
     const renderItem = useCallback(
-      ({ item }: { item: DebtCardView }) => (
-        <DebtCard
-          debt={item}
-          onAction={onDebtAction}
-          onPress={() => onDebtPress(item.id)}
-          showDirectionCue={showDirectionCue}
-        />
+      ({ item, index }: { item: DebtCardView; index: number }) => (
+        <ListRowContainer leadingInset={LIST_LEADING_INSET_AVATAR_MD} showDivider={index > 0}>
+          <DebtCard
+            debt={item}
+            onAction={onDebtAction}
+            onPress={() => onDebtPress(item.id)}
+            showDirectionCue={showDirectionCue}
+          />
+        </ListRowContainer>
       ),
       [onDebtAction, onDebtPress, showDirectionCue],
     );

@@ -5,6 +5,7 @@ import { useRouter } from "expo-router";
 import { ChevronRight } from "lucide-react-native";
 import { StyleSheet } from "react-native-unistyles";
 
+import { ListInsetDivider } from "@/components/shared/list-inset-divider";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { selectionChange } from "@/lib/haptics";
 
@@ -35,22 +36,25 @@ function DevToolRow({
   onPress,
 }: DevToolRowProps) {
   return (
-    <PressableScale
-      accessibilityRole="button"
-      disabled={disabled}
-      onPress={onPress}
-      style={[styles.row, bordered && styles.rowBorder]}
-    >
-      <Text style={styles.icon}>{icon}</Text>
-      <View style={styles.rowCopy}>
-        <Text style={styles.label}>{title}</Text>
-        <Text style={styles.description}>{description}</Text>
-      </View>
-      <View style={styles.valueWrap}>
-        <Text style={styles.value}>{value}</Text>
-        <ChevronRight color={styles.chevron.color} size={16} strokeWidth={2} />
-      </View>
-    </PressableScale>
+    <View>
+      {bordered ? <ListInsetDivider leadingInset={44} trailingInset={16} /> : null}
+      <PressableScale
+        accessibilityRole="button"
+        disabled={disabled}
+        onPress={onPress}
+        style={styles.row}
+      >
+        <Text style={styles.icon}>{icon}</Text>
+        <View style={styles.rowCopy}>
+          <Text style={styles.label}>{title}</Text>
+          <Text style={styles.description}>{description}</Text>
+        </View>
+        <View style={styles.valueWrap}>
+          <Text style={styles.value}>{value}</Text>
+          <ChevronRight color={styles.chevron.color} size={16} strokeWidth={2} />
+        </View>
+      </PressableScale>
+    </View>
   );
 }
 
@@ -174,10 +178,6 @@ const styles = StyleSheet.create((theme) => ({
     gap: 12,
     paddingHorizontal: 16,
     paddingVertical: 16,
-  },
-  rowBorder: {
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
   },
   icon: {
     fontSize: 16,

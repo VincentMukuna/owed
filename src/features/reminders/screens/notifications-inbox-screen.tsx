@@ -9,6 +9,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Bell } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
+import {
+  LIST_LEADING_INSET_ICON_MD,
+  ListRowContainer,
+} from "@/components/shared/list-inset-divider";
 import { NotificationsScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { NotificationRow } from "@/features/reminders/components/notification-row";
 import { useMarkInboxRead } from "@/features/reminders/hooks/use-mark-inbox-read";
@@ -37,7 +41,11 @@ export function NotificationsInboxScreen() {
   }, []);
 
   const renderItem = useCallback(
-    ({ item }: { item: ReminderInboxView }) => <NotificationRow item={item} onPress={openDebt} />,
+    ({ item, index }: { item: ReminderInboxView; index: number }) => (
+      <ListRowContainer leadingInset={LIST_LEADING_INSET_ICON_MD} showDivider={index > 0}>
+        <NotificationRow item={item} onPress={openDebt} />
+      </ListRowContainer>
+    ),
     [openDebt],
   );
 

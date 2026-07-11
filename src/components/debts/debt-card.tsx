@@ -120,9 +120,7 @@ DebtCard.displayName = "DebtCard";
 
 const styles = StyleSheet.create((theme) => ({
   card: {
-    paddingVertical: 12,
-    borderColor: theme.colors.border,
-    borderBottomWidth: 1,
+    paddingVertical: 10,
   },
   row: {
     flexDirection: "row",

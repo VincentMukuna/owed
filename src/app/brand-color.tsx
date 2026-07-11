@@ -1,1 +1,5 @@
-export { BrandColorScreen as default } from "@/features/settings/screens/brand-color-screen";
+import { Redirect } from "expo-router";
+
+export default function BrandColorRedirect() {
+  return <Redirect href="/appearance" />;
+}

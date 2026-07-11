@@ -14,6 +14,10 @@ import { ActivityRow } from "@/components/activity/activity-list";
 import { SummaryStatCard } from "@/components/debts/summary-stat-card";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
+import {
+  LIST_LEADING_INSET_ICON_MD,
+  ListRowContainer,
+} from "@/components/shared/list-inset-divider";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { HomeScreenSkeleton } from "@/components/ui/screen-skeletons";
 import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
@@ -236,8 +240,14 @@ export function HomeScreen() {
           <Text style={styles.seeAll}>See all</Text>
         </PressableScale>
         <View>
-          {recentActivity.map((activity) => (
-            <ActivityRow key={activity.id} activity={activity} />
+          {recentActivity.map((activity, index) => (
+            <ListRowContainer
+              key={activity.id}
+              leadingInset={LIST_LEADING_INSET_ICON_MD}
+              showDivider={index > 0}
+            >
+              <ActivityRow activity={activity} />
+            </ListRowContainer>
           ))}
         </View>
       </View>
