@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 import { NativeTabs } from "expo-router/unstable-native-tabs";
 
 import { useUnistyles } from "react-native-unistyles";
@@ -6,16 +8,39 @@ import { selectionChange } from "@/lib/haptics";
 
 export default function TabLayout() {
   const { theme } = useUnistyles();
+  const isAndroid = Platform.OS === "android";
+  const androidRippleColor = theme.colors.primarySoft;
+  const androidTriggerProps = isAndroid
+    ? {
+        indicatorColor: theme.colors.primary,
+        rippleColor: androidRippleColor,
+      }
+    : {};
+  const triggerContentStyle = { backgroundColor: theme.colors.background };
 
   return (
     <NativeTabs
       backgroundColor={theme.colors.background}
-      iconColor={{ default: theme.colors.tabInactive, selected: theme.colors.tabActive }}
-      labelStyle={{
-        default: { color: theme.colors.tabInactive, fontSize: 10, fontWeight: "700" },
-        selected: { color: theme.colors.tabActive, fontSize: 10, fontWeight: "700" },
-      }}
+      iconColor={
+        isAndroid
+          ? { default: theme.colors.tabInactive, selected: theme.colors.primaryForeground }
+          : { default: theme.colors.tabInactive, selected: theme.colors.tabActive }
+      }
+      indicatorColor={isAndroid ? theme.colors.primary : undefined}
+      labelStyle={
+        isAndroid
+          ? {
+              default: { color: theme.colors.tabInactive, fontSize: 10, fontWeight: "700" },
+              selected: { color: theme.colors.primaryForeground, fontSize: 10, fontWeight: "700" },
+            }
+          : {
+              default: { color: theme.colors.tabInactive, fontSize: 10, fontWeight: "700" },
+              selected: { color: theme.colors.tabActive, fontSize: 10, fontWeight: "700" },
+            }
+      }
+      labelVisibilityMode="labeled"
       minimizeBehavior="onScrollDown"
+      rippleColor={isAndroid ? androidRippleColor : undefined}
       screenListeners={{
         tabPress: (event) => {
           if (!event.data.isPrevented) {
@@ -24,23 +49,35 @@ export default function TabLayout() {
         },
       }}
       tabBarRespectsIMEInsets
-      tintColor={theme.colors.tint}
+      tintColor={isAndroid ? theme.colors.primaryForeground : theme.colors.tint}
     >
-      <NativeTabs.Trigger contentStyle={{ backgroundColor: theme.colors.background }} name="home">
+      <NativeTabs.Trigger
+        {...androidTriggerProps}
+        contentStyle={triggerContentStyle}
+        name="home"
+      >
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "home", selected: "home_filled" }}
           sf={{ default: "house", selected: "house.fill" }}
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger contentStyle={{ backgroundColor: theme.colors.background }} name="debts">
+      <NativeTabs.Trigger
+        {...androidTriggerProps}
+        contentStyle={triggerContentStyle}
+        name="debts"
+      >
         <NativeTabs.Trigger.Label>Debts</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "list", selected: "list" }}
           sf={{ default: "list.bullet", selected: "list.bullet" }}
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger contentStyle={{ backgroundColor: theme.colors.background }} name="people">
+      <NativeTabs.Trigger
+        {...androidTriggerProps}
+        contentStyle={triggerContentStyle}
+        name="people"
+      >
         <NativeTabs.Trigger.Label>People</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "group", selected: "group" }}
@@ -48,7 +85,8 @@ export default function TabLayout() {
         />
       </NativeTabs.Trigger>
       <NativeTabs.Trigger
-        contentStyle={{ backgroundColor: theme.colors.background }}
+        {...androidTriggerProps}
+        contentStyle={triggerContentStyle}
         name="settings"
       >
         <NativeTabs.Trigger.Label>Settings</NativeTabs.Trigger.Label>
