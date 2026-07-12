@@ -11,9 +11,9 @@ import {
   View,
 } from "react-native";
 
-import { router, useLocalSearchParams } from "expo-router";
+import { Stack, router, useLocalSearchParams } from "expo-router";
 
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { Send } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import {
@@ -36,7 +36,6 @@ const detailPlaceholders: Record<FeedbackCategory, string> = {
 
 export function ShareFeedbackScreen() {
   const { theme } = useUnistyles();
-  const insets = useSafeAreaInsets();
   const params = useLocalSearchParams<{ category?: string }>();
   const showToast = useUiStore((state) => state.showToast);
 
@@ -80,6 +79,32 @@ export function ShareFeedbackScreen() {
 
   return (
     <>
+      <Stack.Screen
+        options={{
+          headerRight: () => (
+            <Pressable
+              accessibilityLabel="Send feedback"
+              accessibilityRole="button"
+              disabled={!canSubmit}
+              hitSlop={8}
+              onPress={() => {
+                void handleSubmit();
+              }}
+              style={styles.headerAction}
+            >
+              {isSubmitting ? (
+                <ActivityIndicator color={theme.colors.text} />
+              ) : (
+                <Send
+                  color={canSubmit ? theme.colors.text : theme.colors.muted}
+                  size={17}
+                  strokeWidth={2}
+                />
+              )}
+            </Pressable>
+          ),
+        }}
+      />
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : undefined}
         style={styles.root}
@@ -156,23 +181,6 @@ export function ShareFeedbackScreen() {
             </Text>
           ) : null}
         </ScrollView>
-
-        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom + 64, 72) }]}>
-          <Pressable
-            accessibilityRole="button"
-            disabled={!canSubmit}
-            onPress={() => {
-              void handleSubmit();
-            }}
-            style={[styles.submitButton, !canSubmit && styles.submitButtonDisabled]}
-          >
-            {isSubmitting ? (
-              <ActivityIndicator color={theme.colors.primaryForeground} />
-            ) : (
-              <Text style={styles.submitLabel}>Send feedback</Text>
-            )}
-          </Pressable>
-        </View>
       </KeyboardAvoidingView>
       <KeyboardDoneAccessory />
     </>
@@ -206,15 +214,14 @@ const styles = StyleSheet.create((theme) => ({
   content: {
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 18,
+    paddingBottom: 28,
     gap: 18,
   },
-  footer: {
-    paddingHorizontal: 20,
-    paddingTop: 16,
-    backgroundColor: theme.colors.background,
-    borderTopWidth: 1,
-    borderTopColor: theme.colors.border,
+  headerAction: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
   },
   field: {
     gap: 8,
@@ -279,20 +286,5 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 13,
     lineHeight: 18,
     color: theme.colors.danger,
-  },
-  submitButton: {
-    minHeight: 52,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 16,
-    backgroundColor: theme.colors.primary,
-  },
-  submitButtonDisabled: {
-    opacity: 0.45,
-  },
-  submitLabel: {
-    fontSize: 15,
-    fontWeight: "700",
-    color: theme.colors.primaryForeground,
   },
 }));

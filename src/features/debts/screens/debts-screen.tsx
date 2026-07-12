@@ -872,6 +872,7 @@ const styles = StyleSheet.create((theme) => ({
   empty: {
     alignItems: "center",
     paddingVertical: 64,
+    paddingHorizontal: 24,
   },
   emptyIcon: {
     width: 48,
@@ -883,13 +884,16 @@ const styles = StyleSheet.create((theme) => ({
     marginBottom: 12,
   },
   emptyTitle: {
-    fontSize: 14,
+    fontSize: 15,
     fontWeight: "600",
-    color: theme.colors.icon,
+    color: theme.colors.text,
   },
   emptyCopy: {
-    fontSize: 12,
-    color: theme.colors.mutedLight,
-    marginTop: 4,
+    fontSize: 13,
+    color: theme.colors.muted,
+    marginTop: 6,
+    textAlign: "center",
+    lineHeight: 20,
+    maxWidth: 240,
   },
 }));

@@ -13,7 +13,6 @@ import { DebtSearchBar, type DebtSearchBarRef } from "@/components/debts/debt-se
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { IconButton } from "@/components/shared/icon-button";
-import { PressableScale } from "@/components/shared/pressable-scale";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { selectionChange } from "@/lib/haptics";
@@ -89,14 +88,9 @@ export function PeopleScreen() {
             ? "Try searching by name or phone number."
             : "Add people connected to money promises, then log what is unsettled."}
         </Text>
-        {!isSearching ? (
-          <PressableScale onPress={openAddPerson} style={styles.emptyCta}>
-            <Text style={styles.emptyCtaText}>Add person</Text>
-          </PressableScale>
-        ) : null}
       </View>
     ),
-    [isSearching, openAddPerson, theme.colors.mutedLight],
+    [isSearching, theme.colors.mutedLight],
   );
 
   if (isPending) {
@@ -200,17 +194,5 @@ const styles = StyleSheet.create((theme) => ({
     textAlign: "center",
     lineHeight: 20,
     maxWidth: 240,
-  },
-  emptyCta: {
-    marginTop: 16,
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: 20,
-    paddingVertical: 12,
-    borderRadius: 12,
-  },
-  emptyCtaText: {
-    color: theme.colors.primaryForeground,
-    fontSize: 14,
-    fontWeight: "600",
   },
 }));
