@@ -12,7 +12,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { DetailScreenSkeleton } from "@/components/ui/screen-skeletons";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
 import {
   RecordPaymentSheet,
@@ -57,7 +57,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
     return (
       <>
         <Stack.Screen options={LOADING_DETAIL_HEADER_OPTIONS} />
-        <DetailScreenSkeleton />
+        <LoadingSpinner />
       </>
     );
   }

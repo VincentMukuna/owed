@@ -19,7 +19,7 @@ import {
   ListRowContainer,
 } from "@/components/shared/list-inset-divider";
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { HomeScreenSkeleton } from "@/components/ui/screen-skeletons";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
 import { useRecentActivities } from "@/features/activity/hooks/use-recent-activities";
 import { HomeDebtSection } from "@/features/dashboard/components/home-debt-section";
@@ -257,7 +257,7 @@ export function HomeScreen() {
   if (isPending) {
     return (
       <TabScreen>
-        <HomeScreenSkeleton />
+        <LoadingSpinner />
       </TabScreen>
     );
   }

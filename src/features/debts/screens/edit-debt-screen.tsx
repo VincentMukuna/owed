@@ -13,7 +13,7 @@ import {
   KEYBOARD_DONE_ACCESSORY_ID,
   KeyboardDoneAccessory,
 } from "@/components/ui/keyboard-done-accessory";
-import { FormScreenSkeleton } from "@/components/ui/screen-skeletons";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { DueDatePickerModal } from "@/features/debts/components/due-date-picker-modal";
 import { useDebt } from "@/features/debts/hooks/use-debt";
 import { useUpdateDebt } from "@/features/debts/hooks/use-update-debt";
@@ -93,7 +93,7 @@ export function EditDebtScreen() {
   }, [canSave, handleSave, navigation, updateDebt.isPending]);
 
   if (isPending) {
-    return <FormScreenSkeleton />;
+    return <LoadingSpinner />;
   }
 
   if (!debt) {

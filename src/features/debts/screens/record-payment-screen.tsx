@@ -11,7 +11,7 @@ import {
   KEYBOARD_DONE_ACCESSORY_ID,
   KeyboardDoneAccessory,
 } from "@/components/ui/keyboard-done-accessory";
-import { FormScreenSkeleton } from "@/components/ui/screen-skeletons";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useDebt } from "@/features/debts/hooks/use-debt";
 import { useRecordPayment } from "@/features/debts/hooks/use-record-payment";
 import { formatCurrency, formatCurrencyPrefix } from "@/lib/utils/formatters";
@@ -62,7 +62,7 @@ export function RecordPaymentScreen() {
   }, [canSave, handleSave, navigation, recordPayment.isPending]);
 
   if (isPending) {
-    return <FormScreenSkeleton />;
+    return <LoadingSpinner />;
   }
 
   if (!debt) {

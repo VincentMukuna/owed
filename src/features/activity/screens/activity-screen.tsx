@@ -7,7 +7,7 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet } from "react-native-unistyles";
 
 import { ActivityList } from "@/components/activity/activity-list";
-import { ActivityListScreenSkeleton } from "@/components/ui/screen-skeletons";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { useActivities } from "@/features/activity/hooks/use-activities";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { invalidateActivityQueries } from "@/lib/query/invalidate-queries";
@@ -23,7 +23,7 @@ export function ActivityScreen() {
   if (isPending) {
     return (
       <View style={styles.screen}>
-        <ActivityListScreenSkeleton />
+        <LoadingSpinner />
       </View>
     );
   }

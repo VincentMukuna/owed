@@ -13,7 +13,7 @@ import {
   LIST_LEADING_INSET_ICON_MD,
   ListRowContainer,
 } from "@/components/shared/list-inset-divider";
-import { NotificationsScreenSkeleton } from "@/components/ui/screen-skeletons";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { NotificationRow } from "@/features/reminders/components/notification-row";
 import {
   type NotificationsAction,
@@ -97,7 +97,7 @@ export function NotificationsInboxScreen() {
   );
 
   if (isPending) {
-    return <NotificationsScreenSkeleton />;
+    return <LoadingSpinner />;
   }
 
   const headerRight = () => (

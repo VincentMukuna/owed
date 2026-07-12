@@ -11,7 +11,7 @@ import {
   KEYBOARD_DONE_ACCESSORY_ID,
   KeyboardDoneAccessory,
 } from "@/components/ui/keyboard-done-accessory";
-import { FormScreenSkeleton } from "@/components/ui/screen-skeletons";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
 import { usePersonDetail } from "../hooks/use-person-detail";
 import { useUpdatePerson } from "../hooks/use-update-person";
@@ -73,7 +73,7 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
   }, [canSave, handleSave, navigation, updatePerson.isPending]);
 
   if (isPending) {
-    return <FormScreenSkeleton />;
+    return <LoadingSpinner />;
   }
 
   if (!person) {
