@@ -294,6 +294,16 @@ export default function RootLayout() {
                 }}
               />
               <Stack.Screen
+                name="help-center"
+                options={{
+                  ...stackOptions,
+                  headerShown: true,
+                  headerLargeTitleEnabled: false,
+                  animation: "slide_from_right",
+                  title: "Help Center",
+                }}
+              />
+              <Stack.Screen
                 name="about"
                 options={{
                   ...stackOptions,

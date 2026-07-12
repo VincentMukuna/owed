@@ -11,7 +11,7 @@ import {
   View,
 } from "react-native";
 
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
@@ -37,9 +37,14 @@ const detailPlaceholders: Record<FeedbackCategory, string> = {
 export function ShareFeedbackScreen() {
   const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
+  const params = useLocalSearchParams<{ category?: string }>();
   const showToast = useUiStore((state) => state.showToast);
 
-  const [category, setCategory] = useState<FeedbackCategory>("feedback");
+  const initialCategory = feedbackCategories.some((item) => item.value === params.category)
+    ? (params.category as FeedbackCategory)
+    : "feedback";
+
+  const [category, setCategory] = useState<FeedbackCategory>(initialCategory);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [email, setEmail] = useState("");
