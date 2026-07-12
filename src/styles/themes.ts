@@ -92,7 +92,7 @@ const neutralLightColors = {
   surfaceMuted: "#E0E0DA",
   card: "#FFFFFF",
   text: "#1A1A18",
-  muted: "#8A8A82",
+  muted: "#75756D",
   mutedLight: "#96968E",
   placeholder: "#C8C8C0",
   border: "rgba(0, 0, 0, 0.06)",

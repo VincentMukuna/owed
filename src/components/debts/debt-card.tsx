@@ -146,7 +146,7 @@ const styles = StyleSheet.create((theme) => ({
   name: {
     flexShrink: 1,
     fontSize: 15,
-    fontWeight: "500",
+    fontWeight: "600",
     lineHeight: 20,
   },
   reason: {
