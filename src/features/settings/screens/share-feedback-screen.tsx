@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useLayoutEffect, useState } from "react";
 
 import {
   ActivityIndicator,
@@ -11,8 +11,10 @@ import {
   View,
 } from "react-native";
 
-import { router } from "expo-router";
+import { router, useNavigation } from "expo-router";
 
+import { X } from "lucide-react-native";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import {
@@ -27,8 +29,6 @@ import {
 } from "@/features/settings/lib/product-feedback";
 import { lightImpact, selectionChange } from "@/lib/haptics";
 
-const MIN_DESCRIPTION_LENGTH = 8;
-
 const detailPlaceholders: Record<FeedbackCategory, string> = {
   bug: "What happened? What did you expect instead?",
   feature_request: "What would you like Owed to help you do?",
@@ -37,6 +37,8 @@ const detailPlaceholders: Record<FeedbackCategory, string> = {
 
 export function ShareFeedbackScreen() {
   const { theme } = useUnistyles();
+  const insets = useSafeAreaInsets();
+  const navigation = useNavigation();
   const showToast = useUiStore((state) => state.showToast);
 
   const [category, setCategory] = useState<FeedbackCategory>("feedback");
@@ -46,8 +48,27 @@ export function ShareFeedbackScreen() {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const canSubmit =
-    title.trim().length > 0 && description.trim().length >= MIN_DESCRIPTION_LENGTH && !isSubmitting;
+  const canSubmit = title.trim().length > 0 && description.trim().length > 0 && !isSubmitting;
+
+  const handleClose = useCallback(() => {
+    router.back();
+  }, []);
+
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerRight: () => (
+        <Pressable
+          accessibilityLabel="Close"
+          accessibilityRole="button"
+          hitSlop={12}
+          onPress={handleClose}
+          style={styles.closeButton}
+        >
+          <X color={theme.colors.icon} size={18} strokeWidth={2} />
+        </Pressable>
+      ),
+    });
+  }, [handleClose, navigation, theme.colors.icon]);
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) {
@@ -151,7 +172,9 @@ export function ShareFeedbackScreen() {
               {error}
             </Text>
           ) : null}
+        </ScrollView>
 
+        <View style={[styles.footer, { paddingBottom: Math.max(insets.bottom + 64, 72) }]}>
           <Pressable
             accessibilityRole="button"
             disabled={!canSubmit}
@@ -166,7 +189,7 @@ export function ShareFeedbackScreen() {
               <Text style={styles.submitLabel}>Send feedback</Text>
             )}
           </Pressable>
-        </ScrollView>
+        </View>
       </KeyboardAvoidingView>
       <KeyboardDoneAccessory />
     </>
@@ -200,8 +223,21 @@ const styles = StyleSheet.create((theme) => ({
   content: {
     paddingHorizontal: 20,
     paddingTop: 10,
-    paddingBottom: 32,
+    paddingBottom: 18,
     gap: 18,
+  },
+  closeButton: {
+    width: 36,
+    height: 36,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  footer: {
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    backgroundColor: theme.colors.background,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border,
   },
   field: {
     gap: 8,
