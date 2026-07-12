@@ -31,8 +31,8 @@ import {
   formatRateForInput,
 } from "@/features/settings/lib/fetch-suggested-exchange-rate";
 import { parseExchangeRate } from "@/features/settings/lib/parse-exchange-rate";
-import { closeModalScreen } from "@/lib/navigation/close-modal-screen";
 import { selectionChange } from "@/lib/haptics";
+import { closeModalScreen } from "@/lib/navigation/close-modal-screen";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 /** After flag emoji + gap (row padding 10 + lineHeight 26 + gap 12). */

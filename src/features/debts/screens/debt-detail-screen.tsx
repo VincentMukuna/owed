@@ -137,87 +137,87 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
         }}
       />
       <View collapsable={false} style={styles.screen}>
-          <ScrollView
-            contentContainerStyle={[
-              styles.content,
-              { paddingBottom: debt.status === "paid" ? 24 : 120 + insets.bottom },
-            ]}
-            refreshControl={<RefreshControl {...refreshControlProps} />}
-            showsVerticalScrollIndicator={false}
-          >
-            {debt.status === "paid" ? (
-              <PaidOverview debt={debt} firstName={firstName} />
-            ) : (
-              <ActiveOverview debt={debt} pct={pct} />
-            )}
+        <ScrollView
+          contentContainerStyle={[
+            styles.content,
+            { paddingBottom: debt.status === "paid" ? 24 : 120 + insets.bottom },
+          ]}
+          refreshControl={<RefreshControl {...refreshControlProps} />}
+          showsVerticalScrollIndicator={false}
+        >
+          {debt.status === "paid" ? (
+            <PaidOverview debt={debt} firstName={firstName} />
+          ) : (
+            <ActiveOverview debt={debt} pct={pct} />
+          )}
 
-            {debt.reason ? (
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>Reason</Text>
-                <Text style={styles.sectionBody}>{debt.reason}</Text>
-              </View>
-            ) : null}
+          {debt.reason ? (
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Reason</Text>
+              <Text style={styles.sectionBody}>{debt.reason}</Text>
+            </View>
+          ) : null}
 
-            {debt.payments.length > 0 ? (
-              <View style={styles.section}>
-                <Text style={styles.sectionLabel}>Payment history ({debt.payments.length})</Text>
-                {debt.payments.map((payment, index) => (
-                  <View
-                    key={payment.id}
-                    style={[styles.paymentRow, index > 0 && styles.paymentRowBorder]}
-                  >
-                    <View style={styles.paymentMain}>
-                      <Text style={styles.paymentAmount}>
-                        {isUserOwed
-                          ? `${formatCurrency(payment.amount)} paid`
-                          : `You paid ${formatCurrency(payment.amount)}`}
-                      </Text>
-                      <Text style={styles.paymentDate}>{payment.date}</Text>
-                    </View>
-                    {payment.note ? <Text style={styles.paymentNote}>{payment.note}</Text> : null}
+          {debt.payments.length > 0 ? (
+            <View style={styles.section}>
+              <Text style={styles.sectionLabel}>Payment history ({debt.payments.length})</Text>
+              {debt.payments.map((payment, index) => (
+                <View
+                  key={payment.id}
+                  style={[styles.paymentRow, index > 0 && styles.paymentRowBorder]}
+                >
+                  <View style={styles.paymentMain}>
+                    <Text style={styles.paymentAmount}>
+                      {isUserOwed
+                        ? `${formatCurrency(payment.amount)} paid`
+                        : `You paid ${formatCurrency(payment.amount)}`}
+                    </Text>
+                    <Text style={styles.paymentDate}>{payment.date}</Text>
                   </View>
-                ))}
-              </View>
-            ) : null}
-
-            {debt.status !== "paid" ? (
-              <View style={styles.lastSection}>
-                <Text style={styles.sectionLabel}>
-                  {isUserOwed ? "Follow-up message" : "Payment reminder"}
-                </Text>
-                {isUserOwed ? (
-                  <Pressable
-                    onPress={handleCopy}
-                    style={[styles.messageBlock, styles.messageBlockCopyable]}
-                  >
-                    <View style={styles.copyIcon}>
-                      {copied ? (
-                        <Check color={theme.colors.success} size={14} strokeWidth={2.5} />
-                      ) : (
-                        <Copy color={theme.colors.mutedLight} size={14} strokeWidth={2.5} />
-                      )}
-                    </View>
-                    <Text style={styles.messageText}>{reminderText}</Text>
-                  </Pressable>
-                ) : (
-                  <View style={styles.messageBlock}>
-                    <Text style={styles.messageText}>{reminderText}</Text>
-                  </View>
-                )}
-              </View>
-            ) : null}
-          </ScrollView>
+                  {payment.note ? <Text style={styles.paymentNote}>{payment.note}</Text> : null}
+                </View>
+              ))}
+            </View>
+          ) : null}
 
           {debt.status !== "paid" ? (
-            <LinearGradient
-              colors={theme.colors.footerGradient}
-              style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
-            >
-              <PressableScale onPress={openRecordPayment} style={styles.primaryBtn}>
-                <Text style={styles.primaryBtnText}>Add Payment</Text>
-              </PressableScale>
-            </LinearGradient>
+            <View style={styles.lastSection}>
+              <Text style={styles.sectionLabel}>
+                {isUserOwed ? "Follow-up message" : "Payment reminder"}
+              </Text>
+              {isUserOwed ? (
+                <Pressable
+                  onPress={handleCopy}
+                  style={[styles.messageBlock, styles.messageBlockCopyable]}
+                >
+                  <View style={styles.copyIcon}>
+                    {copied ? (
+                      <Check color={theme.colors.success} size={14} strokeWidth={2.5} />
+                    ) : (
+                      <Copy color={theme.colors.mutedLight} size={14} strokeWidth={2.5} />
+                    )}
+                  </View>
+                  <Text style={styles.messageText}>{reminderText}</Text>
+                </Pressable>
+              ) : (
+                <View style={styles.messageBlock}>
+                  <Text style={styles.messageText}>{reminderText}</Text>
+                </View>
+              )}
+            </View>
           ) : null}
+        </ScrollView>
+
+        {debt.status !== "paid" ? (
+          <LinearGradient
+            colors={theme.colors.footerGradient}
+            style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
+          >
+            <PressableScale onPress={openRecordPayment} style={styles.primaryBtn}>
+              <Text style={styles.primaryBtnText}>Add Payment</Text>
+            </PressableScale>
+          </LinearGradient>
+        ) : null}
       </View>
     </>
   );

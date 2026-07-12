@@ -13,10 +13,10 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
-import { formatRelativeDay, toISODate } from "@/features/debts/lib/format-dates";
 import { peopleKeys } from "@/features/debts/hooks/query-keys";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
+import { formatRelativeDay, toISODate } from "@/features/debts/lib/format-dates";
 import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
 import type { ActivityView, DebtCardView } from "@/features/debts/view-models";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
@@ -121,91 +121,87 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
         }}
       />
       <View collapsable={false} style={styles.screen}>
-          <ScrollView
-            contentContainerStyle={[styles.content, { paddingBottom: 120 + insets.bottom }]}
-            refreshControl={<RefreshControl {...refreshControlProps} />}
-            showsVerticalScrollIndicator={false}
-          >
-            <PersonOverview
-              onDirectionPress={handleDirectionPress}
-              person={person}
-              selectedDirection={directionFilter}
-            />
+        <ScrollView
+          contentContainerStyle={[styles.content, { paddingBottom: 120 + insets.bottom }]}
+          refreshControl={<RefreshControl {...refreshControlProps} />}
+          showsVerticalScrollIndicator={false}
+        >
+          <PersonOverview
+            onDirectionPress={handleDirectionPress}
+            person={person}
+            selectedDirection={directionFilter}
+          />
 
-            {hasDetails ? (
-              <View style={styles.detailsSection}>
-                {person.phoneNumber ? (
-                  <View>
-                    <Text style={styles.detailKey}>Phone</Text>
-                    <Text style={styles.detailValue}>{person.phoneNumber}</Text>
-                  </View>
-                ) : null}
-                {person.notes ? (
-                  <View>
-                    <Text style={styles.detailKey}>Notes</Text>
-                    <Text style={[styles.detailValue, styles.detailNotes]}>{person.notes}</Text>
-                  </View>
-                ) : null}
-              </View>
-            ) : null}
+          {hasDetails ? (
+            <View style={styles.detailsSection}>
+              {person.phoneNumber ? (
+                <View>
+                  <Text style={styles.detailKey}>Phone</Text>
+                  <Text style={styles.detailValue}>{person.phoneNumber}</Text>
+                </View>
+              ) : null}
+              {person.notes ? (
+                <View>
+                  <Text style={styles.detailKey}>Notes</Text>
+                  <Text style={[styles.detailValue, styles.detailNotes]}>{person.notes}</Text>
+                </View>
+              ) : null}
+            </View>
+          ) : null}
 
-            <View style={styles.section}>
-              <Text style={styles.sectionLabel}>
-                Promises ({filteredDebts.length}
-                {directionFilter && filteredDebts.length !== person.debts.length
-                  ? ` of ${person.debts.length}`
-                  : ""}
-                )
+          <View style={styles.section}>
+            <Text style={styles.sectionLabel}>
+              Promises ({filteredDebts.length}
+              {directionFilter && filteredDebts.length !== person.debts.length
+                ? ` of ${person.debts.length}`
+                : ""}
+              )
+            </Text>
+            {filteredDebts.length > 0 ? (
+              filteredDebts.map((debt, index) => (
+                <PromiseRow
+                  key={debt.id}
+                  debt={debt}
+                  onAction={handleDebtAction}
+                  onPress={() => openDebt(debt.id)}
+                  showBorder={index > 0}
+                />
+              ))
+            ) : person.debts.length > 0 ? (
+              <Text style={styles.emptyCopy}>
+                {directionFilter === "they_owe_me"
+                  ? `Nothing ${firstName} owes you right now.`
+                  : `Nothing you owe ${firstName} right now.`}
               </Text>
-              {filteredDebts.length > 0 ? (
-                filteredDebts.map((debt, index) => (
-                  <PromiseRow
-                    key={debt.id}
-                    debt={debt}
-                    onAction={handleDebtAction}
-                    onPress={() => openDebt(debt.id)}
-                    showBorder={index > 0}
-                  />
-                ))
-              ) : person.debts.length > 0 ? (
-                <Text style={styles.emptyCopy}>
-                  {directionFilter === "they_owe_me"
-                    ? `Nothing ${firstName} owes you right now.`
-                    : `Nothing you owe ${firstName} right now.`}
-                </Text>
-              ) : (
-                <Text style={styles.emptyCopy}>
-                  Add the first promise between you and {firstName}.
-                </Text>
-              )}
-            </View>
+            ) : (
+              <Text style={styles.emptyCopy}>
+                Add the first promise between you and {firstName}.
+              </Text>
+            )}
+          </View>
 
-            <View style={styles.lastSection}>
-              <Text style={styles.sectionLabel}>Payment history ({person.payments.length})</Text>
-              {person.payments.length > 0 ? (
-                person.payments.map((payment, index) => (
-                  <PaymentRow
-                    key={payment.id}
-                    activity={payment}
-                    showBorder={index > 0}
-                  />
-                ))
-              ) : (
-                <Text style={styles.emptyCopy}>
-                  Payments between you and {firstName} will show up here.
-                </Text>
-              )}
-            </View>
-          </ScrollView>
+          <View style={styles.lastSection}>
+            <Text style={styles.sectionLabel}>Payment history ({person.payments.length})</Text>
+            {person.payments.length > 0 ? (
+              person.payments.map((payment, index) => (
+                <PaymentRow key={payment.id} activity={payment} showBorder={index > 0} />
+              ))
+            ) : (
+              <Text style={styles.emptyCopy}>
+                Payments between you and {firstName} will show up here.
+              </Text>
+            )}
+          </View>
+        </ScrollView>
 
-          <LinearGradient
-            colors={theme.colors.footerGradient}
-            style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
-          >
-            <PressableScale onPress={openAddDebt} style={styles.primaryBtn}>
-              <Text style={styles.primaryBtnText}>Add promise for {firstName}</Text>
-            </PressableScale>
-          </LinearGradient>
+        <LinearGradient
+          colors={theme.colors.footerGradient}
+          style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
+        >
+          <PressableScale onPress={openAddDebt} style={styles.primaryBtn}>
+            <Text style={styles.primaryBtnText}>Add promise for {firstName}</Text>
+          </PressableScale>
+        </LinearGradient>
       </View>
     </>
   );
@@ -335,13 +331,7 @@ function PromiseRow({
   );
 }
 
-function PaymentRow({
-  activity,
-  showBorder,
-}: {
-  activity: ActivityView;
-  showBorder: boolean;
-}) {
+function PaymentRow({ activity, showBorder }: { activity: ActivityView; showBorder: boolean }) {
   return (
     <View style={[styles.paymentRow, showBorder && styles.rowBorder]}>
       <View style={styles.paymentMain}>
