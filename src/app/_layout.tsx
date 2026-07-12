@@ -274,6 +274,16 @@ export default function RootLayout() {
                 }}
               />
               <Stack.Screen
+                name="share-feedback"
+                options={{
+                  ...modalOptions,
+                  presentation: "modal",
+                  animation: "slide_from_bottom",
+                  headerShown: true,
+                  title: "Share Feedback",
+                }}
+              />
+              <Stack.Screen
                 name="about"
                 options={{
                   ...stackOptions,

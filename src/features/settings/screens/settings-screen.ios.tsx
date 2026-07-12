@@ -56,7 +56,7 @@ export function SettingsScreen() {
   const brandColorTheme = useSettingsStore((state) => state.brandColorTheme);
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
   const changeCurrency = useChangeCurrency();
-  const { handleAboutPress, handleHelpCenterPress, handleReportIssue } = useGetHelpActions();
+  const { handleAboutPress, handleHelpCenterPress, handleShareFeedbackPress } = useGetHelpActions();
   const currencyPickerRef = useRef<CurrencyPickerSheetRef>(null);
   const conversionSheetRef = useRef<CurrencyConversionSheetRef>(null);
 
@@ -170,9 +170,9 @@ export function SettingsScreen() {
           <SettingsSwiftSection title="Get Help">
             <SettingsSwiftNavRow
               iconBackgroundColor="#DC2626"
-              onPress={handleReportIssue}
-              systemImage="flag"
-              title="Report an issue"
+              onPress={handleShareFeedbackPress}
+              systemImage="square.and.pencil"
+              title="Share feedback"
             />
             <SettingsSwiftNavRow
               iconBackgroundColor="#0D9488"

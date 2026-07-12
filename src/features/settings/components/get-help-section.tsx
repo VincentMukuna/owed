@@ -1,4 +1,4 @@
-import { CircleHelp, Flag, Info } from "lucide-react-native";
+import { CircleHelp, Info, MessageSquareText } from "lucide-react-native";
 
 import {
   SettingsCard,
@@ -11,19 +11,19 @@ import { useGetHelpActions } from "@/features/settings/hooks/use-get-help-action
 const SETTINGS_ICON_SIZE = 16;
 
 export function GetHelpSection() {
-  const { handleAboutPress, handleHelpCenterPress, handleReportIssue } = useGetHelpActions();
+  const { handleAboutPress, handleHelpCenterPress, handleShareFeedbackPress } = useGetHelpActions();
 
   return (
     <SettingsSection title="Get Help">
       <SettingsCard>
         <SettingsNavRow
-          label="Report an issue"
+          label="Share feedback"
           leading={
             <SettingsIconTile backgroundColor="#DC2626">
-              <Flag color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
+              <MessageSquareText color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
             </SettingsIconTile>
           }
-          onPress={handleReportIssue}
+          onPress={handleShareFeedbackPress}
         />
         <SettingsNavRow
           bordered

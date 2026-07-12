@@ -3,14 +3,14 @@ import { useCallback } from "react";
 import { type Href, router } from "expo-router";
 
 import { useUiStore } from "@/features/debts/store/ui-store";
-import { reportAppIssue } from "@/features/settings/lib/report-app-issue";
 import { selectionChange } from "@/lib/haptics";
 
 export function useGetHelpActions() {
   const showToast = useUiStore((state) => state.showToast);
 
-  const handleReportIssue = useCallback(() => {
-    reportAppIssue();
+  const handleShareFeedbackPress = useCallback(() => {
+    selectionChange();
+    router.push("/share-feedback" as Href);
   }, []);
 
   const handleHelpCenterPress = useCallback(() => {
@@ -24,7 +24,7 @@ export function useGetHelpActions() {
   }, []);
 
   return {
-    handleReportIssue,
+    handleShareFeedbackPress,
     handleHelpCenterPress,
     handleAboutPress,
   };
