@@ -259,8 +259,6 @@ export default function RootLayout() {
                   animation: "slide_from_bottom",
                   headerShown: true,
                   title: "Add Payment",
-                  sheetGrabberVisible: true,
-                  sheetAllowedDetents: [0.55, 1],
                 }}
               />
               <Stack.Screen

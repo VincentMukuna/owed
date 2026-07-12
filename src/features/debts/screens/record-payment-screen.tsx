@@ -84,6 +84,10 @@ export function RecordPaymentScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <Text style={styles.subtitle}>
+          {debt.name} · {formatCurrency(debt.remaining, debt.currency)} remaining
+        </Text>
+
         <View style={styles.field}>
           <Text style={styles.label}>Amount paid</Text>
           <View style={styles.inputCard}>
@@ -152,6 +156,10 @@ const styles = StyleSheet.create((theme) => ({
     paddingTop: 10,
     paddingBottom: 32,
     gap: 18,
+  },
+  subtitle: {
+    fontSize: 13,
+    color: theme.colors.muted,
   },
   field: {
     gap: 8,

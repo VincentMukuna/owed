@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { Pressable, RefreshControl, ScrollView, Text, View } from "react-native";
 
@@ -6,7 +6,6 @@ import * as Clipboard from "expo-clipboard";
 import { LinearGradient } from "expo-linear-gradient";
 import { type Href, Stack, router } from "expo-router";
 
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowDownLeft, ArrowUpRight, Check, Copy, MoreHorizontal } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -15,10 +14,6 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
-import {
-  RecordPaymentSheet,
-  type RecordPaymentSheetRef,
-} from "@/features/debts/components/record-payment-sheet";
 import { debtKeys } from "@/features/debts/hooks/query-keys";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebt } from "@/features/debts/hooks/use-debt";
@@ -41,7 +36,6 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   const archiveDebt = useArchiveDebt();
   const { data: debt, isPending } = useDebt(debtId);
   const [copied, setCopied] = useState(false);
-  const paymentSheetRef = useRef<RecordPaymentSheetRef>(null);
 
   const handleRefresh = useCallback(
     () => queryClient.invalidateQueries({ queryKey: debtKeys.detail(debtId) }),
@@ -88,7 +82,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   };
 
   const openRecordPayment = () => {
-    paymentSheetRef.current?.present();
+    router.push(`/record-payment?debtId=${debt.id}` as Href);
   };
 
   const handleDebtAction = (action: DebtAction) => {
@@ -142,8 +136,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
           ),
         }}
       />
-      <BottomSheetModalProvider>
-        <View collapsable={false} style={styles.screen}>
+      <View collapsable={false} style={styles.screen}>
           <ScrollView
             contentContainerStyle={[
               styles.content,
@@ -225,9 +218,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
               </PressableScale>
             </LinearGradient>
           ) : null}
-        </View>
-        <RecordPaymentSheet ref={paymentSheetRef} debt={debt} />
-      </BottomSheetModalProvider>
+      </View>
     </>
   );
 }

@@ -1,10 +1,9 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo } from "react";
 
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { FlashList } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
 import { Wallet } from "lucide-react-native";
@@ -24,10 +23,6 @@ import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
 import { useRecentActivities } from "@/features/activity/hooks/use-recent-activities";
 import { HomeDebtSection } from "@/features/dashboard/components/home-debt-section";
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
-import {
-  RecordPaymentSheet,
-  type RecordPaymentSheetRef,
-} from "@/features/debts/components/record-payment-sheet";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import { usePaidThisMonth } from "@/features/debts/hooks/use-paid-this-month";
@@ -73,8 +68,6 @@ export function HomeScreen() {
   const { data: debts = [], isPending } = useDebts();
   const { data: paidThisMonth = 0 } = usePaidThisMonth();
   const { data: recentActivity = [] } = useRecentActivities(HOME_RECENT_ACTIVITY_LIMIT);
-  const paymentSheetRef = useRef<RecordPaymentSheetRef>(null);
-  const [paymentDebt, setPaymentDebt] = useState<DebtCardView | null>(null);
 
   const handleRefresh = useCallback(() => invalidateHomeQueries(queryClient), [queryClient]);
   const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
@@ -89,8 +82,7 @@ export function HomeScreen() {
   const handleDebtAction = useCallback(
     (action: DebtAction, debt: DebtCardView) => {
       if (action === "record-payment") {
-        setPaymentDebt(debt);
-        requestAnimationFrame(() => paymentSheetRef.current?.present());
+        router.push(`/record-payment?debtId=${debt.id}` as Href);
         return;
       }
 
@@ -297,32 +289,29 @@ export function HomeScreen() {
   }
 
   return (
-    <BottomSheetModalProvider>
-      <TabScreen>
-        <View style={styles.header}>
-          <View>
-            <Text style={styles.kicker}>Good morning</Text>
-            <Text style={styles.pageTitleLg}>{"Here's what's unsettled"}</Text>
-          </View>
-          <BellBadgeButton onPress={openNotifications} />
+    <TabScreen>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.kicker}>Good morning</Text>
+          <Text style={styles.pageTitleLg}>{"Here's what's unsettled"}</Text>
         </View>
+        <BellBadgeButton onPress={openNotifications} />
+      </View>
 
-        <FlashList
-          contentContainerStyle={styles.scroll}
-          data={sections}
-          ItemSeparatorComponent={HomeSectionSeparator}
-          keyExtractor={keyExtractor}
-          ListFooterComponent={listFooter}
-          ListHeaderComponent={listHeader}
-          refreshControl={<RefreshControl {...refreshControlProps} />}
-          renderItem={renderItem}
-          showsVerticalScrollIndicator={false}
-        />
+      <FlashList
+        contentContainerStyle={styles.scroll}
+        data={sections}
+        ItemSeparatorComponent={HomeSectionSeparator}
+        keyExtractor={keyExtractor}
+        ListFooterComponent={listFooter}
+        ListHeaderComponent={listHeader}
+        refreshControl={<RefreshControl {...refreshControlProps} />}
+        renderItem={renderItem}
+        showsVerticalScrollIndicator={false}
+      />
 
-        <FabButton onPress={openAdd} />
-      </TabScreen>
-      <RecordPaymentSheet ref={paymentSheetRef} debt={paymentDebt} />
-    </BottomSheetModalProvider>
+      <FabButton onPress={openAdd} />
+    </TabScreen>
   );
 }
 

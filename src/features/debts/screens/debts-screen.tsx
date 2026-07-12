@@ -36,10 +36,6 @@ import { PressableScale } from "@/components/shared/pressable-scale";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import { DueDatePickerModal } from "@/features/debts/components/due-date-picker-modal";
-import {
-  RecordPaymentSheet,
-  type RecordPaymentSheetRef,
-} from "@/features/debts/components/record-payment-sheet";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
@@ -223,8 +219,6 @@ export function DebtsScreen() {
   const listRef = useRef<FlashListRef<DebtCardView>>(null);
   const searchRef = useRef<DebtSearchBarRef>(null);
   const filtersSheetRef = useRef<BottomSheetModal>(null);
-  const paymentSheetRef = useRef<RecordPaymentSheetRef>(null);
-  const [paymentDebt, setPaymentDebt] = useState<DebtCardView | null>(null);
   const filterSheetSnapPoints = useMemo(() => ["56%"], []);
   const todayIso = useMemo(() => toISODate(new Date()), []);
   const canUseLiquidGlass =
@@ -315,8 +309,7 @@ export function DebtsScreen() {
   const handleDebtAction = useCallback(
     (action: DebtAction, debt: DebtCardView) => {
       if (action === "record-payment") {
-        setPaymentDebt(debt);
-        requestAnimationFrame(() => paymentSheetRef.current?.present());
+        router.push(`/record-payment?debtId=${debt.id}` as Href);
         return;
       }
 
@@ -633,7 +626,6 @@ export function DebtsScreen() {
         value={datePickerValue}
         visible={datePickerTarget !== null}
       />
-      <RecordPaymentSheet ref={paymentSheetRef} debt={paymentDebt} />
     </BottomSheetModalProvider>
   );
 }

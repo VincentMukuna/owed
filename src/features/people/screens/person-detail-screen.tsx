@@ -1,11 +1,10 @@
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useState } from "react";
 
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { LinearGradient } from "expo-linear-gradient";
 import { type Href, Stack, router } from "expo-router";
 
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -14,10 +13,6 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
-import {
-  RecordPaymentSheet,
-  type RecordPaymentSheetRef,
-} from "@/features/debts/components/record-payment-sheet";
 import { formatRelativeDay, toISODate } from "@/features/debts/lib/format-dates";
 import { peopleKeys } from "@/features/debts/hooks/query-keys";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
@@ -43,8 +38,6 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   const queryClient = useQueryClient();
   const archiveDebt = useArchiveDebt();
   const { data: person, isPending } = usePersonDetail(personId);
-  const paymentSheetRef = useRef<RecordPaymentSheetRef>(null);
-  const [paymentDebt, setPaymentDebt] = useState<DebtCardView | null>(null);
   const [directionFilter, setDirectionFilter] = useState<DebtDirection | null>(null);
 
   const handleRefresh = useCallback(
@@ -91,8 +84,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
 
   const handleDebtAction = (action: DebtAction, debt: DebtCardView) => {
     if (action === "record-payment") {
-      setPaymentDebt(debt);
-      requestAnimationFrame(() => paymentSheetRef.current?.present());
+      router.push(`/record-payment?debtId=${debt.id}` as Href);
       return;
     }
 
@@ -128,8 +120,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
           ),
         }}
       />
-      <BottomSheetModalProvider>
-        <View collapsable={false} style={styles.screen}>
+      <View collapsable={false} style={styles.screen}>
           <ScrollView
             contentContainerStyle={[styles.content, { paddingBottom: 120 + insets.bottom }]}
             refreshControl={<RefreshControl {...refreshControlProps} />}
@@ -215,9 +206,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
               <Text style={styles.primaryBtnText}>Add promise for {firstName}</Text>
             </PressableScale>
           </LinearGradient>
-        </View>
-        <RecordPaymentSheet ref={paymentSheetRef} debt={paymentDebt} />
-      </BottomSheetModalProvider>
+      </View>
     </>
   );
 }
