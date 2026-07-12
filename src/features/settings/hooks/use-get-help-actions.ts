@@ -2,21 +2,26 @@ import { useCallback } from "react";
 
 import { type Href, router } from "expo-router";
 
-import { useUiStore } from "@/features/debts/store/ui-store";
+import type { FeedbackCategory } from "@/features/settings/lib/product-feedback";
 import { selectionChange } from "@/lib/haptics";
 
 export function useGetHelpActions() {
-  const showToast = useUiStore((state) => state.showToast);
-
-  const handleShareFeedbackPress = useCallback(() => {
+  const handleShareFeedbackPress = useCallback((category?: FeedbackCategory) => {
     selectionChange();
-    router.push("/share-feedback" as Href);
+    router.push(
+      category
+        ? ({
+            pathname: "/share-feedback",
+            params: { category },
+          } as Href)
+        : ("/share-feedback" as Href),
+    );
   }, []);
 
   const handleHelpCenterPress = useCallback(() => {
     selectionChange();
-    showToast("Help Center coming soon.");
-  }, [showToast]);
+    router.push("/help-center" as Href);
+  }, []);
 
   const handleAboutPress = useCallback(() => {
     selectionChange();
