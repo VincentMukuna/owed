@@ -250,15 +250,15 @@ function ActiveOverview({ debt, pct }: { debt: DebtDetailView; pct: number }) {
     <View style={styles.statsStrip}>
       <View style={styles.overviewTop}>
         <Text style={styles.overviewAmount}>{formatCurrency(debt.remaining)}</Text>
-        <StatusPill status={debt.status} />
+        {debt.status !== "active" ? <StatusPill status={debt.status} /> : null}
+      </View>
+      <View style={styles.progressTrack}>
+        <View style={[styles.progressFill, { width: `${pct}%` }]} />
       </View>
       <Text style={styles.overviewMeta}>
         Due {debt.dueDate} · {formatCurrency(debt.amount)} original
         {pct > 0 ? ` · ${Math.round(pct)}% paid` : null}
       </Text>
-      <View style={styles.progressTrack}>
-        <View style={[styles.progressFill, { width: `${pct}%` }]} />
-      </View>
     </View>
   );
 }
@@ -355,9 +355,10 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 14,
     color: theme.colors.muted,
     lineHeight: 20,
+    marginTop: 8,
   },
   progressTrack: {
-    height: 4,
+    height: 6,
     backgroundColor: theme.colors.progressTrack,
     borderRadius: 999,
     overflow: "hidden",
