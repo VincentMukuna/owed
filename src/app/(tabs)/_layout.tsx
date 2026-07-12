@@ -11,9 +11,15 @@ export default function TabLayout() {
   const isAndroid = Platform.OS === "android";
   const isLight = theme.name === "light";
   const androidIndicatorColor = isLight ? theme.colors.primarySoft : theme.colors.primary;
-  const androidSelectedIconColor = isLight ? theme.colors.tabActive : theme.colors.primaryForeground;
-  const androidSelectedLabelColor = isLight
+  const androidDefaultIconColor = isLight
+    ? theme.colors.icon
+    : theme.colors.primaryForeground;
+  const androidDefaultLabelColor = isLight ? theme.colors.text : theme.colors.primaryForeground;
+  const androidSelectedIconColor = isLight
     ? theme.colors.tabActive
+    : theme.colors.primaryForeground;
+  const androidSelectedLabelColor = isLight
+    ? theme.colors.text
     : theme.colors.primaryForeground;
   const androidRippleColor = theme.colors.primarySoft;
   const androidTriggerProps = isAndroid
@@ -29,14 +35,18 @@ export default function TabLayout() {
       backgroundColor={theme.colors.background}
       iconColor={
         isAndroid
-          ? { default: theme.colors.tabInactive, selected: androidSelectedIconColor }
+          ? { default: androidDefaultIconColor, selected: androidSelectedIconColor }
           : { default: theme.colors.tabInactive, selected: theme.colors.tabActive }
       }
       indicatorColor={isAndroid ? androidIndicatorColor : undefined}
       labelStyle={
         isAndroid
           ? {
-              default: { color: theme.colors.tabInactive, fontSize: 10, fontWeight: "700" },
+              default: {
+                color: androidDefaultLabelColor,
+                fontSize: 10,
+                fontWeight: "700",
+              },
               selected: {
                 color: androidSelectedLabelColor,
                 fontSize: 10,
