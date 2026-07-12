@@ -29,6 +29,10 @@ export function modalCloseHeaderLeft() {
   return <HeaderCloseButton />;
 }
 
+export function modalCloseHeaderRight() {
+  return <HeaderCloseButton />;
+}
+
 const styles = StyleSheet.create(() => ({
   trigger: {
     width: 36,

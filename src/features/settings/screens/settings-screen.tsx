@@ -1,24 +1,13 @@
 import type { ComponentType } from "react";
-import { useCallback, useRef, useState } from "react";
 
 import { ScrollView, Text, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
-import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { Bell, HardDriveDownload, Palette, WalletCards } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
-import { debtRepository } from "@/features/debts/repositories/debt-repository";
-import {
-  CurrencyConversionSheet,
-  type CurrencyConversionSheetRef,
-} from "@/features/settings/components/currency-conversion-sheet";
-import {
-  CurrencyPickerSheet,
-  type CurrencyPickerSheetRef,
-} from "@/features/settings/components/currency-picker-sheet";
 import { GetHelpSection } from "@/features/settings/components/get-help-section";
 import {
   SettingsCard,
@@ -26,10 +15,7 @@ import {
   SettingsNavRow,
   SettingsSection,
 } from "@/features/settings/components/settings-ui";
-import {
-  useChangeCurrency,
-  useCurrentCurrency,
-} from "@/features/settings/hooks/use-change-currency";
+import { useCurrentCurrency } from "@/features/settings/hooks/use-change-currency";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { formatReminderTimeDisplay } from "@/features/settings/lib/format-reminder-time";
 import { selectionChange } from "@/lib/haptics";
@@ -59,166 +45,79 @@ export function SettingsScreen() {
   const themePreference = useSettingsStore((state) => state.themePreference);
   const brandColorTheme = useSettingsStore((state) => state.brandColorTheme);
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
-  const changeCurrency = useChangeCurrency();
-  const currencyPickerRef = useRef<CurrencyPickerSheetRef>(null);
-  const conversionSheetRef = useRef<CurrencyConversionSheetRef>(null);
-
-  const [conversionTarget, setConversionTarget] = useState<string | null>(null);
-  const [totalRemaining, setTotalRemaining] = useState(0);
 
   const brandColorLabel = getBrandColorTheme(brandColorTheme).name;
   const appearanceSummary = `${THEME_LABELS[themePreference]} · ${brandColorLabel}`;
 
-  const handleCurrencySelect = useCallback(
-    async (code: string) => {
-      if (code === defaultCurrency) {
-        return;
-      }
-
-      const hasDebts = await debtRepository.hasAnyDebts();
-
-      if (!hasDebts) {
-        changeCurrency.mutate({
-          fromCurrency: defaultCurrency,
-          toCurrency: code,
-        });
-        return;
-      }
-
-      const total = await debtRepository.getTotalRemaining();
-      setTotalRemaining(total);
-      setConversionTarget(code);
-      requestAnimationFrame(() => {
-        conversionSheetRef.current?.present();
-      });
-    },
-    [changeCurrency, defaultCurrency],
-  );
-
-  const handleConversionConfirm = useCallback(
-    (rate: number) => {
-      if (!conversionTarget) {
-        return;
-      }
-
-      changeCurrency.mutate(
-        {
-          fromCurrency: defaultCurrency,
-          toCurrency: conversionTarget,
-          rate,
-        },
-        {
-          onSuccess: () => {
-            conversionSheetRef.current?.dismiss();
-            setConversionTarget(null);
-          },
-        },
-      );
-    },
-    [changeCurrency, conversionTarget, defaultCurrency],
-  );
-
-  const handleConversionClose = useCallback(() => {
-    if (changeCurrency.isPending) {
-      return;
-    }
-
-    setConversionTarget(null);
-  }, [changeCurrency.isPending]);
-
   return (
-    <BottomSheetModalProvider>
-      <TabScreen>
-        <View style={styles.header}>
-          <Text style={styles.title}>Settings</Text>
-        </View>
+    <TabScreen>
+      <View style={styles.header}>
+        <Text style={styles.title}>Settings</Text>
+      </View>
 
-        <ScrollView
-          contentContainerStyle={[styles.scroll, { paddingBottom: tabScrollPadding }]}
-          showsVerticalScrollIndicator={false}
-        >
-          <SettingsSection title="General">
-            <SettingsCard>
-              <SettingsNavRow
-                label="Appearance"
-                leading={
-                  <SettingsIconTile backgroundColor="#7C3AED">
-                    <Palette color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
-                  </SettingsIconTile>
-                }
-                onPress={() => router.push("/appearance" as Href)}
-                value={appearanceSummary}
-              />
-              <SettingsNavRow
-                bordered
-                label="Currency"
-                leading={
-                  <SettingsIconTile backgroundColor="#059669">
-                    <WalletCards color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
-                  </SettingsIconTile>
-                }
-                onPress={() => {
-                  selectionChange();
-                  currencyPickerRef.current?.present();
-                }}
-                value={defaultCurrency}
-              />
-              <SettingsNavRow
-                bordered
-                label="Reminders"
-                leading={
-                  <SettingsIconTile backgroundColor="#F97316">
-                    <Bell color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
-                  </SettingsIconTile>
-                }
-                onPress={() => router.push("/reminders-settings" as Href)}
-                value={formatReminderTimeDisplay(defaultReminderTime)}
-              />
-            </SettingsCard>
-          </SettingsSection>
+      <ScrollView
+        contentContainerStyle={[styles.scroll, { paddingBottom: tabScrollPadding }]}
+        showsVerticalScrollIndicator={false}
+      >
+        <SettingsSection title="General">
+          <SettingsCard>
+            <SettingsNavRow
+              label="Appearance"
+              leading={
+                <SettingsIconTile backgroundColor="#7C3AED">
+                  <Palette color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
+                </SettingsIconTile>
+              }
+              onPress={() => router.push("/appearance" as Href)}
+              value={appearanceSummary}
+            />
+            <SettingsNavRow
+              bordered
+              label="Currency"
+              leading={
+                <SettingsIconTile backgroundColor="#059669">
+                  <WalletCards color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
+                </SettingsIconTile>
+              }
+              onPress={() => {
+                selectionChange();
+                router.push("/currency" as Href);
+              }}
+              value={defaultCurrency}
+            />
+            <SettingsNavRow
+              bordered
+              label="Reminders"
+              leading={
+                <SettingsIconTile backgroundColor="#F97316">
+                  <Bell color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
+                </SettingsIconTile>
+              }
+              onPress={() => router.push("/reminders-settings" as Href)}
+              value={formatReminderTimeDisplay(defaultReminderTime)}
+            />
+          </SettingsCard>
+        </SettingsSection>
 
-          <SettingsSection title="Data">
-            <SettingsCard>
-              <SettingsNavRow
-                label="Backup & Restore"
-                leading={
-                  <SettingsIconTile backgroundColor="#2563EB">
-                    <HardDriveDownload
-                      color="#FFFFFF"
-                      size={SETTINGS_ICON_SIZE}
-                      strokeWidth={2.2}
-                    />
-                  </SettingsIconTile>
-                }
-                onPress={() => router.push("/backup-restore" as Href)}
-              />
-            </SettingsCard>
-          </SettingsSection>
+        <SettingsSection title="Data">
+          <SettingsCard>
+            <SettingsNavRow
+              label="Backup & Restore"
+              leading={
+                <SettingsIconTile backgroundColor="#2563EB">
+                  <HardDriveDownload color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
+                </SettingsIconTile>
+              }
+              onPress={() => router.push("/backup-restore" as Href)}
+            />
+          </SettingsCard>
+        </SettingsSection>
 
-          <GetHelpSection />
+        <GetHelpSection />
 
-          {DevToolsSection ? <DevToolsSection /> : null}
-        </ScrollView>
-
-        <CurrencyPickerSheet
-          onSelect={(code) => {
-            void handleCurrencySelect(code);
-          }}
-          ref={currencyPickerRef}
-          value={defaultCurrency}
-        />
-
-        <CurrencyConversionSheet
-          fromCurrency={defaultCurrency}
-          isSubmitting={changeCurrency.isPending}
-          onClose={handleConversionClose}
-          onConfirm={handleConversionConfirm}
-          ref={conversionSheetRef}
-          toCurrency={conversionTarget ?? defaultCurrency}
-          totalRemaining={totalRemaining}
-        />
-      </TabScreen>
-    </BottomSheetModalProvider>
+        {DevToolsSection ? <DevToolsSection /> : null}
+      </ScrollView>
+    </TabScreen>
   );
 }
 

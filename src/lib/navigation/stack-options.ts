@@ -1,6 +1,9 @@
 import type { NativeStackNavigationOptions } from "expo-router";
 
-import { modalCloseHeaderLeft } from "@/components/navigation/header-close-button";
+import {
+  modalCloseHeaderLeft,
+  modalCloseHeaderRight,
+} from "@/components/navigation/header-close-button";
 import { type AppTheme, lightTheme } from "@/styles/themes";
 
 export function getStackScreenOptions(theme: AppTheme): NativeStackNavigationOptions {
@@ -26,6 +29,14 @@ export function getModalScreenOptions(theme: AppTheme): NativeStackNavigationOpt
     headerLargeTitleEnabled: false,
     headerBackVisible: false,
     headerLeft: modalCloseHeaderLeft,
+  };
+}
+
+export function getModalScreenOptionsWithRightClose(theme: AppTheme): NativeStackNavigationOptions {
+  return {
+    ...getModalScreenOptions(theme),
+    headerLeft: undefined,
+    headerRight: modalCloseHeaderRight,
   };
 }
 

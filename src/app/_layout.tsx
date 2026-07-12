@@ -32,6 +32,7 @@ import { getDb } from "@/lib/db/client";
 import {
   LOADING_DETAIL_HEADER_OPTIONS,
   getModalScreenOptions,
+  getModalScreenOptionsWithRightClose,
   getStackScreenOptions,
 } from "@/lib/navigation/stack-options";
 
@@ -40,6 +41,7 @@ export default function RootLayout() {
   const [dbReady, setDbReady] = useState(false);
   const stackOptions = getStackScreenOptions(theme);
   const modalOptions = getModalScreenOptions(theme);
+  const currencyModalOptions = getModalScreenOptionsWithRightClose(theme);
 
   useEffect(() => {
     void Promise.all([
@@ -269,6 +271,16 @@ export default function RootLayout() {
                   animation: "slide_from_bottom",
                   headerShown: true,
                   title: "Notifications",
+                }}
+              />
+              <Stack.Screen
+                name="currency"
+                options={{
+                  ...currencyModalOptions,
+                  presentation: "modal",
+                  animation: "slide_from_bottom",
+                  headerShown: true,
+                  title: "Currency",
                 }}
               />
               <Stack.Screen
