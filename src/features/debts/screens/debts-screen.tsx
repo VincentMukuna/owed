@@ -1,6 +1,7 @@
 import {
   type ComponentType,
   type ReactNode,
+  memo,
   useCallback,
   useDeferredValue,
   useEffect,
@@ -9,7 +10,14 @@ import {
   useState,
 } from "react";
 
-import { type LayoutChangeEvent, Platform, Pressable, Text, View } from "react-native";
+import {
+  InteractionManager,
+  type LayoutChangeEvent,
+  Platform,
+  Pressable,
+  Text,
+  View,
+} from "react-native";
 
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
 import { type Href, router, useLocalSearchParams } from "expo-router";
@@ -55,17 +63,48 @@ import { selectionChange } from "@/lib/haptics";
 import { invalidateDebtQueries } from "@/lib/query/invalidate-queries";
 import type { ReminderType } from "@/types";
 
-type DebtFocus = { kind: "date"; date: string; type: ReminderType } | { kind: "paid-this-month" };
+type DebtFocus =
+  | { kind: "date"; date: string; type: ReminderType }
+  | { kind: "paid-this-month" }
+  | { kind: "filter"; filter: DebtFilterKey }
+  | { kind: "direction"; direction: Exclude<DebtDirectionFilter, "all"> };
 type DateRangeTarget = "from" | "to";
+
+const DASHBOARD_FILTER_FOCUS = new Set<DebtFilterKey>(["active", "overdue", "due-soon"]);
+const DASHBOARD_DIRECTION_FOCUS = new Set<Exclude<DebtDirectionFilter, "all">>([
+  "they_owe_me",
+  "i_owe_them",
+]);
+
+function parseDashboardFilterFocus(focusType: string): DebtFilterKey | null {
+  if (!focusType.startsWith("filter-")) {
+    return null;
+  }
+
+  const filter = focusType.slice("filter-".length) as DebtFilterKey;
+  return DASHBOARD_FILTER_FOCUS.has(filter) ? filter : null;
+}
+
+function parseDashboardDirectionFocus(
+  focusType: string,
+): Exclude<DebtDirectionFilter, "all"> | null {
+  if (!focusType.startsWith("direction-")) {
+    return null;
+  }
+
+  const direction = focusType.slice("direction-".length) as Exclude<DebtDirectionFilter, "all">;
+  return DASHBOARD_DIRECTION_FOCUS.has(direction) ? direction : null;
+}
 
 const SHEET_CONTAINER = (Platform.OS === "ios" ? FullWindowOverlay : undefined) as
   | ComponentType<{ children?: ReactNode }>
   | undefined;
 
-type OptimisticParam<TKey extends string> = {
-  baseParam: TKey | null;
-  value: TKey;
-};
+function scheduleDashboardFocusClear() {
+  InteractionManager.runAfterInteractions(() => {
+    router.setParams({ focusDate: "", focusType: "" });
+  });
+}
 
 function parseFilterParam(value: string | string[] | undefined): DebtFilterKey | null {
   if (typeof value !== "string" || value.length === 0) {
@@ -167,11 +206,18 @@ function FilterTabs<TKey extends string>({
         return (
           <Pressable
             key={tab.key}
-            onPress={() => onSelect(tab.key)}
+            onPress={() => {
+              if (canUseLiquidGlass) {
+                onSelect(tab.key);
+              }
+            }}
             onPressIn={() => {
               if (canUseLiquidGlass) {
                 indicatorIndex.value = withTiming(index, { duration: 220 });
+                return;
               }
+
+              onSelect(tab.key);
             }}
             style={[styles.tab, active && !canUseLiquidGlass && styles.tabActive]}
           >
@@ -182,6 +228,95 @@ function FilterTabs<TKey extends string>({
     </View>
   );
 }
+
+type DebtsFiltersSheetContentProps = {
+  canUseLiquidGlass: boolean;
+  dateRange: DebtDateRangeFilter;
+  direction: DebtDirectionFilter;
+  directionTabs: FilterTabItem<DebtDirectionFilter>[];
+  filter: DebtFilterKey;
+  hasActiveFilters: boolean;
+  onClearRangeDate: (target: DateRangeTarget) => void;
+  onOpenDatePicker: (target: DateRangeTarget) => void;
+  onResetFilters: () => void;
+  onSelectDirection: (key: DebtDirectionFilter) => void;
+  onSelectFilter: (key: DebtFilterKey) => void;
+  tabs: FilterTabItem<DebtFilterKey>[];
+};
+
+function DebtsFiltersSheetContentInner({
+  canUseLiquidGlass,
+  dateRange,
+  direction,
+  directionTabs,
+  filter,
+  hasActiveFilters,
+  onClearRangeDate,
+  onOpenDatePicker,
+  onResetFilters,
+  onSelectDirection,
+  onSelectFilter,
+  tabs,
+}: DebtsFiltersSheetContentProps) {
+  return (
+    <View style={styles.sheetContent}>
+      <View style={styles.sheetHeader}>
+        <Text style={styles.sheetTitle}>Filters</Text>
+        <PressableScale
+          hitSlop={8}
+          onPress={onResetFilters}
+          style={styles.sheetReset}
+          disabled={!hasActiveFilters}
+        >
+          <Text style={[styles.sheetResetText, !hasActiveFilters && styles.sheetResetMuted]}>
+            Reset
+          </Text>
+        </PressableScale>
+      </View>
+
+      <View style={styles.tabsWrap}>
+        <Text style={styles.filterLabel}>Direction</Text>
+        <FilterTabs
+          canUseLiquidGlass={canUseLiquidGlass}
+          items={directionTabs}
+          onSelect={onSelectDirection}
+          selected={direction}
+        />
+      </View>
+
+      <View style={styles.tabsWrap}>
+        <Text style={styles.filterLabel}>Status</Text>
+        <FilterTabs
+          canUseLiquidGlass={canUseLiquidGlass}
+          items={tabs}
+          onSelect={onSelectFilter}
+          selected={filter}
+        />
+      </View>
+
+      <View style={styles.tabsWrap}>
+        <Text style={styles.filterLabel}>Promised date</Text>
+        <View style={styles.dateRangeRow}>
+          <DateRangeField
+            placeholder="From"
+            value={dateRange.from}
+            onClear={() => onClearRangeDate("from")}
+            onPress={() => onOpenDatePicker("from")}
+          />
+          <Text style={styles.dateRangeSeparator}>-</Text>
+          <DateRangeField
+            placeholder="To"
+            value={dateRange.to}
+            onClear={() => onClearRangeDate("to")}
+            onPress={() => onOpenDatePicker("to")}
+          />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+const DebtsFiltersSheetContent = memo(DebtsFiltersSheetContentInner);
 
 export function DebtsScreen() {
   const { theme } = useUnistyles();
@@ -196,21 +331,11 @@ export function DebtsScreen() {
   }>();
   const paramFilter = useMemo(() => parseFilterParam(params.filter), [params.filter]);
   const paramDirection = useMemo(() => parseDirectionParam(params.direction), [params.direction]);
-  const [optimisticFilter, setOptimisticFilter] = useState<OptimisticParam<DebtFilterKey> | null>(
-    null,
-  );
-  const [optimisticDirection, setOptimisticDirection] =
-    useState<OptimisticParam<DebtDirectionFilter> | null>(null);
+  const [filter, setFilter] = useState<DebtFilterKey>(() => paramFilter ?? "all");
+  const [direction, setDirection] = useState<DebtDirectionFilter>(() => paramDirection ?? "all");
+  const deferredFilter = useDeferredValue(filter);
+  const deferredDirection = useDeferredValue(direction);
   const [dateRange, setDateRange] = useState<DebtDateRangeFilter>({});
-  const filter =
-    optimisticFilter && (paramFilter === null || paramFilter === optimisticFilter.baseParam)
-      ? optimisticFilter.value
-      : (paramFilter ?? "all");
-  const direction =
-    optimisticDirection &&
-    (paramDirection === null || paramDirection === optimisticDirection.baseParam)
-      ? optimisticDirection.value
-      : (paramDirection ?? "all");
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [datePickerTarget, setDatePickerTarget] = useState<DateRangeTarget | null>(null);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -221,12 +346,23 @@ export function DebtsScreen() {
   const filtersSheetRef = useRef<BottomSheetModal>(null);
   const filterSheetSnapPoints = useMemo(() => ["56%"], []);
   const todayIso = useMemo(() => toISODate(new Date()), []);
-  const canUseLiquidGlass =
-    Platform.OS === "ios" && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
-
   const focus = useMemo<DebtFocus | null>(() => {
-    if (params.focusType === "paid-this-month") {
+    const focusType = params.focusType;
+
+    if (focusType === "paid-this-month") {
       return { kind: "paid-this-month" };
+    }
+
+    if (typeof focusType === "string" && focusType.length > 0) {
+      const dashboardFilter = parseDashboardFilterFocus(focusType);
+      if (dashboardFilter) {
+        return { kind: "filter", filter: dashboardFilter };
+      }
+
+      const dashboardDirection = parseDashboardDirectionFocus(focusType);
+      if (dashboardDirection) {
+        return { kind: "direction", direction: dashboardDirection };
+      }
     }
 
     const focusDate = params.focusDate;
@@ -236,12 +372,25 @@ export function DebtsScreen() {
     return {
       kind: "date",
       date: focusDate,
-      type: params.focusType === "overdue" ? "overdue" : "due",
+      type: focusType === "overdue" ? "overdue" : "due",
     };
   }, [params.focusDate, params.focusType]);
 
-  const clearFocus = useCallback(() => {
-    router.setParams({ focusDate: "", focusType: "" });
+  const canUseLiquidGlass =
+    Platform.OS === "ios" && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
+
+  const clearDashboardFocusParams = useCallback(() => {
+    if (!params.focusType && !params.focusDate) {
+      return;
+    }
+
+    scheduleDashboardFocusClear();
+  }, [params.focusDate, params.focusType]);
+
+  const dismissFocusBanner = useCallback(() => {
+    setFilter("all");
+    setDirection("all");
+    router.setParams({ focusDate: "", focusType: "", filter: "", direction: "" });
   }, []);
 
   const directionCounts = useMemo(
@@ -278,13 +427,23 @@ export function DebtsScreen() {
         ? filterDebtsByDueDate(debts, focus.date)
         : focus?.kind === "paid-this-month"
           ? filterSearchAndSortDebts(debts, "paid-this-month", deferredSearchQuery, "all")
-          : filterSearchAndSortDebts(debts, filter, deferredSearchQuery, direction, dateRange),
-    [debts, filter, deferredSearchQuery, direction, dateRange, focus],
+          : focus?.kind === "filter"
+            ? filterSearchAndSortDebts(debts, focus.filter, deferredSearchQuery, "all")
+            : focus?.kind === "direction"
+              ? filterSearchAndSortDebts(debts, "all", deferredSearchQuery, focus.direction)
+              : filterSearchAndSortDebts(
+                  debts,
+                  deferredFilter,
+                  deferredSearchQuery,
+                  deferredDirection,
+                  dateRange,
+                ),
+    [debts, deferredFilter, deferredSearchQuery, deferredDirection, dateRange, focus],
   );
 
   useEffect(() => {
     listRef.current?.scrollToTop({ animated: false });
-  }, [filter, deferredSearchQuery, direction, dateRange, focus]);
+  }, [deferredFilter, deferredSearchQuery, deferredDirection, dateRange, focus]);
 
   useEffect(() => {
     if (!searchOpen) {
@@ -302,9 +461,9 @@ export function DebtsScreen() {
 
   const openSearch = useCallback(() => {
     selectionChange();
-    clearFocus();
+    clearDashboardFocusParams();
     setSearchOpen(true);
-  }, [clearFocus]);
+  }, [clearDashboardFocusParams]);
 
   const handleDebtAction = useCallback(
     (action: DebtAction, debt: DebtCardView) => {
@@ -353,30 +512,32 @@ export function DebtsScreen() {
   const selectFilter = useCallback(
     (key: DebtFilterKey) => {
       selectionChange();
-      clearFocus();
-      setOptimisticFilter({ baseParam: paramFilter, value: key });
-      router.setParams({ filter: "" });
+      setFilter(key);
+      if (params.focusType || params.focusDate) {
+        scheduleDashboardFocusClear();
+      }
     },
-    [clearFocus, paramFilter],
+    [params.focusDate, params.focusType],
   );
 
   const selectDirection = useCallback(
     (key: DebtDirectionFilter) => {
       selectionChange();
-      clearFocus();
-      setOptimisticDirection({ baseParam: paramDirection, value: key });
-      router.setParams({ direction: "" });
+      setDirection(key);
+      if (params.focusType || params.focusDate) {
+        scheduleDashboardFocusClear();
+      }
     },
-    [clearFocus, paramDirection],
+    [params.focusDate, params.focusType],
   );
 
   const openDatePicker = useCallback(
     (target: DateRangeTarget) => {
       selectionChange();
-      clearFocus();
+      clearDashboardFocusParams();
       setDatePickerTarget(target);
     },
-    [clearFocus],
+    [clearDashboardFocusParams],
   );
 
   const saveRangeDate = useCallback(
@@ -405,20 +566,19 @@ export function DebtsScreen() {
   const clearRangeDate = useCallback(
     (target: DateRangeTarget) => {
       selectionChange();
-      clearFocus();
+      clearDashboardFocusParams();
       setDateRange((current) => ({ ...current, [target]: undefined }));
     },
-    [clearFocus],
+    [clearDashboardFocusParams],
   );
 
   const resetFilters = useCallback(() => {
     selectionChange();
-    clearFocus();
-    setOptimisticDirection({ baseParam: paramDirection, value: "all" });
-    setOptimisticFilter({ baseParam: paramFilter, value: "all" });
+    setDirection("all");
+    setFilter("all");
     setDateRange({});
-    router.setParams({ direction: "", filter: "" });
-  }, [clearFocus, paramDirection, paramFilter]);
+    router.setParams({ focusDate: "", focusType: "", direction: "", filter: "" });
+  }, []);
 
   const closeSearch = useCallback(() => {
     setSearchQuery("");
@@ -448,13 +608,31 @@ export function DebtsScreen() {
       return "";
     }
 
+    const count = visibleDebts.length;
+
     if (focus.kind === "paid-this-month") {
-      return `${visibleDebts.length} settled this month`;
+      return `${count} settled this month`;
+    }
+
+    if (focus.kind === "filter") {
+      if (focus.filter === "active") {
+        return `${count} active ${count === 1 ? "promise" : "promises"}`;
+      }
+
+      if (focus.filter === "overdue") {
+        return `${count} overdue`;
+      }
+
+      return `${count} due soon`;
+    }
+
+    if (focus.kind === "direction") {
+      return focus.direction === "they_owe_me" ? `${count} owed to you` : `${count} you owe`;
     }
 
     return focus.type === "overdue"
-      ? `${visibleDebts.length} overdue from ${formatDueDate(focus.date)}`
-      : `${visibleDebts.length} promised on ${formatDueDate(focus.date)}`;
+      ? `${count} overdue from ${formatDueDate(focus.date)}`
+      : `${count} promised on ${formatDueDate(focus.date)}`;
   }, [focus, visibleDebts.length]);
 
   const emptyState = useMemo(
@@ -532,7 +710,7 @@ export function DebtsScreen() {
             <Text style={styles.focusText} numberOfLines={1}>
               {focusBannerText}
             </Text>
-            <PressableScale hitSlop={8} onPress={clearFocus} style={styles.focusClear}>
+            <PressableScale hitSlop={8} onPress={dismissFocusBanner} style={styles.focusClear}>
               <Text style={styles.focusClearText}>Clear</Text>
               <X color={theme.colors.icon} size={14} strokeWidth={2} />
             </PressableScale>
@@ -547,7 +725,7 @@ export function DebtsScreen() {
           onDebtAction={handleDebtAction}
           onDebtPress={openDebt}
           refreshControlProps={refreshControlProps}
-          showDirectionCue={direction === "all"}
+          showDirectionCue={deferredDirection === "all"}
         />
 
         <FabButton onPress={openAdd} />
@@ -564,60 +742,20 @@ export function DebtsScreen() {
         handleIndicatorStyle={styles.sheetHandle}
         backgroundStyle={styles.sheetBackground}
       >
-        <View style={styles.sheetContent}>
-          <View style={styles.sheetHeader}>
-            <Text style={styles.sheetTitle}>Filters</Text>
-            <PressableScale
-              hitSlop={8}
-              onPress={resetFilters}
-              style={styles.sheetReset}
-              disabled={!hasActiveFilters}
-            >
-              <Text style={[styles.sheetResetText, !hasActiveFilters && styles.sheetResetMuted]}>
-                Reset
-              </Text>
-            </PressableScale>
-          </View>
-
-          <View style={styles.tabsWrap}>
-            <Text style={styles.filterLabel}>Direction</Text>
-            <FilterTabs
-              canUseLiquidGlass={canUseLiquidGlass}
-              items={directionTabs}
-              onSelect={selectDirection}
-              selected={direction}
-            />
-          </View>
-
-          <View style={styles.tabsWrap}>
-            <Text style={styles.filterLabel}>Status</Text>
-            <FilterTabs
-              canUseLiquidGlass={canUseLiquidGlass}
-              items={tabs}
-              onSelect={selectFilter}
-              selected={filter}
-            />
-          </View>
-
-          <View style={styles.tabsWrap}>
-            <Text style={styles.filterLabel}>Promised date</Text>
-            <View style={styles.dateRangeRow}>
-              <DateRangeField
-                placeholder="From"
-                value={dateRange.from}
-                onClear={() => clearRangeDate("from")}
-                onPress={() => openDatePicker("from")}
-              />
-              <Text style={styles.dateRangeSeparator}>-</Text>
-              <DateRangeField
-                placeholder="To"
-                value={dateRange.to}
-                onClear={() => clearRangeDate("to")}
-                onPress={() => openDatePicker("to")}
-              />
-            </View>
-          </View>
-        </View>
+        <DebtsFiltersSheetContent
+          canUseLiquidGlass={canUseLiquidGlass}
+          dateRange={dateRange}
+          direction={direction}
+          directionTabs={directionTabs}
+          filter={filter}
+          hasActiveFilters={hasActiveFilters}
+          onClearRangeDate={clearRangeDate}
+          onOpenDatePicker={openDatePicker}
+          onResetFilters={resetFilters}
+          onSelectDirection={selectDirection}
+          onSelectFilter={selectFilter}
+          tabs={tabs}
+        />
       </BottomSheetModal>
 
       <DueDatePickerModal

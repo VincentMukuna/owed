@@ -111,24 +111,26 @@ export function HomeScreen() {
   }, []);
 
   const openDebtsFilter = useCallback((filter: DebtFilterKey) => {
-    if (filter === "paid-this-month") {
-      router.push({
-        pathname: "/debts",
-        params: { filter: "all", direction: "all", focusDate: "", focusType: "paid-this-month" },
-      });
-      return;
-    }
-
     router.push({
       pathname: "/debts",
-      params: { filter, direction: "all", focusDate: "", focusType: "" },
+      params: {
+        filter: "all",
+        direction: "all",
+        focusDate: "",
+        focusType: filter === "paid-this-month" ? "paid-this-month" : `filter-${filter}`,
+      },
     });
   }, []);
 
   const openDebtsDirection = useCallback((direction: "they_owe_me" | "i_owe_them") => {
     router.push({
       pathname: "/debts",
-      params: { direction, filter: "all", focusDate: "", focusType: "" },
+      params: {
+        filter: "all",
+        direction: "all",
+        focusDate: "",
+        focusType: `direction-${direction}`,
+      },
     });
   }, []);
 
