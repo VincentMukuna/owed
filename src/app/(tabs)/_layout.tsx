@@ -9,10 +9,16 @@ import { selectionChange } from "@/lib/haptics";
 export default function TabLayout() {
   const { theme } = useUnistyles();
   const isAndroid = Platform.OS === "android";
+  const isLight = theme.name === "light";
+  const androidIndicatorColor = isLight ? theme.colors.primarySoft : theme.colors.primary;
+  const androidSelectedIconColor = isLight ? theme.colors.tabActive : theme.colors.primaryForeground;
+  const androidSelectedLabelColor = isLight
+    ? theme.colors.tabActive
+    : theme.colors.primaryForeground;
   const androidRippleColor = theme.colors.primarySoft;
   const androidTriggerProps = isAndroid
     ? {
-        indicatorColor: theme.colors.primary,
+        indicatorColor: androidIndicatorColor,
         rippleColor: androidRippleColor,
       }
     : {};
@@ -23,15 +29,19 @@ export default function TabLayout() {
       backgroundColor={theme.colors.background}
       iconColor={
         isAndroid
-          ? { default: theme.colors.tabInactive, selected: theme.colors.primaryForeground }
+          ? { default: theme.colors.tabInactive, selected: androidSelectedIconColor }
           : { default: theme.colors.tabInactive, selected: theme.colors.tabActive }
       }
-      indicatorColor={isAndroid ? theme.colors.primary : undefined}
+      indicatorColor={isAndroid ? androidIndicatorColor : undefined}
       labelStyle={
         isAndroid
           ? {
               default: { color: theme.colors.tabInactive, fontSize: 10, fontWeight: "700" },
-              selected: { color: theme.colors.primaryForeground, fontSize: 10, fontWeight: "700" },
+              selected: {
+                color: androidSelectedLabelColor,
+                fontSize: 10,
+                fontWeight: "700",
+              },
             }
           : {
               default: { color: theme.colors.tabInactive, fontSize: 10, fontWeight: "700" },
@@ -49,7 +59,7 @@ export default function TabLayout() {
         },
       }}
       tabBarRespectsIMEInsets
-      tintColor={isAndroid ? theme.colors.primaryForeground : theme.colors.tint}
+      tintColor={isAndroid ? androidSelectedIconColor : theme.colors.tint}
     >
       <NativeTabs.Trigger
         {...androidTriggerProps}
