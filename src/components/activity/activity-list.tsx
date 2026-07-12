@@ -3,6 +3,15 @@ import { memo, useCallback } from "react";
 import { RefreshControl, type RefreshControlProps, Text, View } from "react-native";
 
 import { FlashList } from "@shopify/flash-list";
+import {
+  Archive,
+  Banknote,
+  Calendar,
+  Check,
+  type LucideIcon,
+  Pencil,
+  Plus,
+} from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import {
@@ -10,14 +19,31 @@ import {
   ListRowContainer,
 } from "@/components/shared/list-inset-divider";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
-import type { ActivityView } from "@/features/debts/view-models";
+import type { ActivityView, ActivityViewType } from "@/features/debts/view-models";
+import type { AppTheme } from "@/styles/themes";
 
-const TYPE_SYMBOL: Record<ActivityView["type"], string> = {
-  payment: "↓",
-  add: "+",
-  paid: "✓",
-  update: "•",
+const ACTIVITY_ICON: Record<ActivityViewType, LucideIcon> = {
+  payment: Banknote,
+  add: Plus,
+  paid: Check,
+  "amount-changed": Pencil,
+  "due-date-changed": Calendar,
+  archived: Archive,
 };
+
+type ActivityColorKey = keyof AppTheme["colors"]["activity"];
+
+function activityColorKey(type: ActivityViewType): ActivityColorKey {
+  switch (type) {
+    case "amount-changed":
+    case "due-date-changed":
+      return "update";
+    case "archived":
+      return "add";
+    default:
+      return type;
+  }
+}
 
 type ActivityListProps = {
   activities: ActivityView[];
@@ -29,12 +55,13 @@ type ActivityListProps = {
 
 export const ActivityRow = memo(({ activity }: { activity: ActivityView }) => {
   const { theme } = useUnistyles();
-  const config = theme.colors.activity[activity.type];
+  const config = theme.colors.activity[activityColorKey(activity.type)];
+  const Icon = ACTIVITY_ICON[activity.type];
 
   return (
     <View style={styles.row}>
       <View style={[styles.icon, { backgroundColor: config.bg }]}>
-        <Text style={[styles.symbol, { color: config.text }]}>{TYPE_SYMBOL[activity.type]}</Text>
+        <Icon color={config.text} size={14} strokeWidth={2} />
       </View>
       <View style={styles.copy}>
         <Text style={styles.text}>{activity.text}</Text>
@@ -112,27 +139,27 @@ const styles = StyleSheet.create((theme) => ({
     justifyContent: "center",
     marginTop: 2,
   },
-  symbol: {
-    fontSize: 14,
-    fontWeight: "700",
-  },
   copy: {
     flex: 1,
     minWidth: 0,
+    gap: 3,
   },
   text: {
-    fontSize: 14,
+    fontSize: 15,
+    fontWeight: "600",
     color: theme.colors.text,
     lineHeight: 20,
   },
   sub: {
     fontSize: 12,
     color: theme.colors.muted,
-    marginTop: 2,
+    lineHeight: 17,
   },
   time: {
-    fontSize: 11,
-    color: theme.colors.mutedLight,
+    fontSize: 12,
+    fontWeight: "500",
+    color: theme.colors.muted,
+    lineHeight: 17,
     marginTop: 2,
     flexShrink: 0,
   },

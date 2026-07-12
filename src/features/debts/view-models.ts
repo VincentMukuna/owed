@@ -73,7 +73,13 @@ export type UpdateDebtInput = {
   reminderTime?: string;
 };
 
-export type ActivityViewType = "payment" | "add" | "paid" | "update";
+export type ActivityViewType =
+  | "payment"
+  | "add"
+  | "paid"
+  | "amount-changed"
+  | "due-date-changed"
+  | "archived";
 
 export type ActivityView = {
   id: string;

@@ -13,9 +13,11 @@ function toActivityViewType(type: ActivityEventType): ActivityViewType {
     case "debt_paid":
       return "paid";
     case "debt_amount_changed":
+      return "amount-changed";
     case "debt_due_date_changed":
+      return "due-date-changed";
     case "debt_archived":
-      return "update";
+      return "archived";
   }
 }
 
