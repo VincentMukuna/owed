@@ -1,18 +1,20 @@
 import Constants from "expo-constants";
 
+import {
+  cancelReminderNotifications,
+  listScheduledOsNotificationIds,
+} from "@/features/reminders/lib/notification-service";
+import { runReminderSync } from "@/features/reminders/lib/reminder-sync";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
 import { createId } from "@/lib/id";
 
-import { DefaultBackupClient } from "../application/default-backup-client";
-import { JsonBackupCodec } from "../infrastructure/codecs/json-backup-codec";
-import { ExpoBackupStore } from "../infrastructure/expo/expo-backup-store";
-import { QueryCacheRestoreHook } from "../infrastructure/hooks/query-cache-restore-hook";
-import { ReminderRestoreHook } from "../infrastructure/hooks/reminder-restore-hook";
-import { Sha256BackupIntegrity } from "../infrastructure/integrity/sha256-backup-integrity";
-import { SQLiteBackupAdapter } from "../infrastructure/sqlite/sqlite-backup-adapter";
-import { ZodBackupValidator } from "../infrastructure/validation/backup-validator";
-import type { BackupStore } from "../ports/backup-store";
+import { DefaultBackupClient } from "../client/default-backup-client";
+import type { BackupStore } from "../files/backup-store";
+import { ExpoBackupStore } from "../files/expo-backup-store";
+import { jsonBackupCodec } from "../files/json-backup-codec";
+import { sha256Integrity } from "../files/sha256-integrity";
+import { SQLiteBackupAdapter } from "../persistence/sqlite-backup-adapter";
 import type { BackupClient } from "./types";
 
 function getAppId(): string {
@@ -25,7 +27,7 @@ function getAppId(): string {
 }
 
 export function createBackupClient(): BackupClient {
-  const adapter = new SQLiteBackupAdapter(getDb);
+  const snapshot = new SQLiteBackupAdapter(getDb);
 
   return new DefaultBackupClient({
     app: {
@@ -33,12 +35,25 @@ export function createBackupClient(): BackupClient {
       getAppVersion: () => Constants.expoConfig?.version ?? "unknown",
       getBuildVersion: () => Constants.expoConfig?.ios?.buildNumber ?? null,
     },
-    source: adapter,
-    destination: adapter,
-    codec: new JsonBackupCodec(),
-    validator: new ZodBackupValidator(),
-    integrity: new Sha256BackupIntegrity(),
-    hooks: [new ReminderRestoreHook(), new QueryCacheRestoreHook(queryClient)],
+    snapshot,
+    codec: jsonBackupCodec,
+    integrity: sha256Integrity,
+    afterRestore: [
+      {
+        name: "reschedule-reminders",
+        run: async () => {
+          const scheduledIds = await listScheduledOsNotificationIds();
+          await cancelReminderNotifications(scheduledIds);
+          await runReminderSync();
+        },
+      },
+      {
+        name: "invalidate-caches",
+        run: async () => {
+          await queryClient.invalidateQueries();
+        },
+      },
+    ],
     clock: {
       now: () => new Date(),
     },

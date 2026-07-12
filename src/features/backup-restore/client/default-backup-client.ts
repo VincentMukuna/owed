@@ -3,8 +3,11 @@ import {
   type BackupInspection,
   type BackupManifest,
   createBackupSummary,
+  validateBackupDocument,
+  validateBackupPayload,
 } from "../domain/backup-document";
 import { BackupError, normalizeBackupFailure } from "../domain/backup-error";
+import type { BackupIntegrity } from "../domain/backup-integrity";
 import {
   BACKUP_FORMAT,
   BACKUP_SDK_VERSION,
@@ -12,14 +15,8 @@ import {
   CURRENT_BACKUP_FORMAT_VERSION,
   calculateRecordCounts,
 } from "../domain/backup-payload-v1";
-import type { BackupCodec } from "../ports/backup-codec";
-import type { BackupIntegrity } from "../ports/backup-integrity";
-import type {
-  BackupPayloadRestoreDestination,
-  BackupRestoreHook,
-} from "../ports/backup-restore-destination";
-import type { BackupSource } from "../ports/backup-source";
-import type { BackupValidator } from "../ports/backup-validator";
+import type { BackupCodec } from "../files/json-backup-codec";
+import type { BackupSnapshot } from "../persistence/backup-snapshot";
 import type {
   BackupClient,
   BackupInput,
@@ -31,6 +28,7 @@ import type {
   RestoreOptions,
   RestoreResult,
 } from "../public/types";
+import type { AfterRestoreAction } from "./prepared-restore-operation";
 import { PreparedRestoreOperation } from "./prepared-restore-operation";
 
 type BackupAppInfo = {
@@ -49,12 +47,10 @@ type IdGenerator = {
 
 type DefaultBackupClientOptions = {
   app: BackupAppInfo;
-  source: BackupSource<BackupPayloadV1>;
-  destination: BackupPayloadRestoreDestination;
+  snapshot: BackupSnapshot;
   codec: BackupCodec;
-  validator: BackupValidator<BackupPayloadV1>;
   integrity: BackupIntegrity;
-  hooks: BackupRestoreHook[];
+  afterRestore?: AfterRestoreAction[];
   clock: Clock;
   idGenerator: IdGenerator;
 };
@@ -89,15 +85,21 @@ function buildWarnings(payload: BackupPayloadV1) {
 }
 
 export class DefaultBackupClient implements BackupClient {
-  constructor(private readonly options: DefaultBackupClientOptions) {}
+  private readonly integrity: BackupIntegrity;
+  private readonly afterRestore: AfterRestoreAction[];
+
+  constructor(private readonly options: DefaultBackupClientOptions) {
+    this.integrity = options.integrity;
+    this.afterRestore = options.afterRestore ?? [];
+  }
 
   async create(options: CreateBackupOptions = {}): Promise<CreatedBackup> {
-    const sourceMetadata = await this.options.source.getSourceMetadata();
-    const payload = this.options.validator.validateCurrentPayload(
-      await this.options.source.exportSnapshot({ signal: options.signal }),
+    const metadata = await this.options.snapshot.getMetadata();
+    const payload = validateBackupPayload(
+      await this.options.snapshot.exportSnapshot({ signal: options.signal }),
     );
     const payloadBytes = await this.options.codec.encodePayloadForIntegrity(payload);
-    const hash = await this.options.integrity.calculateHash(payloadBytes);
+    const hash = await this.integrity.calculateHash(payloadBytes);
     const document: BackupDocument<BackupPayloadV1> = {
       manifest: {
         format: BACKUP_FORMAT,
@@ -111,7 +113,7 @@ export class DefaultBackupClient implements BackupClient {
           sdkVersion: BACKUP_SDK_VERSION,
         },
         source: {
-          databaseSchemaVersion: sourceMetadata.databaseSchemaVersion,
+          databaseSchemaVersion: metadata.databaseSchemaVersion,
         },
         payload: {
           encoding: "json",
@@ -142,7 +144,7 @@ export class DefaultBackupClient implements BackupClient {
       typeof input === "string" || input instanceof Uint8Array
         ? await this.options.codec.decode(input)
         : input;
-    const document = this.options.validator.validateDocument(decoded);
+    const document = validateBackupDocument(decoded);
     const payloadBytes = await this.options.codec.encodePayloadForIntegrity(document.payload);
 
     if (document.manifest.producer.appId !== this.options.app.appId) {
@@ -156,7 +158,7 @@ export class DefaultBackupClient implements BackupClient {
       );
     }
 
-    const hashMatches = await this.options.integrity.verifyHash(
+    const hashMatches = await this.integrity.verifyHash(
       payloadBytes,
       document.manifest.payload.hash,
     );
@@ -206,7 +208,7 @@ export class DefaultBackupClient implements BackupClient {
     options: PrepareRestoreOptions = {},
   ): Promise<PreparedRestore> {
     const inspection = await this.inspect(input);
-    const deleteCounts = await this.options.destination.getCurrentRecordCounts();
+    const deleteCounts = await this.options.snapshot.getCurrentRecordCounts();
 
     return new PreparedRestoreOperation({
       inspection,
@@ -214,10 +216,10 @@ export class DefaultBackupClient implements BackupClient {
         mode: "replace",
         deleteCounts,
         insertCounts: inspection.summary.counts,
-        postRestoreActions: this.options.hooks.map((hook) => hook.name),
+        postRestoreActions: this.afterRestore.map((action) => action.name),
       },
-      destination: this.options.destination,
-      hooks: this.options.hooks,
+      snapshot: this.options.snapshot,
+      afterRestore: this.afterRestore,
       createSafetyBackup: async (restoringBackupId) => {
         try {
           return await this.create({

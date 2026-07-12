@@ -1,29 +1,26 @@
-import { DefaultBackupClient } from "@/features/backup-restore/application/default-backup-client";
+import { DefaultBackupClient } from "@/features/backup-restore/client/default-backup-client";
+import type { AfterRestoreAction } from "@/features/backup-restore/client/prepared-restore-operation";
 import type { BackupDocument } from "@/features/backup-restore/domain/backup-document";
 import { BackupError } from "@/features/backup-restore/domain/backup-error";
+import type { BackupIntegrity } from "@/features/backup-restore/domain/backup-integrity";
 import type { BackupPayloadV1 } from "@/features/backup-restore/domain/backup-payload-v1";
-import { JsonBackupCodec } from "@/features/backup-restore/infrastructure/codecs/json-backup-codec";
-import { ZodBackupValidator } from "@/features/backup-restore/infrastructure/validation/backup-validator";
-import type { BackupIntegrity } from "@/features/backup-restore/ports/backup-integrity";
-import type {
-  BackupPayloadRestoreDestination,
-  BackupRestoreHook,
-} from "@/features/backup-restore/ports/backup-restore-destination";
 import type {
   BackupStore,
   StoredBackup,
   StoredBackupInfo,
-} from "@/features/backup-restore/ports/backup-store";
+} from "@/features/backup-restore/files/backup-store";
+import { JsonBackupCodec } from "@/features/backup-restore/files/json-backup-codec";
+import type { BackupSnapshot } from "@/features/backup-restore/persistence/backup-snapshot";
 
-export class StaticIntegrity implements BackupIntegrity {
+export const fixtureIntegrity: BackupIntegrity = {
   async calculateHash(_contents: Uint8Array): Promise<string> {
     return "fixture-hash";
-  }
+  },
 
   async verifyHash(_contents: Uint8Array, expectedHash: string): Promise<boolean> {
     return expectedHash === "fixture-hash";
-  }
-}
+  },
+};
 
 export class InMemoryBackupStore implements BackupStore {
   private readonly files = new Map<string, Uint8Array>();
@@ -109,10 +106,50 @@ export function emptyPayload(): BackupPayloadV1 {
 }
 
 type CreateTestClientOptions = {
-  destination?: BackupPayloadRestoreDestination;
-  hooks?: BackupRestoreHook[];
+  snapshot?: BackupSnapshot;
+  afterRestore?: AfterRestoreAction[];
   exportSnapshot?: () => Promise<BackupPayloadV1>;
 };
+
+function createDefaultSnapshot(
+  payload: BackupPayloadV1,
+  options: CreateTestClientOptions,
+): BackupSnapshot {
+  if (options.snapshot) {
+    return options.snapshot;
+  }
+
+  return {
+    async getMetadata() {
+      return { databaseSchemaVersion: 5 };
+    },
+    async exportSnapshot() {
+      if (options.exportSnapshot) {
+        return options.exportSnapshot();
+      }
+
+      return payload;
+    },
+    async getCurrentRecordCounts() {
+      return {
+        people: 0,
+        debts: 0,
+        payments: 0,
+        activityEvents: 0,
+        reminders: 0,
+      };
+    },
+    async replaceSnapshot(restoredPayload) {
+      return {
+        people: restoredPayload.people.length,
+        debts: restoredPayload.debts.length,
+        payments: restoredPayload.payments.length,
+        activityEvents: restoredPayload.activityEvents.length,
+        reminders: restoredPayload.reminders.length,
+      };
+    },
+  };
+}
 
 export function createTestClient(
   payload: BackupPayloadV1 = emptyPayload(),
@@ -124,44 +161,10 @@ export function createTestClient(
       getAppVersion: () => "1.0.0",
       getBuildVersion: () => null,
     },
-    source: {
-      async getSourceMetadata() {
-        return { databaseSchemaVersion: 5 };
-      },
-      async exportSnapshot() {
-        if (options.exportSnapshot) {
-          return options.exportSnapshot();
-        }
-
-        return payload;
-      },
-    },
-    destination:
-      options.destination ??
-      ({
-        async getCurrentRecordCounts() {
-          return {
-            people: 0,
-            debts: 0,
-            payments: 0,
-            activityEvents: 0,
-            reminders: 0,
-          };
-        },
-        async replaceSnapshot(restoredPayload) {
-          return {
-            people: restoredPayload.people.length,
-            debts: restoredPayload.debts.length,
-            payments: restoredPayload.payments.length,
-            activityEvents: restoredPayload.activityEvents.length,
-            reminders: restoredPayload.reminders.length,
-          };
-        },
-      } satisfies BackupPayloadRestoreDestination),
+    snapshot: createDefaultSnapshot(payload, options),
     codec: new JsonBackupCodec(),
-    validator: new ZodBackupValidator(),
-    integrity: new StaticIntegrity(),
-    hooks: options.hooks ?? [],
+    integrity: fixtureIntegrity,
+    afterRestore: options.afterRestore ?? [],
     clock: {
       now: () => new Date("2026-07-10T12:00:00.000Z"),
     },

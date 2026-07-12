@@ -1,6 +1,6 @@
 # Backup Restore SDK
 
-This feature is implemented as a small internal SDK. App code should use the public clients and avoid reaching into domain, adapter, or codec internals.
+This feature is implemented as a small internal SDK. App code should use the public clients and avoid reaching into domain, persistence, or codec internals.
 
 ## Public API
 
@@ -86,15 +86,15 @@ if (file) {
 ```text
 backup-restore/
 ├── public/          # Factories and stable app-facing types
-├── domain/          # Backup document, payload, errors, summaries
-├── application/     # Backup client, file client, prepared restore operation
-├── ports/           # Interfaces for source, destination, codec, integrity, files, hooks
-├── infrastructure/  # SQLite, Expo, JSON, SHA-256, validation, restore hooks
+├── domain/          # Backup document, payload, validation, integrity, errors
+├── client/          # Backup client and prepared restore operation
+├── persistence/     # BackupSnapshot interface and SQLite adapter
+├── files/           # BackupStore, JSON codec, Expo file I/O
 ├── __fixtures__/    # Compatibility fixtures
 └── __tests__/       # SDK behavior tests
 ```
 
-The important boundary: the core application layer depends on ports, not Expo, SQLite, React, navigation, or UI code.
+The important boundary: the client module depends on persistence and files seams, not Expo UI, navigation, or screen code. Post-restore side effects are wired as callbacks in `createBackupClient()`.
 
 ## Backup Document
 
@@ -129,7 +129,7 @@ Do not expose SQLite table names, indexes, row IDs, notification IDs, query cach
 Restores are two-phase:
 
 1. `prepareRestore(input)` decodes, validates, verifies integrity, inspects compatibility, and builds a restore plan.
-2. `prepared.commit()` creates a safety backup by default, replaces local state, and runs post-restore hooks.
+2. `prepared.commit()` creates a safety backup by default, replaces local state, and runs post-restore actions.
 
 `prepareRestore()` must not modify app data.
 
@@ -141,24 +141,23 @@ Restores are two-phase:
 
 The restore layer does not run ad hoc data repair or backfill logic. Schema-shape changes and defaults belong in the normal database migration stack.
 
-## Post-Restore Hooks
+## Post-Restore Actions
 
-Post-restore hooks currently:
+Post-restore actions are registered in `createBackupClient()` and currently:
 
 - cancel and reconcile reminder notifications
 - invalidate React Query caches
 
-Hook failures do not roll back a completed database restore. They are returned as restore warnings so the app can surface or retry follow-up work.
+Action failures do not roll back a completed database restore. They are returned as restore warnings so the app can surface or retry follow-up work.
 
 ## Extension Points
 
-Future cloud or encrypted backups should plug into ports instead of changing app UI code:
+Future cloud or encrypted backups should plug into seams instead of changing app UI code:
 
 - `BackupStore` for local, cloud, or remote blob storage
 - `BackupCodec` for compression/encryption wrappers
-- `BackupIntegrity` for different integrity implementations
-- `BackupSource` / `BackupRestoreDestination` for different persistence engines
-- `BackupRestoreHook` for widgets, analytics-safe local refreshes, or other post-restore work
+- `BackupSnapshot` for different persistence engines
+- `afterRestore` callbacks in `createBackupClient()` for widgets, analytics-safe local refreshes, or other post-restore work
 
 ## Testing
 

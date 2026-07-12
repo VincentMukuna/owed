@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import { BackupError } from "@/features/backup-restore/domain/backup-error";
 import { suggestBackupFileName } from "@/features/backup-restore/domain/backup-payload-v1";
-import { JsonBackupCodec } from "@/features/backup-restore/infrastructure/codecs/json-backup-codec";
+import { JsonBackupCodec } from "@/features/backup-restore/files/json-backup-codec";
 
 import { InMemoryBackupStore, createTestClient, decodeUtf8, emptyPayload } from "./test-utils";
 

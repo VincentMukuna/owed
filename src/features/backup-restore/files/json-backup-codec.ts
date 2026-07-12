@@ -1,6 +1,11 @@
-import type { BackupDocument } from "../../domain/backup-document";
-import { BackupError } from "../../domain/backup-error";
-import type { BackupCodec } from "../../ports/backup-codec";
+import type { BackupDocument } from "../domain/backup-document";
+import { BackupError } from "../domain/backup-error";
+
+export type BackupCodec = {
+  encode<TPayload>(document: BackupDocument<TPayload>): Promise<Uint8Array>;
+  decode(input: Uint8Array | string): Promise<unknown>;
+  encodePayloadForIntegrity(payload: unknown): Promise<Uint8Array>;
+};
 
 function sortValue(value: unknown): unknown {
   if (Array.isArray(value)) {
@@ -45,3 +50,5 @@ export class JsonBackupCodec implements BackupCodec {
     return this.encoder.encode(stableStringify(payload));
   }
 }
+
+export const jsonBackupCodec = new JsonBackupCodec();

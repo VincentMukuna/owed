@@ -1,8 +1,8 @@
 import * as DocumentPicker from "expo-document-picker";
 import { File, Paths } from "expo-file-system";
 
-import { BackupError } from "../../domain/backup-error";
-import type { BackupStore, StoredBackup, StoredBackupInfo } from "../../ports/backup-store";
+import { BackupError } from "../domain/backup-error";
+import type { BackupStore, StoredBackup, StoredBackupInfo } from "./backup-store";
 
 export class ExpoBackupStore implements BackupStore {
   async write(name: string, contents: Uint8Array): Promise<StoredBackup> {

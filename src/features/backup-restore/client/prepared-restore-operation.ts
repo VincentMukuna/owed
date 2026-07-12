@@ -1,10 +1,7 @@
 import type { BackupInspection } from "../domain/backup-document";
 import { BackupError } from "../domain/backup-error";
-import type { BackupPayloadV1 } from "../domain/backup-payload-v1";
-import type {
-  BackupPayloadRestoreDestination,
-  BackupRestoreHook,
-} from "../ports/backup-restore-destination";
+import type { BackupPayloadV1, BackupRecordCounts } from "../domain/backup-payload-v1";
+import type { BackupSnapshot } from "../persistence/backup-snapshot";
 import type {
   CommitRestoreOptions,
   CreatedBackup,
@@ -13,11 +10,20 @@ import type {
   RestoreResult,
 } from "../public/types";
 
+export type AfterRestoreContext = {
+  restoredCounts: BackupRecordCounts;
+};
+
+export type AfterRestoreAction = {
+  name: string;
+  run(context: AfterRestoreContext): Promise<void>;
+};
+
 type PreparedRestoreOperationOptions = {
   inspection: BackupInspection;
   plan: RestorePlan;
-  destination: BackupPayloadRestoreDestination;
-  hooks: BackupRestoreHook[];
+  snapshot: BackupSnapshot;
+  afterRestore: AfterRestoreAction[];
   createSafetyBackup: (restoringBackupId: string) => Promise<CreatedBackup>;
   now: () => Date;
 };
@@ -69,7 +75,7 @@ export class PreparedRestoreOperation implements PreparedRestore {
 
     let restoredCounts;
     try {
-      restoredCounts = await this.options.destination.replaceSnapshot(this.payload, {
+      restoredCounts = await this.options.snapshot.replaceSnapshot(this.payload, {
         signal: options.signal,
       });
     } catch (error) {
@@ -77,14 +83,14 @@ export class PreparedRestoreOperation implements PreparedRestore {
     }
 
     const warnings = [...this.inspection.warnings];
-    for (const hook of this.options.hooks) {
+    for (const action of this.options.afterRestore) {
       try {
-        await hook.afterRestore({ restoredCounts });
+        await action.run({ restoredCounts });
       } catch (error) {
         warnings.push({
           code: "POST_RESTORE_HOOK_FAILED",
-          message: `Post-restore hook failed: ${hook.name}`,
-          details: { hook: hook.name, error },
+          message: `Post-restore hook failed: ${action.name}`,
+          details: { hook: action.name, error },
         });
       }
     }

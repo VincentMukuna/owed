@@ -2,15 +2,13 @@ import { readFileSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
+import type { AfterRestoreAction } from "@/features/backup-restore/client/prepared-restore-operation";
 import { BackupError } from "@/features/backup-restore/domain/backup-error";
 import {
   type BackupPayloadV1,
   suggestBackupFileName,
 } from "@/features/backup-restore/domain/backup-payload-v1";
-import type {
-  BackupPayloadRestoreDestination,
-  BackupRestoreHook,
-} from "@/features/backup-restore/ports/backup-restore-destination";
+import type { BackupSnapshot } from "@/features/backup-restore/persistence/backup-snapshot";
 
 import {
   InMemoryBackupStore,
@@ -155,7 +153,13 @@ describe("backup client", () => {
 
   it("round-trips backup bytes through create, store, and restore", async () => {
     let currentPayload = populatedPayload();
-    const destination: BackupPayloadRestoreDestination = {
+    const snapshot: BackupSnapshot = {
+      async getMetadata() {
+        return { databaseSchemaVersion: 5 };
+      },
+      async exportSnapshot() {
+        return currentPayload;
+      },
       async getCurrentRecordCounts() {
         return {
           people: currentPayload.people.length,
@@ -177,10 +181,7 @@ describe("backup client", () => {
       },
     };
 
-    const backups = createTestClient(currentPayload, {
-      destination,
-      exportSnapshot: async () => currentPayload,
-    });
+    const backups = createTestClient(currentPayload, { snapshot });
     const store = new InMemoryBackupStore();
     const exported = await backups.create();
     const stored = await store.write(
@@ -274,7 +275,13 @@ describe("backup client", () => {
 
   it("prepares restore without replacing data", async () => {
     let replaceCalls = 0;
-    const destination: BackupPayloadRestoreDestination = {
+    const snapshot: BackupSnapshot = {
+      async getMetadata() {
+        return { databaseSchemaVersion: 5 };
+      },
+      async exportSnapshot() {
+        return populatedPayload();
+      },
       async getCurrentRecordCounts() {
         return {
           people: 9,
@@ -295,7 +302,7 @@ describe("backup client", () => {
         };
       },
     };
-    const client = createTestClient(populatedPayload(), { destination });
+    const client = createTestClient(populatedPayload(), { snapshot });
     const created = await client.create();
     const prepared = await client.prepareRestore(created.bytes);
 
@@ -330,7 +337,13 @@ describe("backup client", () => {
 
   it("commits a prepared restore with a safety backup", async () => {
     const restoredPayloads: BackupPayloadV1[] = [];
-    const destination: BackupPayloadRestoreDestination = {
+    const snapshot: BackupSnapshot = {
+      async getMetadata() {
+        return { databaseSchemaVersion: 5 };
+      },
+      async exportSnapshot() {
+        return populatedPayload();
+      },
       async getCurrentRecordCounts() {
         return {
           people: 0,
@@ -351,7 +364,7 @@ describe("backup client", () => {
         };
       },
     };
-    const client = createTestClient(populatedPayload(), { destination });
+    const client = createTestClient(populatedPayload(), { snapshot });
     const created = await client.create();
     const prepared = await client.prepareRestore(created.bytes);
     const result = await prepared.commit();
@@ -414,13 +427,13 @@ describe("backup client", () => {
   });
 
   it("surfaces post-restore hook failures as warnings without rolling back", async () => {
-    const hook: BackupRestoreHook = {
+    const action: AfterRestoreAction = {
       name: "failing-hook",
-      async afterRestore() {
+      async run() {
         throw new Error("hook failed");
       },
     };
-    const client = createTestClient(populatedPayload(), { hooks: [hook] });
+    const client = createTestClient(populatedPayload(), { afterRestore: [action] });
     const created = await client.create();
     const prepared = await client.prepareRestore(created.bytes);
     const result = await prepared.commit();
@@ -437,7 +450,13 @@ describe("backup client", () => {
   });
 
   it("fails restore when the database replacement fails", async () => {
-    const destination: BackupPayloadRestoreDestination = {
+    const snapshot: BackupSnapshot = {
+      async getMetadata() {
+        return { databaseSchemaVersion: 5 };
+      },
+      async exportSnapshot() {
+        return populatedPayload();
+      },
       async getCurrentRecordCounts() {
         return {
           people: 0,
@@ -451,7 +470,7 @@ describe("backup client", () => {
         throw new Error("sqlite locked");
       },
     };
-    const client = createTestClient(populatedPayload(), { destination });
+    const client = createTestClient(populatedPayload(), { snapshot });
     const created = await client.create();
     const prepared = await client.prepareRestore(created.bytes);
 
@@ -481,7 +500,13 @@ describe("backup client", () => {
 
   it("restores through the store read and write path used by settings", async () => {
     const restoredPayloads: BackupPayloadV1[] = [];
-    const destination: BackupPayloadRestoreDestination = {
+    const snapshot: BackupSnapshot = {
+      async getMetadata() {
+        return { databaseSchemaVersion: 5 };
+      },
+      async exportSnapshot() {
+        return populatedPayload();
+      },
       async getCurrentRecordCounts() {
         return {
           people: 0,
@@ -502,7 +527,7 @@ describe("backup client", () => {
         };
       },
     };
-    const backups = createTestClient(populatedPayload(), { destination });
+    const backups = createTestClient(populatedPayload(), { snapshot });
     const store = new InMemoryBackupStore();
 
     const created = await backups.create();

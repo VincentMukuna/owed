@@ -73,7 +73,7 @@ export type BackupClient = {
   restore(input: BackupInput, options?: RestoreOptions): Promise<RestoreResult>;
 };
 
-export type { BackupStore, StoredBackup, StoredBackupInfo } from "../ports/backup-store";
+export type { BackupStore, StoredBackup, StoredBackupInfo } from "../files/backup-store";
 
 export type {
   BackupCompatibility,

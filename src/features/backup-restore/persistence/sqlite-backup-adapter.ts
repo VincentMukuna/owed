@@ -8,13 +8,12 @@ import {
 } from "@/features/reminders/lib/reminder-storage";
 import { setItem, storageKeys } from "@/lib/storage/local-storage";
 
-import type { BackupPayloadV1, BackupRecordCounts } from "../../domain/backup-payload-v1";
-import type { BackupRestoreDestination } from "../../ports/backup-restore-destination";
+import type { BackupPayloadV1, BackupRecordCounts } from "../domain/backup-payload-v1";
 import type {
   BackupOperationContext,
-  BackupSource,
-  BackupSourceMetadata,
-} from "../../ports/backup-source";
+  BackupSnapshot,
+  BackupSnapshotMetadata,
+} from "./backup-snapshot";
 
 type BackupDatabaseConnection = {
   getFirstAsync<T>(source: string, ...params: unknown[]): Promise<T | null>;
@@ -87,12 +86,10 @@ type ReminderRow = {
   archived_at: string | null;
 };
 
-export class SQLiteBackupAdapter
-  implements BackupSource<BackupPayloadV1>, BackupRestoreDestination<BackupPayloadV1>
-{
+export class SQLiteBackupAdapter implements BackupSnapshot {
   constructor(private readonly getDb: () => Promise<BackupDatabaseConnection>) {}
 
-  async getSourceMetadata(): Promise<BackupSourceMetadata> {
+  async getMetadata(): Promise<BackupSnapshotMetadata> {
     const db = await this.getDb();
     const row = await db.getFirstAsync<{ version: number | null }>(
       "SELECT MAX(version) AS version FROM schema_migrations",
