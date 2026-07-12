@@ -6,7 +6,7 @@ import { Stack, router, useFocusEffect } from "expo-router";
 
 import { FlashList } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
-import { Bell, MoreHorizontal, X } from "lucide-react-native";
+import { Bell, MoreHorizontal } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import {
@@ -23,7 +23,6 @@ import { useArchiveInbox } from "@/features/reminders/hooks/use-archive-inbox";
 import { useMarkInboxRead } from "@/features/reminders/hooks/use-mark-inbox-read";
 import { useRemindersInbox } from "@/features/reminders/hooks/use-reminders-inbox";
 import type { ReminderInboxView } from "@/features/reminders/view-models";
-import { HOME_ROUTE } from "@/lib/navigation/routes";
 import { invalidateReminderQueries } from "@/lib/query/invalidate-queries";
 
 export function NotificationsInboxScreen() {
@@ -34,15 +33,6 @@ export function NotificationsInboxScreen() {
   const markInboxRead = useMarkInboxRead();
 
   const handleRefresh = useCallback(() => invalidateReminderQueries(queryClient), [queryClient]);
-
-  const closeNotifications = useCallback(() => {
-    if (router.canGoBack()) {
-      router.back();
-      return;
-    }
-
-    router.replace(HOME_ROUTE);
-  }, []);
 
   useFocusEffect(
     useCallback(() => {
@@ -107,16 +97,11 @@ export function NotificationsInboxScreen() {
       </Pressable>
     </NotificationsActionsMenu>
   );
-  const headerLeft = () => (
-    <Pressable hitSlop={10} onPress={closeNotifications} style={styles.headerMenuTrigger}>
-      <X color={theme.colors.icon} size={18} strokeWidth={2} />
-    </Pressable>
-  );
 
   if (items.length === 0) {
     return (
       <>
-        <Stack.Screen options={{ headerLeft, headerRight }} />
+        <Stack.Screen options={{ headerRight }} />
         <ScrollView contentContainerStyle={styles.emptyScroll} showsVerticalScrollIndicator={false}>
           <View style={styles.empty}>
             <View style={styles.emptyIcon}>
@@ -135,7 +120,7 @@ export function NotificationsInboxScreen() {
 
   return (
     <>
-      <Stack.Screen options={{ headerLeft, headerRight }} />
+      <Stack.Screen options={{ headerRight }} />
       <FlashList
         contentContainerStyle={styles.list}
         data={items}

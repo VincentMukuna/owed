@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useState } from "react";
+import { useCallback, useState } from "react";
 
 import {
   ActivityIndicator,
@@ -11,9 +11,8 @@ import {
   View,
 } from "react-native";
 
-import { router, useNavigation } from "expo-router";
+import { router } from "expo-router";
 
-import { X } from "lucide-react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
@@ -38,7 +37,6 @@ const detailPlaceholders: Record<FeedbackCategory, string> = {
 export function ShareFeedbackScreen() {
   const { theme } = useUnistyles();
   const insets = useSafeAreaInsets();
-  const navigation = useNavigation();
   const showToast = useUiStore((state) => state.showToast);
 
   const [category, setCategory] = useState<FeedbackCategory>("feedback");
@@ -49,26 +47,6 @@ export function ShareFeedbackScreen() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const canSubmit = title.trim().length > 0 && description.trim().length > 0 && !isSubmitting;
-
-  const handleClose = useCallback(() => {
-    router.back();
-  }, []);
-
-  useLayoutEffect(() => {
-    navigation.setOptions({
-      headerRight: () => (
-        <Pressable
-          accessibilityLabel="Close"
-          accessibilityRole="button"
-          hitSlop={12}
-          onPress={handleClose}
-          style={styles.closeButton}
-        >
-          <X color={theme.colors.icon} size={18} strokeWidth={2} />
-        </Pressable>
-      ),
-    });
-  }, [handleClose, navigation, theme.colors.icon]);
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) {
@@ -225,12 +203,6 @@ const styles = StyleSheet.create((theme) => ({
     paddingTop: 10,
     paddingBottom: 18,
     gap: 18,
-  },
-  closeButton: {
-    width: 36,
-    height: 36,
-    alignItems: "center",
-    justifyContent: "center",
   },
   footer: {
     paddingHorizontal: 20,
