@@ -9,6 +9,7 @@ import {
   LIST_LEADING_INSET_ICON_MD,
   ListRowContainer,
 } from "@/components/shared/list-inset-divider";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import type { ActivityView } from "@/features/debts/view-models";
 
 const TYPE_SYMBOL: Record<ActivityView["type"], string> = {
@@ -21,6 +22,8 @@ const TYPE_SYMBOL: Record<ActivityView["type"], string> = {
 type ActivityListProps = {
   activities: ActivityView[];
   contentContainerStyle?: object;
+  isFetchingNextPage?: boolean;
+  onEndReached?: () => void;
   refreshControlProps?: RefreshControlProps;
 };
 
@@ -45,7 +48,13 @@ export const ActivityRow = memo(({ activity }: { activity: ActivityView }) => {
 ActivityRow.displayName = "ActivityRow";
 
 export const ActivityList = memo(
-  ({ activities, contentContainerStyle, refreshControlProps }: ActivityListProps) => {
+  ({
+    activities,
+    contentContainerStyle,
+    isFetchingNextPage = false,
+    onEndReached,
+    refreshControlProps,
+  }: ActivityListProps) => {
     const renderItem = useCallback(
       ({ item, index }: { item: ActivityView; index: number }) => (
         <ListRowContainer leadingInset={LIST_LEADING_INSET_ICON_MD} showDivider={index > 0}>
@@ -57,11 +66,26 @@ export const ActivityList = memo(
 
     const keyExtractor = useCallback((item: ActivityView) => item.id, []);
 
+    const renderFooter = useCallback(() => {
+      if (!isFetchingNextPage) {
+        return null;
+      }
+
+      return (
+        <View style={styles.footer}>
+          <LoadingSpinner />
+        </View>
+      );
+    }, [isFetchingNextPage]);
+
     return (
       <FlashList
         contentContainerStyle={contentContainerStyle}
         data={activities}
         keyExtractor={keyExtractor}
+        ListFooterComponent={renderFooter}
+        onEndReached={onEndReached}
+        onEndReachedThreshold={0.4}
         refreshControl={
           refreshControlProps ? <RefreshControl {...refreshControlProps} /> : undefined
         }
@@ -111,5 +135,8 @@ const styles = StyleSheet.create((theme) => ({
     color: theme.colors.mutedLight,
     marginTop: 2,
     flexShrink: 0,
+  },
+  footer: {
+    paddingVertical: 16,
   },
 }));

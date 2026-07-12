@@ -52,7 +52,12 @@ Owed is a local SQLite app that should stay responsive over months/years of use.
 
 ### Prefetch on launch
 
-`src/app/_layout.tsx` waits for DB init **and** prefetches `debtKeys.all` + `activityKeys.all` before rendering the stack. Tab screens should read from warm cache on first paint.
+`src/app/_layout.tsx` waits for DB init **and** prefetches debt summaries, paid-this-month, and recent home activity before rendering the stack. Tab screens for debts and home should read from warm cache on first paint.
+
+**Deferred on first visit (not prefetched at launch):**
+
+- **People tab** — `peopleKeys.list` / `peopleKeys.all` load when the People screen or people picker mounts.
+- **Full activity feed** — `activityKeys.infinite()` loads paginated pages when the Activity stack screen opens (`ACTIVITY_PAGE_SIZE` rows per page).
 
 ---
 
@@ -95,7 +100,7 @@ LEFT JOIN (
 | **`staleTime: Infinity`** | Local SQLite data is authoritative until a mutation changes it. Set on `useDebts`, `useActivities`, `useDebt`, and matching `prefetchQuery` calls. |
 | **Shared `queryFn`** | Export `load*` functions from hooks. `_layout.tsx` prefetch must use the **same** function as the hook. |
 | **Invalidate on mutation only** | Mutations (`useAddDebt`, `useRecordPayment`, seed hook, etc.) call `invalidateQueries`. Do not lower `staleTime` to refresh lists. |
-| **Prefetch new tab queries** | If a new root tab loads a large query, add it to the `_layout.tsx` init `Promise.all`. |
+| **Prefetch new tab queries** | Prefetch in `_layout.tsx` only for root-tab critical path (debts, home aggregates). Defer people and full activity. |
 
 ---
 
@@ -127,6 +132,8 @@ LEFT JOIN (
 
 | Path | Role |
 |------|------|
+| `src/features/activity/hooks/use-activities.ts` | `loadActivityPage` — infinite query + cursor pagination |
+| `src/features/debts/repositories/activity-repository.ts` | `listPage()`, `listRecent()` |
 | `src/features/debts/repositories/debt-repository.ts` | `listSummaries()`, `getById()` |
 | `src/features/debts/hooks/use-debts.ts` | `loadDebts` — shared queryFn + view mapping |
 | `src/lib/db/mappers.ts` | `DebtSummary` vs `DebtWithRelations` |
@@ -145,7 +152,7 @@ LEFT JOIN (
 3. **UI** — `FlashList` (or reuse `DebtList` / `ActivityList`).
 4. **Derivations** — Single-pass utils + `useMemo`; no filter chains in JSX.
 5. **Mutations** — `invalidateQueries` for the new key.
-6. **Launch** — Prefetch in `_layout.tsx` if the screen is on a root tab or critical path.
+6. **Launch** — Prefetch in `_layout.tsx` if the screen is on the home/debts critical path; otherwise load on first visit (see People, Activity).
 7. **Verify** — Seed sample data; scroll and tab-switch under load.
 
 ---
@@ -163,8 +170,7 @@ LEFT JOIN (
 
 Optional next steps — not substitutes for the guidelines above:
 
-- **Pagination / `LIMIT`** for the activity feed at very large event counts
-- **SQLite indexes** when new filter or sort columns are added
+- **SQLite indexes** on `activity_events(occurred_at, id)` if activity pagination slows at very large counts
 - **Selective cache updates** instead of full list refetch after mutations
 - **Skeleton UI** instead of `return null` while `isPending` on first load
 

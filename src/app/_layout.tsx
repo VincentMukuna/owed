@@ -13,14 +13,11 @@ import { UnistylesRuntime, useUnistyles } from "react-native-unistyles";
 
 import { Toast } from "@/components/shared/toast";
 import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
-import { loadActivities } from "@/features/activity/hooks/use-activities";
 import { loadRecentActivities } from "@/features/activity/hooks/use-recent-activities";
-import { activityKeys, debtKeys, peopleKeys } from "@/features/debts/hooks/query-keys";
+import { activityKeys, debtKeys } from "@/features/debts/hooks/query-keys";
 import { loadDebts } from "@/features/debts/hooks/use-debts";
 import { loadPaidThisMonth } from "@/features/debts/hooks/use-paid-this-month";
-import { loadPeoplePicker } from "@/features/debts/hooks/use-people";
 import { hydrateOnboardingState } from "@/features/onboarding/lib/onboarding-storage";
-import { loadPeopleList } from "@/features/people/hooks/use-people-list";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { registerNotificationHandlers } from "@/features/reminders/lib/register-notification-handlers";
 import { hydratePersistedSettings } from "@/features/reminders/lib/reminder-storage";
@@ -59,23 +56,8 @@ export default function RootLayout() {
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({
-        queryKey: activityKeys.all,
-        queryFn: loadActivities,
-        staleTime: Number.POSITIVE_INFINITY,
-      }),
-      queryClient.prefetchQuery({
         queryKey: activityKeys.recent(HOME_RECENT_ACTIVITY_LIMIT),
         queryFn: () => loadRecentActivities(HOME_RECENT_ACTIVITY_LIMIT),
-        staleTime: Number.POSITIVE_INFINITY,
-      }),
-      queryClient.prefetchQuery({
-        queryKey: peopleKeys.all,
-        queryFn: loadPeoplePicker,
-        staleTime: Number.POSITIVE_INFINITY,
-      }),
-      queryClient.prefetchQuery({
-        queryKey: peopleKeys.list,
-        queryFn: loadPeopleList,
         staleTime: Number.POSITIVE_INFINITY,
       }),
       queryClient.prefetchQuery({

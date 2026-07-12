@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useMemo } from "react";
 
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 
@@ -15,10 +15,18 @@ import { invalidateActivityQueries } from "@/lib/query/invalidate-queries";
 export function ActivityScreen() {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
-  const { data: activities = [], isPending } = useActivities();
+  const { data, isPending, isFetchingNextPage, hasNextPage, fetchNextPage } = useActivities();
+
+  const activities = useMemo(() => data?.pages.flatMap((page) => page.items) ?? [], [data]);
 
   const handleRefresh = useCallback(() => invalidateActivityQueries(queryClient), [queryClient]);
   const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
+
+  const handleEndReached = useCallback(() => {
+    if (hasNextPage && !isFetchingNextPage) {
+      void fetchNextPage();
+    }
+  }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
 
   if (isPending) {
     return (
@@ -44,6 +52,8 @@ export function ActivityScreen() {
         <ActivityList
           activities={activities}
           contentContainerStyle={[styles.scroll, { paddingBottom: insets.bottom + 24 }]}
+          isFetchingNextPage={isFetchingNextPage}
+          onEndReached={handleEndReached}
           refreshControlProps={refreshControlProps}
         />
       )}

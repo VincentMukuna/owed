@@ -19,7 +19,10 @@ export function invalidateActivityQueries(queryClient: QueryClient) {
 }
 
 export function invalidatePeopleQueries(queryClient: QueryClient) {
-  return queryClient.invalidateQueries({ queryKey: peopleKeys.all });
+  return Promise.all([
+    queryClient.invalidateQueries({ queryKey: peopleKeys.all }),
+    queryClient.invalidateQueries({ queryKey: peopleKeys.list }),
+  ]);
 }
 
 export function invalidateReminderQueries(queryClient: QueryClient) {

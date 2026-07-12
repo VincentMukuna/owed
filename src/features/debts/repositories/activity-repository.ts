@@ -44,6 +44,11 @@ export type ActivityEventWithRelations = ActivityEvent & {
   paymentNote?: string;
 };
 
+export type ActivityPageCursor = {
+  occurredAt: string;
+  id: string;
+};
+
 function rowToActivityEventWithRelations(row: ActivityEventListRow): ActivityEventWithRelations {
   return {
     ...rowToActivityEvent(row),
@@ -109,10 +114,25 @@ export const activityRepository = {
     await insertActivityEvent(db, input);
   },
 
-  async list(): Promise<ActivityEventWithRelations[]> {
+  async listPage(
+    limit: number,
+    cursor?: ActivityPageCursor,
+  ): Promise<ActivityEventWithRelations[]> {
     const db = await getDb();
+    const params: unknown[] = [];
+    let whereClause = "";
+
+    if (cursor) {
+      whereClause = "WHERE ae.occurred_at < ? OR (ae.occurred_at = ? AND ae.id < ?)";
+      params.push(cursor.occurredAt, cursor.occurredAt, cursor.id);
+    }
+
     const rows = await db.getAllAsync<ActivityEventListRow>(
-      `${ACTIVITY_SELECT} ORDER BY ae.occurred_at DESC`,
+      `${ACTIVITY_SELECT}
+       ${whereClause}
+       ORDER BY ae.occurred_at DESC, ae.id DESC
+       LIMIT ?`,
+      [...params, limit],
     );
 
     return rows.map(rowToActivityEventWithRelations);
