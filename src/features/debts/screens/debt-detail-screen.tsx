@@ -248,16 +248,16 @@ function StatusPill({ status }: { status: CardDebtStatus }) {
 function ActiveOverview({ debt, pct }: { debt: DebtDetailView; pct: number }) {
   return (
     <View style={styles.statsStrip}>
-      <View style={styles.overviewTop}>
-        <Text style={styles.overviewAmount}>{formatCurrency(debt.remaining)}</Text>
+      <View style={styles.overviewHeader}>
+        <Text style={styles.overviewDueDate}>Due {debt.dueDate}</Text>
         {debt.status !== "active" ? <StatusPill status={debt.status} /> : null}
       </View>
+      <Text style={styles.overviewAmount}>{formatCurrency(debt.remaining)}</Text>
       <View style={styles.progressTrack}>
         <View style={[styles.progressFill, { width: `${pct}%` }]} />
       </View>
       <Text style={styles.overviewMeta}>
-        Due {debt.dueDate} · {formatCurrency(debt.amount)} original
-        {pct > 0 ? ` · ${Math.round(pct)}% paid` : null}
+        {formatCurrency(debt.amount)} original{pct > 0 ? ` · ${Math.round(pct)}% paid` : null}
       </Text>
     </View>
   );
@@ -336,20 +336,25 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: 1,
     borderColor: theme.name === "light" ? theme.colors.borderStrong : theme.colors.border,
   },
-  overviewTop: {
+  overviewHeader: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     justifyContent: "space-between",
     gap: 12,
-    minHeight: 32,
   },
   overviewAmount: {
-    flex: 1,
     fontSize: 28,
     fontWeight: "600",
     color: theme.colors.text,
     lineHeight: 32,
     fontVariant: ["tabular-nums"],
+  },
+  overviewDueDate: {
+    flex: 1,
+    fontSize: 14,
+    fontWeight: "600",
+    color: theme.colors.muted,
+    lineHeight: 20,
   },
   overviewMeta: {
     fontSize: 14,
