@@ -1,20 +1,19 @@
-import { ScrollView, Switch, Text, View } from "react-native";
+import { ScrollView, Switch, View } from "react-native";
 
 import { type Href, Stack, router } from "expo-router";
 
-import { Fingerprint, KeyRound, LockKeyhole, ShieldCheck } from "lucide-react-native";
+import { Fingerprint, KeyRound, LockKeyhole } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
-import { Button } from "@/components/ui/button";
 import { useBiometricAvailability } from "@/features/app-lock/hooks/use-biometric-availability";
 import { lockApp, useAppLockStore } from "@/features/app-lock/store/use-app-lock-store";
 import {
   SettingsCard,
   SettingsDetailRow,
-  SettingsHelperText,
   SettingsIconTile,
   SettingsNavRow,
   SettingsSection,
+  SettingsTrailingRow,
 } from "@/features/settings/components/settings-ui";
 import { selectionChange } from "@/lib/haptics";
 
@@ -37,29 +36,32 @@ export function AppLockSettingsScreen() {
         contentInsetAdjustmentBehavior="automatic"
         showsVerticalScrollIndicator={false}
       >
-        {!enabled ? (
-          <View style={styles.emptyState}>
-            <View style={styles.heroIcon}>
-              <ShieldCheck color={theme.colors.primary} size={34} strokeWidth={1.8} />
-            </View>
-            <Text style={styles.emptyTitle}>Keep Owed private</Text>
-            <Text style={styles.emptyBody}>
-              Use a four-digit PIN and optional phone biometrics when opening Owed.
-            </Text>
-            <Button
-              fullWidth
-              onPress={() => router.push("/app-lock-pin?mode=enable" as Href)}
-              size="lg"
-            >
-              Turn on App Lock
-            </Button>
-          </View>
-        ) : (
-          <>
-            <SettingsSection>
-              <SettingsCard>
+        <SettingsSection>
+          <SettingsCard>
+            <SettingsTrailingRow
+              label="Enable App Lock"
+              trailing={
+                <Switch
+                  onValueChange={(next) => {
+                    selectionChange();
+                    router.push(
+                      next ? ("/app-lock-pin?mode=enable" as Href) : authRoute("disable-lock"),
+                    );
+                  }}
+                  thumbColor={theme.colors.primaryForeground}
+                  trackColor={{
+                    false: theme.colors.switchTrackOff,
+                    true: theme.colors.primary,
+                  }}
+                  value={enabled}
+                />
+              }
+            />
+            {enabled ? (
+              <>
                 {availability.available ? (
                   <SettingsDetailRow
+                    bordered
                     label="Biometric Unlock"
                     leading={
                       <SettingsIconTile backgroundColor="#0D9488">
@@ -83,7 +85,7 @@ export function AppLockSettingsScreen() {
                   />
                 ) : null}
                 <SettingsNavRow
-                  bordered={availability.available}
+                  bordered
                   label="Change PIN"
                   leading={
                     <SettingsIconTile backgroundColor="#2563EB">
@@ -105,23 +107,10 @@ export function AppLockSettingsScreen() {
                     lockApp({ suppressAutoBiometrics: true });
                   }}
                 />
-              </SettingsCard>
-              <SettingsHelperText>
-                Owed locks after 30 seconds in the background and on every new launch.
-              </SettingsHelperText>
-            </SettingsSection>
-
-            <SettingsSection>
-              <SettingsCard>
-                <SettingsNavRow
-                  danger
-                  label="Turn off App Lock"
-                  onPress={() => router.push(authRoute("disable-lock"))}
-                />
-              </SettingsCard>
-            </SettingsSection>
-          </>
-        )}
+              </>
+            ) : null}
+          </SettingsCard>
+        </SettingsSection>
       </ScrollView>
     </View>
   );
@@ -138,36 +127,5 @@ const styles = StyleSheet.create((theme) => ({
     paddingTop: 16,
     paddingBottom: 32,
     gap: 20,
-  },
-  emptyState: {
-    flex: 1,
-    alignItems: "center",
-    justifyContent: "center",
-    gap: 12,
-    paddingBottom: 48,
-  },
-  heroIcon: {
-    width: 68,
-    height: 68,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.primarySoft,
-    marginBottom: 8,
-  },
-  emptyTitle: {
-    color: theme.colors.text,
-    fontSize: 24,
-    lineHeight: 31,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  emptyBody: {
-    maxWidth: 330,
-    color: theme.colors.muted,
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: "center",
-    marginBottom: 16,
   },
 }));

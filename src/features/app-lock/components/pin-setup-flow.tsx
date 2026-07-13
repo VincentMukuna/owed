@@ -1,13 +1,9 @@
 import { useCallback, useState } from "react";
 
-import { Text, View } from "react-native";
+import { Alert } from "react-native";
 
 import { usePreventRemove } from "expo-router/react-navigation";
 
-import { ShieldCheck } from "lucide-react-native";
-import { StyleSheet, useUnistyles } from "react-native-unistyles";
-
-import { Button } from "@/components/ui/button";
 import { AppPinScreen, announcePinFeedback } from "@/features/app-lock/components/app-pin-screen";
 import { authenticateWithBiometrics } from "@/features/app-lock/lib/app-lock-authentication";
 import type { BiometricAvailability } from "@/features/app-lock/types";
@@ -26,8 +22,7 @@ export function PinSetupFlow({
   onCancel,
   onComplete,
 }: PinSetupFlowProps) {
-  const { theme } = useUnistyles();
-  const [stage, setStage] = useState<"create" | "confirm" | "biometrics">("create");
+  const [stage, setStage] = useState<"create" | "confirm">("create");
   const [createdPin, setCreatedPin] = useState("");
   const [value, setValue] = useState("");
   const [errorToken, setErrorToken] = useState(0);
@@ -36,13 +31,8 @@ export function PinSetupFlow({
 
   usePreventRemove(!onCancel && stage !== "create" && !allowRouteExit, () => {
     setValue("");
-    if (stage === "confirm") {
-      setCreatedPin("");
-      setStage("create");
-      return;
-    }
-
-    setStage("confirm");
+    setCreatedPin("");
+    setStage("create");
   });
 
   const finish = useCallback(
@@ -83,13 +73,51 @@ export function PinSetupFlow({
       }
 
       if (offerBiometrics && biometricAvailability.available) {
-        setStage("biometrics");
+        const biometricName =
+          biometricAvailability.icon === "face"
+            ? "Face ID"
+            : biometricAvailability.icon === "fingerprint"
+              ? "fingerprint"
+              : "biometrics";
+        const biometricDescription =
+          biometricAvailability.icon === "fingerprint"
+            ? "Use your fingerprint for quicker access to Owed. Your PIN will still work."
+            : `Use ${biometricName} for quicker access to Owed. Your PIN will still work.`;
+        setValue("");
+        Alert.alert(
+          `Use ${biometricName}?`,
+          biometricDescription,
+          [
+            {
+              text: "Not now",
+              style: "cancel",
+              onPress: () => void finish(false),
+            },
+            {
+              text: "Sure",
+              onPress: () => {
+                void (async () => {
+                  const authenticated = await authenticateWithBiometrics();
+                  await finish(authenticated);
+                })();
+              },
+            },
+          ],
+          { cancelable: false },
+        );
         return;
       }
 
       void finish(false);
     },
-    [biometricAvailability.available, createdPin, finish, offerBiometrics, stage],
+    [
+      biometricAvailability.available,
+      biometricAvailability.icon,
+      createdPin,
+      finish,
+      offerBiometrics,
+      stage,
+    ],
   );
 
   const handleDigit = useCallback(
@@ -106,44 +134,6 @@ export function PinSetupFlow({
     },
     [busy, handleCompleteEntry, value],
   );
-
-  if (stage === "biometrics") {
-    return (
-      <View style={styles.offerScreen}>
-        <View style={styles.offerContent}>
-          <View style={styles.offerIcon}>
-            <ShieldCheck color={theme.colors.primary} size={34} strokeWidth={1.8} />
-          </View>
-          <Text style={styles.offerTitle}>Unlock faster</Text>
-          <Text style={styles.offerBody}>
-            {
-              "Use your phone's biometrics to open Owed. Your four-digit PIN will always be available."
-            }
-          </Text>
-        </View>
-
-        <View style={styles.offerActions}>
-          <Button
-            disabled={busy}
-            fullWidth
-            onPress={() => {
-              void (async () => {
-                if (await authenticateWithBiometrics()) {
-                  await finish(true);
-                }
-              })();
-            }}
-            size="lg"
-          >
-            Use biometrics
-          </Button>
-          <Button disabled={busy} fullWidth onPress={() => void finish(false)} variant="ghost">
-            Not now
-          </Button>
-        </View>
-      </View>
-    );
-  }
 
   return (
     <AppPinScreen
@@ -172,44 +162,3 @@ export function PinSetupFlow({
     />
   );
 }
-
-const styles = StyleSheet.create((theme) => ({
-  offerScreen: {
-    flex: 1,
-    backgroundColor: theme.colors.background,
-    paddingHorizontal: 24,
-    paddingTop: 80,
-    paddingBottom: 32,
-    justifyContent: "space-between",
-  },
-  offerContent: {
-    alignItems: "center",
-    gap: 12,
-  },
-  offerIcon: {
-    width: 68,
-    height: 68,
-    borderRadius: 22,
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: theme.colors.primarySoft,
-    marginBottom: 8,
-  },
-  offerTitle: {
-    color: theme.colors.text,
-    fontSize: 25,
-    lineHeight: 32,
-    fontWeight: "700",
-    textAlign: "center",
-  },
-  offerBody: {
-    maxWidth: 340,
-    color: theme.colors.muted,
-    fontSize: 15,
-    lineHeight: 22,
-    textAlign: "center",
-  },
-  offerActions: {
-    gap: 4,
-  },
-}));

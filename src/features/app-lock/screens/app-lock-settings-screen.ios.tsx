@@ -2,15 +2,12 @@ import { View } from "react-native";
 
 import { type Href, Stack, router } from "expo-router";
 
-import { Button } from "@expo/ui/swift-ui";
-import { buttonStyle } from "@expo/ui/swift-ui/modifiers";
+import { Toggle } from "@expo/ui/swift-ui";
 import { StyleSheet } from "react-native-unistyles";
 
 import { useBiometricAvailability } from "@/features/app-lock/hooks/use-biometric-availability";
 import { lockApp, useAppLockStore } from "@/features/app-lock/store/use-app-lock-store";
 import {
-  SettingsSwiftBodyText,
-  SettingsSwiftDestructiveRow,
   SettingsSwiftList,
   SettingsSwiftNavRow,
   SettingsSwiftSection,
@@ -32,21 +29,17 @@ export function AppLockSettingsScreen() {
       <Stack.Screen options={{ title: "App Lock" }} />
 
       <SettingsSwiftList>
-        {!enabled ? (
-          <SettingsSwiftSection footer="Owed will ask for your PIN on every new launch and after 30 seconds in the background.">
-            <SettingsSwiftBodyText>
-              Keep names, balances, and payment history private with a four-digit PIN and optional
-              phone biometrics.
-            </SettingsSwiftBodyText>
-            <Button
-              label="Turn on App Lock"
-              modifiers={[buttonStyle("borderedProminent")]}
-              onPress={() => router.push("/app-lock-pin?mode=enable" as Href)}
-            />
-          </SettingsSwiftSection>
-        ) : (
-          <>
-            <SettingsSwiftSection footer="Owed locks after 30 seconds in the background and on every new launch.">
+        <SettingsSwiftSection>
+          <Toggle
+            isOn={enabled}
+            label="Enable App Lock"
+            onIsOnChange={(next) => {
+              selectionChange();
+              router.push(next ? ("/app-lock-pin?mode=enable" as Href) : authRoute("disable-lock"));
+            }}
+          />
+          {enabled ? (
+            <>
               {availability.available ? (
                 <SettingsSwiftToggleRow
                   iconBackgroundColor="#0D9488"
@@ -75,16 +68,9 @@ export function AppLockSettingsScreen() {
                 systemImage="lock"
                 title="Lock now"
               />
-            </SettingsSwiftSection>
-
-            <SettingsSwiftSection>
-              <SettingsSwiftDestructiveRow
-                onPress={() => router.push(authRoute("disable-lock"))}
-                title="Turn off App Lock"
-              />
-            </SettingsSwiftSection>
-          </>
-        )}
+            </>
+          ) : null}
+        </SettingsSwiftSection>
       </SettingsSwiftList>
     </View>
   );

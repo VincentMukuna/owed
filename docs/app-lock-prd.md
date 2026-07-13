@@ -116,16 +116,17 @@ Add an **App Lock** row with a trailing `On` or `Off` value. The row opens a ded
 
 ### App Lock off
 
-The dedicated screen explains the feature briefly and offers **Turn on App Lock**.
+The dedicated screen contains only an **Enable App Lock** toggle. Do not add onboarding,
+marketing, or explanatory hero content.
 
 ### App Lock on
 
 The dedicated screen contains:
 
+- **Enable App Lock** toggle;
 - biometric preference, shown only when a supported biometric is currently available and enrolled;
 - **Change PIN**;
-- **Lock now**; and
-- **Turn off App Lock**.
+- **Lock now**.
 
 Use Owed's existing platform-appropriate settings presentation. Avoid a dense security dashboard or extra explanatory cards.
 
@@ -136,7 +137,7 @@ Use Owed's existing platform-appropriate settings presentation. Avoid a dense se
 ### 7.1 Enable App Lock
 
 1. User opens Settings → App Lock.
-2. User taps **Turn on App Lock**.
+2. User turns on **Enable App Lock**.
 3. Owed presents its full-screen keypad with **Create a PIN**.
 4. The fourth digit advances the same screen to **Confirm your PIN**.
 5. If confirmation matches, the PIN is committed.
@@ -145,7 +146,10 @@ Use Owed's existing platform-appropriate settings presentation. Avoid a dense se
    - clear only the confirmation attempt; and
    - keep the user on confirmation so they can retry.
 7. A Back action lets the user return to **Create a PIN** if the original PIN was mistyped.
-8. If usable biometrics are available, offer **Unlock faster with Face ID / Touch ID / biometrics** with a primary enable action and **Not now**.
+8. If usable biometrics are available, show a concise native alert explaining that biometrics
+   provide quicker access while the PIN remains available. Offer **Not now** and **Sure**, with
+   **Sure** as the primary action on the right. Do not navigate to a separate biometric marketing
+   screen.
 9. Choosing biometrics performs one system authentication to confirm the preference.
 10. Complete setup by returning to Settings and showing a lightweight `App lock is on` confirmation.
 
@@ -330,7 +334,7 @@ Copy may be tuned during visual implementation while preserving meaning and tone
 | Main settings row    | App Lock                                                          |
 | Setup title          | Create a PIN                                                      |
 | Confirmation title   | Confirm your PIN                                                  |
-| Biometric offer      | Unlock faster with Face ID / Touch ID / biometrics                |
+| Biometric offer      | Use Face ID / fingerprint / biometrics?                           |
 | Lock title           | Enter your PIN                                                    |
 | Retry pause          | Try again in {seconds} seconds                                    |
 | Recovery action      | Forgot PIN?                                                       |
