@@ -38,39 +38,39 @@ export function AppLockSettingsScreen() {
               router.push(next ? ("/app-lock-pin?mode=enable" as Href) : authRoute("disable-lock"));
             }}
           />
-          {enabled ? (
-            <>
-              {availability.available ? (
-                <SettingsSwiftToggleRow
-                  iconBackgroundColor="#0D9488"
-                  isOn={biometricsEnabled}
-                  onIsOnChange={(next) => {
-                    selectionChange();
-                    router.push(authRoute(next ? "enable-biometrics" : "disable-biometrics"));
-                  }}
-                  systemImage="faceid"
-                  title="Biometric Unlock"
-                />
-              ) : null}
-              <SettingsSwiftNavRow
-                iconBackgroundColor="#2563EB"
-                onPress={() => router.push(authRoute("change-pin"))}
-                showsChevron
-                systemImage="key"
-                title="Change PIN"
-              />
-              <SettingsSwiftNavRow
-                iconBackgroundColor="#334155"
-                onPress={() => {
-                  selectionChange();
-                  lockApp({ suppressAutoBiometrics: true });
-                }}
-                systemImage="lock"
-                title="Lock now"
-              />
-            </>
-          ) : null}
         </SettingsSwiftSection>
+        {enabled ? (
+          <SettingsSwiftSection>
+            {availability.available ? (
+              <SettingsSwiftToggleRow
+                iconBackgroundColor="#0D9488"
+                isOn={biometricsEnabled}
+                onIsOnChange={(next) => {
+                  selectionChange();
+                  router.push(authRoute(next ? "enable-biometrics" : "disable-biometrics"));
+                }}
+                systemImage="faceid"
+                title="Biometric Unlock"
+              />
+            ) : null}
+            <SettingsSwiftNavRow
+              iconBackgroundColor="#2563EB"
+              onPress={() => router.push(authRoute("change-pin"))}
+              showsChevron
+              systemImage="key"
+              title="Change PIN"
+            />
+            <SettingsSwiftNavRow
+              iconBackgroundColor="#334155"
+              onPress={() => {
+                selectionChange();
+                lockApp({ suppressAutoBiometrics: true });
+              }}
+              systemImage="lock"
+              title="Lock now"
+            />
+          </SettingsSwiftSection>
+        ) : null}
       </SettingsSwiftList>
     </View>
   );

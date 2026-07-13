@@ -57,60 +57,62 @@ export function AppLockSettingsScreen() {
                 />
               }
             />
-            {enabled ? (
-              <>
-                {availability.available ? (
-                  <SettingsDetailRow
-                    bordered
-                    label="Biometric Unlock"
-                    leading={
-                      <SettingsIconTile backgroundColor="#0D9488">
-                        <Fingerprint color="#FFFFFF" size={16} strokeWidth={2.2} />
-                      </SettingsIconTile>
-                    }
-                    trailing={
-                      <Switch
-                        onValueChange={(next) => {
-                          selectionChange();
-                          router.push(authRoute(next ? "enable-biometrics" : "disable-biometrics"));
-                        }}
-                        thumbColor={theme.colors.primaryForeground}
-                        trackColor={{
-                          false: theme.colors.switchTrackOff,
-                          true: theme.colors.primary,
-                        }}
-                        value={biometricsEnabled}
-                      />
-                    }
-                  />
-                ) : null}
-                <SettingsNavRow
-                  bordered
-                  label="Change PIN"
-                  leading={
-                    <SettingsIconTile backgroundColor="#2563EB">
-                      <KeyRound color="#FFFFFF" size={16} strokeWidth={2.2} />
-                    </SettingsIconTile>
-                  }
-                  onPress={() => router.push(authRoute("change-pin"))}
-                />
-                <SettingsNavRow
-                  bordered
-                  label="Lock now"
-                  leading={
-                    <SettingsIconTile backgroundColor="#334155">
-                      <LockKeyhole color="#FFFFFF" size={16} strokeWidth={2.2} />
-                    </SettingsIconTile>
-                  }
-                  onPress={() => {
-                    selectionChange();
-                    lockApp({ suppressAutoBiometrics: true });
-                  }}
-                />
-              </>
-            ) : null}
           </SettingsCard>
         </SettingsSection>
+
+        {enabled ? (
+          <SettingsSection>
+            <SettingsCard>
+              {availability.available ? (
+                <SettingsDetailRow
+                  label="Biometric Unlock"
+                  leading={
+                    <SettingsIconTile backgroundColor="#0D9488">
+                      <Fingerprint color="#FFFFFF" size={16} strokeWidth={2.2} />
+                    </SettingsIconTile>
+                  }
+                  trailing={
+                    <Switch
+                      onValueChange={(next) => {
+                        selectionChange();
+                        router.push(authRoute(next ? "enable-biometrics" : "disable-biometrics"));
+                      }}
+                      thumbColor={theme.colors.primaryForeground}
+                      trackColor={{
+                        false: theme.colors.switchTrackOff,
+                        true: theme.colors.primary,
+                      }}
+                      value={biometricsEnabled}
+                    />
+                  }
+                />
+              ) : null}
+              <SettingsNavRow
+                bordered={availability.available}
+                label="Change PIN"
+                leading={
+                  <SettingsIconTile backgroundColor="#2563EB">
+                    <KeyRound color="#FFFFFF" size={16} strokeWidth={2.2} />
+                  </SettingsIconTile>
+                }
+                onPress={() => router.push(authRoute("change-pin"))}
+              />
+              <SettingsNavRow
+                bordered
+                label="Lock now"
+                leading={
+                  <SettingsIconTile backgroundColor="#334155">
+                    <LockKeyhole color="#FFFFFF" size={16} strokeWidth={2.2} />
+                  </SettingsIconTile>
+                }
+                onPress={() => {
+                  selectionChange();
+                  lockApp({ suppressAutoBiometrics: true });
+                }}
+              />
+            </SettingsCard>
+          </SettingsSection>
+        ) : null}
       </ScrollView>
     </View>
   );
