@@ -14,6 +14,8 @@ import { UnistylesRuntime, useUnistyles } from "react-native-unistyles";
 import { Toast } from "@/components/shared/toast";
 import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
 import { loadRecentActivities } from "@/features/activity/hooks/use-recent-activities";
+import { AppLockGate } from "@/features/app-lock/components/app-lock-gate";
+import { hydrateAppLock } from "@/features/app-lock/store/use-app-lock-store";
 import { activityKeys, debtKeys } from "@/features/debts/hooks/query-keys";
 import { loadDebts } from "@/features/debts/hooks/use-debts";
 import { loadPaidThisMonth } from "@/features/debts/hooks/use-paid-this-month";
@@ -45,6 +47,7 @@ export default function RootLayout() {
       getDb(),
       bootstrapCurrency().then(() => hydratePersistedSettings()),
       hydrateOnboardingState(),
+      hydrateAppLock(),
       queryClient.prefetchQuery({
         queryKey: debtKeys.all,
         queryFn: loadDebts,
@@ -115,190 +118,222 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <StatusBar style={dbReady && theme.name === "dark" ? "light" : "dark"} />
         {dbReady ? (
-          <BottomSheetModalProvider>
-            <Stack
-              screenOptions={{
-                headerShown: false,
-                contentStyle: { backgroundColor: theme.colors.background },
-              }}
-            >
-              <Stack.Screen name="index" />
-              <Stack.Screen name="onboarding" options={{ animation: "fade" }} />
-              <Stack.Screen name="(tabs)" />
-              <Stack.Screen
-                name="add-debt"
-                options={{
-                  ...modalOptions,
-                  presentation: "modal",
-                  animation: "slide_from_bottom",
-                  headerShown: true,
-                  title: "Add debt",
+          <AppLockGate>
+            <BottomSheetModalProvider>
+              <Stack
+                screenOptions={{
+                  headerShown: false,
+                  contentStyle: { backgroundColor: theme.colors.background },
                 }}
-              />
-              <Stack.Screen
-                name="debt/[id]"
-                options={{
-                  ...stackOptions,
-                  ...LOADING_DETAIL_HEADER_OPTIONS,
-                  headerShown: true,
-                  headerLargeTitleEnabled: false,
-                  animation: "slide_from_right",
-                }}
-              />
-              <Stack.Screen
-                name="person/[id]"
-                options={{
-                  ...stackOptions,
-                  ...LOADING_DETAIL_HEADER_OPTIONS,
-                  headerShown: true,
-                  headerLargeTitleEnabled: false,
-                  animation: "slide_from_right",
-                }}
-              />
-              <Stack.Screen
-                name="appearance"
-                options={{
-                  ...stackOptions,
-                  headerShown: true,
-                  headerLargeTitleEnabled: false,
-                  animation: "slide_from_right",
-                  title: "Appearance",
-                }}
-              />
-              <Stack.Screen
-                name="reminders-settings"
-                options={{
-                  ...stackOptions,
-                  headerShown: true,
-                  headerLargeTitleEnabled: false,
-                  animation: "slide_from_right",
-                  title: "Reminders",
-                }}
-              />
-              <Stack.Screen
-                name="backup-restore"
-                options={{
-                  ...stackOptions,
-                  headerShown: true,
-                  headerLargeTitleEnabled: false,
-                  animation: "slide_from_right",
-                  title: "Backup & Restore",
-                }}
-              />
-              <Stack.Screen
-                name="brand-color"
-                options={{
-                  ...stackOptions,
-                  headerShown: true,
-                  headerLargeTitleEnabled: false,
-                  animation: "slide_from_right",
-                  title: "Appearance",
-                }}
-              />
-              <Stack.Screen
-                name="activity"
-                options={{
-                  ...stackOptions,
-                  headerShown: true,
-                  headerLargeTitleEnabled: false,
-                  animation: "slide_from_right",
-                  title: "Activity",
-                }}
-              />
-              <Stack.Screen
-                name="add-person"
-                options={{
-                  ...modalOptions,
-                  presentation: "modal",
-                  animation: "slide_from_bottom",
-                  headerShown: true,
-                  title: "Add person",
-                }}
-              />
-              <Stack.Screen
-                name="edit-person"
-                options={{
-                  ...modalOptions,
-                  presentation: "modal",
-                  animation: "slide_from_bottom",
-                  headerShown: true,
-                  title: "Edit person",
-                }}
-              />
-              <Stack.Screen
-                name="edit-debt"
-                options={{
-                  ...modalOptions,
-                  presentation: "modal",
-                  animation: "slide_from_bottom",
-                  headerShown: true,
-                  title: "Edit Debt",
-                }}
-              />
-              <Stack.Screen
-                name="record-payment"
-                options={{
-                  ...modalOptions,
-                  presentation: "modal",
-                  animation: "slide_from_bottom",
-                  headerShown: true,
-                  title: "Add Payment",
-                }}
-              />
-              <Stack.Screen
-                name="notifications"
-                options={{
-                  ...modalOptions,
-                  presentation: "modal",
-                  animation: "slide_from_bottom",
-                  headerShown: true,
-                  title: "Notifications",
-                }}
-              />
-              <Stack.Screen
-                name="currency"
-                options={{
-                  ...currencyModalOptions,
-                  presentation: "modal",
-                  animation: "slide_from_bottom",
-                  headerShown: true,
-                  title: "Currency",
-                }}
-              />
-              <Stack.Screen
-                name="share-feedback"
-                options={{
-                  ...modalOptions,
-                  presentation: "modal",
-                  animation: "slide_from_bottom",
-                  headerShown: true,
-                  title: "Share Feedback",
-                }}
-              />
-              <Stack.Screen
-                name="help-center"
-                options={{
-                  ...stackOptions,
-                  headerShown: true,
-                  headerLargeTitleEnabled: false,
-                  animation: "slide_from_right",
-                  title: "Help Center",
-                }}
-              />
-              <Stack.Screen
-                name="about"
-                options={{
-                  ...stackOptions,
-                  headerShown: true,
-                  headerLargeTitleEnabled: false,
-                  animation: "slide_from_right",
-                  title: "About",
-                }}
-              />
-            </Stack>
-          </BottomSheetModalProvider>
+              >
+                <Stack.Screen name="index" />
+                <Stack.Screen name="onboarding" options={{ animation: "fade" }} />
+                <Stack.Screen name="(tabs)" />
+                <Stack.Screen
+                  name="add-debt"
+                  options={{
+                    ...modalOptions,
+                    presentation: "modal",
+                    animation: "slide_from_bottom",
+                    headerShown: true,
+                    title: "Add debt",
+                  }}
+                />
+                <Stack.Screen
+                  name="debt/[id]"
+                  options={{
+                    ...stackOptions,
+                    ...LOADING_DETAIL_HEADER_OPTIONS,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                  }}
+                />
+                <Stack.Screen
+                  name="person/[id]"
+                  options={{
+                    ...stackOptions,
+                    ...LOADING_DETAIL_HEADER_OPTIONS,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                  }}
+                />
+                <Stack.Screen
+                  name="appearance"
+                  options={{
+                    ...stackOptions,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                    title: "Appearance",
+                  }}
+                />
+                <Stack.Screen
+                  name="reminders-settings"
+                  options={{
+                    ...stackOptions,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                    title: "Reminders",
+                  }}
+                />
+                <Stack.Screen
+                  name="app-lock"
+                  options={{
+                    ...stackOptions,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                    title: "App Lock",
+                  }}
+                />
+                <Stack.Screen
+                  name="app-lock-pin"
+                  options={{
+                    ...stackOptions,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                    title: "",
+                  }}
+                />
+                <Stack.Screen
+                  name="app-lock-auth"
+                  options={{
+                    ...stackOptions,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_bottom",
+                    title: "",
+                  }}
+                />
+                <Stack.Screen
+                  name="backup-restore"
+                  options={{
+                    ...stackOptions,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                    title: "Backup & Restore",
+                  }}
+                />
+                <Stack.Screen
+                  name="brand-color"
+                  options={{
+                    ...stackOptions,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                    title: "Appearance",
+                  }}
+                />
+                <Stack.Screen
+                  name="activity"
+                  options={{
+                    ...stackOptions,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                    title: "Activity",
+                  }}
+                />
+                <Stack.Screen
+                  name="add-person"
+                  options={{
+                    ...modalOptions,
+                    presentation: "modal",
+                    animation: "slide_from_bottom",
+                    headerShown: true,
+                    title: "Add person",
+                  }}
+                />
+                <Stack.Screen
+                  name="edit-person"
+                  options={{
+                    ...modalOptions,
+                    presentation: "modal",
+                    animation: "slide_from_bottom",
+                    headerShown: true,
+                    title: "Edit person",
+                  }}
+                />
+                <Stack.Screen
+                  name="edit-debt"
+                  options={{
+                    ...modalOptions,
+                    presentation: "modal",
+                    animation: "slide_from_bottom",
+                    headerShown: true,
+                    title: "Edit Debt",
+                  }}
+                />
+                <Stack.Screen
+                  name="record-payment"
+                  options={{
+                    ...modalOptions,
+                    presentation: "modal",
+                    animation: "slide_from_bottom",
+                    headerShown: true,
+                    title: "Add Payment",
+                  }}
+                />
+                <Stack.Screen
+                  name="notifications"
+                  options={{
+                    ...modalOptions,
+                    presentation: "modal",
+                    animation: "slide_from_bottom",
+                    headerShown: true,
+                    title: "Notifications",
+                  }}
+                />
+                <Stack.Screen
+                  name="currency"
+                  options={{
+                    ...currencyModalOptions,
+                    presentation: "modal",
+                    animation: "slide_from_bottom",
+                    headerShown: true,
+                    title: "Currency",
+                  }}
+                />
+                <Stack.Screen
+                  name="share-feedback"
+                  options={{
+                    ...modalOptions,
+                    presentation: "modal",
+                    animation: "slide_from_bottom",
+                    headerShown: true,
+                    title: "Share Feedback",
+                  }}
+                />
+                <Stack.Screen
+                  name="help-center"
+                  options={{
+                    ...stackOptions,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                    title: "Help Center",
+                  }}
+                />
+                <Stack.Screen
+                  name="about"
+                  options={{
+                    ...stackOptions,
+                    headerShown: true,
+                    headerLargeTitleEnabled: false,
+                    animation: "slide_from_right",
+                    title: "About",
+                  }}
+                />
+              </Stack>
+            </BottomSheetModalProvider>
+            <Toast />
+          </AppLockGate>
         ) : null}
-        <Toast />
       </QueryClientProvider>
     </GestureHandlerRootView>
   );
