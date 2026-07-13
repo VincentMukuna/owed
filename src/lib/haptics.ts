@@ -11,3 +11,13 @@ export function selectionChange() {
   if (Platform.OS === "web") return;
   void Haptics.selectionAsync();
 }
+
+export function successNotification() {
+  if (Platform.OS === "web") return;
+  void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+}
+
+export function errorNotification() {
+  if (Platform.OS === "web") return;
+  void Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+}

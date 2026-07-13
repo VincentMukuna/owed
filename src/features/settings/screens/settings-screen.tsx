@@ -4,10 +4,11 @@ import { ScrollView, Text, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
-import { Bell, HardDriveDownload, Palette, WalletCards } from "lucide-react-native";
+import { Bell, HardDriveDownload, Palette, ShieldCheck, WalletCards } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
+import { useAppLockStore } from "@/features/app-lock/store/use-app-lock-store";
 import { GetHelpSection } from "@/features/settings/components/get-help-section";
 import {
   SettingsCard,
@@ -45,6 +46,7 @@ export function SettingsScreen() {
   const themePreference = useSettingsStore((state) => state.themePreference);
   const brandColorTheme = useSettingsStore((state) => state.brandColorTheme);
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
+  const appLockEnabled = useAppLockStore((state) => state.enabled);
 
   const brandColorLabel = getBrandColorTheme(brandColorTheme).name;
   const appearanceSummary = `${THEME_LABELS[themePreference]} · ${brandColorLabel}`;
@@ -96,6 +98,19 @@ export function SettingsScreen() {
               onPress={() => router.push("/reminders-settings" as Href)}
               value={formatReminderTimeDisplay(defaultReminderTime)}
             />
+            {process.env.EXPO_OS !== "web" ? (
+              <SettingsNavRow
+                bordered
+                label="App Lock"
+                leading={
+                  <SettingsIconTile backgroundColor="#334155">
+                    <ShieldCheck color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
+                  </SettingsIconTile>
+                }
+                onPress={() => router.push("/app-lock" as Href)}
+                value={appLockEnabled ? "On" : "Off"}
+              />
+            ) : null}
           </SettingsCard>
         </SettingsSection>
 

@@ -13,4 +13,5 @@ Product and design references for the Personal Credit Tracker MVP.
 | [debt-management-prd.md](./debt-management-prd.md) | **Debt management actions** — edit debt, archive debt, contextual payment actions, platform menus, and ledger-safe validation |
 | [backup-restore-prd.md](./backup-restore-prd.md) | **Backup & Restore** — local-first full app backup, destructive restore, and data ownership UX |
 | [backup-restore-implementation-plan.md](./backup-restore-implementation-plan.md) | **Backup & Restore implementation plan** — phased delivery, migration compatibility contract, and release test matrix |
+| [app-lock-prd.md](./app-lock-prd.md) | **App Lock** — four-digit PIN, optional biometrics, lifecycle locking, recovery, and privacy-cover requirements |
 | [performance.md](./performance.md) | **Scaling guidelines** — list/query/DB performance patterns and agent checklist |

@@ -7,6 +7,7 @@ import { type Href, router } from "expo-router";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
+import { useAppLockStore } from "@/features/app-lock/store/use-app-lock-store";
 import {
   SettingsSwiftList,
   SettingsSwiftNavRow,
@@ -41,6 +42,7 @@ export function SettingsScreen() {
   const themePreference = useSettingsStore((state) => state.themePreference);
   const brandColorTheme = useSettingsStore((state) => state.brandColorTheme);
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
+  const appLockEnabled = useAppLockStore((state) => state.enabled);
   const { handleAboutPress, handleHelpCenterPress, handleShareFeedbackPress } = useGetHelpActions();
 
   const brandColorLabel = getBrandColorTheme(brandColorTheme).name;
@@ -77,6 +79,13 @@ export function SettingsScreen() {
             systemImage="alarm"
             title="Reminders"
             value={formatReminderTimeDisplay(defaultReminderTime)}
+          />
+          <SettingsSwiftNavRow
+            iconBackgroundColor="#334155"
+            onPress={() => router.push("/app-lock" as Href)}
+            systemImage="lock.shield"
+            title="App Lock"
+            value={appLockEnabled ? "On" : "Off"}
           />
         </SettingsSwiftSection>
 

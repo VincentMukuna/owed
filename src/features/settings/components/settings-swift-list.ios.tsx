@@ -10,6 +10,8 @@ import {
   Section,
   Spacer,
   Text,
+  Toggle,
+  VStack,
   ZStack,
 } from "@expo/ui/swift-ui";
 import {
@@ -144,6 +146,44 @@ function SettingsSwiftIconTile({
     >
       <Image color={iconColor} size={15} systemName={systemImage} />
     </ZStack>
+  );
+}
+
+type SettingsSwiftToggleRowProps = {
+  systemImage: SFSymbol;
+  iconBackgroundColor: string;
+  title: string;
+  description?: string;
+  isOn: boolean;
+  onIsOnChange: (isOn: boolean) => void;
+};
+
+export function SettingsSwiftToggleRow({
+  systemImage,
+  iconBackgroundColor,
+  title,
+  description,
+  isOn,
+  onIsOnChange,
+}: SettingsSwiftToggleRowProps) {
+  const { rowBackground, rowTitleModifiers, rowDescriptionModifiers, theme } =
+    useSettingsSwiftTheme();
+
+  return (
+    <Toggle isOn={isOn} modifiers={[rowBackground]} onIsOnChange={onIsOnChange}>
+      <HStack alignment="center" spacing={12}>
+        <SettingsSwiftIconTile
+          backgroundColor={iconBackgroundColor}
+          elevated={theme.name === "dark"}
+          iconColor="#FFFFFF"
+          systemImage={systemImage}
+        />
+        <VStack alignment="leading" spacing={2}>
+          <Text modifiers={rowTitleModifiers}>{title}</Text>
+          {description ? <Text modifiers={rowDescriptionModifiers}>{description}</Text> : null}
+        </VStack>
+      </HStack>
+    </Toggle>
   );
 }
 
