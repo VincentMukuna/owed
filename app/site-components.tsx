@@ -1,3 +1,5 @@
+import { SiApple, SiGoogleplay } from "react-icons/si";
+
 export function Brand() {
   return (
     <a className="brand" href="/" aria-label="Owed home">
@@ -11,12 +13,18 @@ export function StoreButtons({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`store-buttons${compact ? " compact" : ""}`}>
       <span className="store-button" role="link" aria-disabled="true">
-        <span className="store-kicker">Coming soon on the</span>
-        <strong>App Store</strong>
+        <SiApple className="store-icon" aria-hidden="true" />
+        <span className="store-copy">
+          <span className="store-kicker">Coming soon on the</span>
+          <strong>App Store</strong>
+        </span>
       </span>
       <span className="store-button secondary" role="link" aria-disabled="true">
-        <span className="store-kicker">Coming soon on</span>
-        <strong>Google Play</strong>
+        <SiGoogleplay className="store-icon play-icon" aria-hidden="true" />
+        <span className="store-copy">
+          <span className="store-kicker">Coming soon on</span>
+          <strong>Google Play</strong>
+        </span>
       </span>
     </div>
   );
