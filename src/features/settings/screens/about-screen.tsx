@@ -51,7 +51,7 @@ export function AboutScreen() {
             <SettingsDetailRow
               bordered
               description={appVersion}
-              label={`Owed for ${platformLabel}`}
+              label={`Owwed for ${platformLabel}`}
               leading={
                 <Image
                   contentFit="cover"

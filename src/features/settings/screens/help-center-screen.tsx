@@ -47,7 +47,7 @@ const FAQ_ITEMS: FaqItem[] = [
     id: "uploads",
     question: "Does Owwed upload my data?",
     answer:
-      "No.\n\nYour debts, people, and payments stay on your device by default.\n\nThe only information Owed receives is optional feedback you choose to send.",
+      "No.\n\nYour debts, people, and payments stay on your device by default.\n\nThe only information Owwed receives is optional feedback you choose to send.",
   },
   {
     id: "backup",

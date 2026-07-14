@@ -14,8 +14,8 @@ const themeBootScript = `(function(){try{var saved=localStorage.getItem('owed-th
 
 const themeControlsScript = `(function(){var media=window.matchMedia('(prefers-color-scheme: dark)');function apply(theme){document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;document.querySelectorAll('[data-theme-toggle]').forEach(function(button){var dark=theme==='dark';button.setAttribute('aria-pressed',String(dark));button.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');});}function current(){return document.documentElement.dataset.theme||'light';}document.addEventListener('click',function(event){var target=event.target;if(!(target instanceof Element))return;var button=target.closest('[data-theme-toggle]');if(!button)return;var next=current()==='dark'?'light':'dark';localStorage.setItem('owed-theme',next);apply(next);});media.addEventListener('change',function(event){if(!localStorage.getItem('owed-theme'))apply(event.matches?'dark':'light');});if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){apply(current());});}else{apply(current());}})();`;
 
-const title = "Owed: Private Debt Tracker for Friends & Family";
-const socialTitle = "Owed: A simpler way to remember money";
+const title = "Owwed: Private Debt Tracker for Friends & Family";
+const socialTitle = "Owwed: A simpler way to remember money";
 const description =
   "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.";
 
@@ -26,7 +26,7 @@ export const metadata: Metadata = {
   icons: { icon: "/favicon.png", apple: "/app-icon.png" },
   openGraph: {
     type: "website",
-    siteName: "Owed",
+    siteName: "Owwed",
     title: socialTitle,
     description,
     images: [
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1536,
         height: 1024,
-        alt: "Owed: a simpler way to remember money",
+        alt: "Owwed: a simpler way to remember money",
       },
     ],
   },

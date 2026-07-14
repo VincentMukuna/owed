@@ -111,7 +111,7 @@ export function RemindersSettingsScreen() {
 
         <SettingsSection>
           <SettingsHelperText>
-            Owed sends a daily reminder at your chosen time for debts with promised dates.
+            Owwed sends a daily reminder at your chosen time for debts with promised dates.
           </SettingsHelperText>
           <SettingsCard>
             <SettingsDetailRow

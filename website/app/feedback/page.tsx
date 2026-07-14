@@ -3,9 +3,9 @@ import { Footer, Header } from "../site-components";
 import { FeedbackForm } from "./feedback-form";
 
 export const metadata: Metadata = {
-  title: "Send Feedback · Owed",
+  title: "Send Feedback · Owwed",
   description:
-    "Share a bug, feature idea, or general note about Owed. Feedback is private and goes straight to the team.",
+    "Share a bug, feature idea, or general note about Owwed. Feedback is private and goes straight to the team.",
   alternates: { canonical: "/feedback" },
 };
 

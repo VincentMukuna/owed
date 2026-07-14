@@ -15,7 +15,7 @@ export function AppPrivacyCover() {
       <View style={styles.logoWrap}>
         <Wallet color={theme.colors.primaryForeground} size={28} strokeWidth={1.5} />
       </View>
-      <Text style={styles.wordmark}>Owed</Text>
+      <Text style={styles.wordmark}>Owwed</Text>
     </View>
   );
 }

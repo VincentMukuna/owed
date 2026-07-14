@@ -268,7 +268,7 @@ export function HomeScreen() {
             <View style={styles.emptyHeader}>
               <View style={styles.emptyHeaderRow}>
                 <View>
-                  <Text style={styles.kicker}>Owed</Text>
+                  <Text style={styles.kicker}>Owwed</Text>
                   <Text style={styles.pageTitle}>Home</Text>
                 </View>
                 <BellBadgeButton onPress={openNotifications} />

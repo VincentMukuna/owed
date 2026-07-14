@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "Owed",
+    "name": "Owwed",
     "slug": "owed",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -54,20 +54,20 @@
       [
         "expo-contacts",
         {
-          "contactsPermission": "Allow Owed to access your contacts so you can quickly choose a phone number."
+          "contactsPermission": "Allow Owwed to access your contacts so you can quickly choose a phone number."
         }
       ],
       [
         "expo-local-authentication",
         {
-          "faceIDPermission": "Allow Owed to use Face ID to unlock the app."
+          "faceIDPermission": "Allow Owwed to use Face ID to unlock the app."
         }
       ],
       [
         "expo-secure-store",
         {
           "configureAndroidBackup": true,
-          "faceIDPermission": "Allow Owed to use Face ID to unlock the app."
+          "faceIDPermission": "Allow Owwed to use Face ID to unlock the app."
         }
       ]
     ],

@@ -53,7 +53,7 @@ export function BackupRestoreScreen() {
       }
 
       await Sharing.shareAsync(file.uri, {
-        dialogTitle: "Save Owed Backup",
+        dialogTitle: "Save Owwed Backup",
         mimeType: BACKUP_MIME_TYPE,
       });
     } catch (error) {
@@ -81,7 +81,7 @@ export function BackupRestoreScreen() {
 
       Alert.alert(
         "Replace Current Data?",
-        "Restoring a backup will replace all current data in Owed.\n\nThis action cannot be undone.",
+        "Restoring a backup will replace all current data in Owwed.\n\nThis action cannot be undone.",
         [
           {
             text: "Cancel",
@@ -116,7 +116,7 @@ export function BackupRestoreScreen() {
       if (__DEV__) {
         console.error("[BackupRestoreScreen] selected backup is not valid", error);
       }
-      Alert.alert("Backup Not Recognized", "The selected file isn't a valid Owed backup.", [
+      Alert.alert("Backup Not Recognized", "The selected file isn't a valid Owwed backup.", [
         { text: "Choose Another File" },
       ]);
     } finally {

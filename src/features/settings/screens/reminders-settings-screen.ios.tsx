@@ -112,7 +112,7 @@ export function RemindersSettingsScreen() {
           </SettingsSwiftSection>
         ) : null}
 
-        <SettingsSwiftSection footer="Owed sends a daily reminder at your chosen time for debts with promised dates.">
+        <SettingsSwiftSection footer="Owwed sends a daily reminder at your chosen time for debts with promised dates.">
           <SettingsSwiftDetailRow
             onPress={() => {
               selectionChange();

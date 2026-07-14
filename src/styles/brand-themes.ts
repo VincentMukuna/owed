@@ -44,8 +44,8 @@ export const DEFAULT_BRAND_COLOR_THEME: BrandColorThemeId = "owedGreen";
 export const brandColorThemes: Record<BrandColorThemeId, BrandColorThemeDefinition> = {
   owedGreen: {
     id: "owedGreen",
-    name: "Owed Green",
-    description: "Calm, trustworthy, classic Owed feel.",
+    name: "Owwed Green",
+    description: "Calm, trustworthy, classic Owwed feel.",
     palette: {
       primary: "#1A3A2A",
       primaryPressed: "#142016",

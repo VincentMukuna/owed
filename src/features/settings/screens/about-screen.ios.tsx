@@ -41,7 +41,7 @@ export function AboutScreen() {
           <SettingsSwiftInfoRow
             subtitle={appVersion}
             systemImage="wallet.pass.fill"
-            title="Owed for iOS"
+            title="Owwed for iOS"
           />
         </SettingsSwiftSection>
       </SettingsSwiftList>

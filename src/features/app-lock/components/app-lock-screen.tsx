@@ -157,7 +157,7 @@ export function AppLockScreen() {
 
   const handleForgotPin = useCallback(async () => {
     setRecoveryMessage(null);
-    const result = await authenticateWithTrustedDevice("Reset your Owed PIN");
+    const result = await authenticateWithTrustedDevice("Reset your Owwed PIN");
     if (result === "success") {
       setResettingPin(true);
       return;

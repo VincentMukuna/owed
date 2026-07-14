@@ -81,8 +81,8 @@ export function PinSetupFlow({
               : "biometrics";
         const biometricDescription =
           biometricAvailability.icon === "fingerprint"
-            ? "Use your fingerprint for quicker access to Owed. Your PIN will still work."
-            : `Use ${biometricName} for quicker access to Owed. Your PIN will still work.`;
+            ? "Use your fingerprint for quicker access to Owwed. Your PIN will still work."
+            : `Use ${biometricName} for quicker access to Owwed. Your PIN will still work.`;
         setValue("");
         Alert.alert(
           `Use ${biometricName}?`,

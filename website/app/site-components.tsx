@@ -3,11 +3,11 @@ import { SiApple } from "react-icons/si";
 
 export function Brand() {
   return (
-    <a className="brand" href="/" aria-label="Owed home">
+    <a className="brand" href="/" aria-label="Owwed home">
       <span className="brand-mark" aria-hidden="true">
         O
       </span>
-      <span>Owed</span>
+      <span>Owwed</span>
     </a>
   );
 }
@@ -110,7 +110,7 @@ export function Footer() {
         </div>
       </div>
       <div className="container footer-bottom">
-        <span>© 2026 Owed</span>
+        <span>© 2026 Owwed</span>
       </div>
     </footer>
   );

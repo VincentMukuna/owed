@@ -39,7 +39,7 @@ const created = await backups.create();
 const file = await store.write(suggestBackupFileName(created.summary.createdAt), created.bytes);
 
 await Sharing.shareAsync(file.uri, {
-  dialogTitle: "Save Owed backup",
+  dialogTitle: "Save Owwed backup",
   mimeType: BACKUP_MIME_TYPE,
 });
 ```

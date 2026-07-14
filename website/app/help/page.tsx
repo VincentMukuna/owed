@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Footer, Header } from "../site-components";
 
 export const metadata: Metadata = {
-  title: "Help Center · Owed",
-  description: "Answers and support for using Owed.",
+  title: "Help Center · Owwed",
+  description: "Answers and support for using Owwed.",
 };
 
 const helpTopics = [
@@ -11,7 +11,7 @@ const helpTopics = [
     "Getting started",
     "Add a person, record a promise, and understand your home totals.",
     [
-      "Open Owed and tap the plus button.",
+      "Open Owwed and tap the plus button.",
       "Choose whether money is owed to you or by you.",
       "Add the amount, person, optional date, and note, then save.",
     ],
@@ -22,7 +22,7 @@ const helpTopics = [
     [
       "Open the promise from Debts or a person’s page.",
       "Choose Add payment and enter the amount and date.",
-      "Owed updates the outstanding balance and payment history.",
+      "Owwed updates the outstanding balance and payment history.",
     ],
   ],
   [
@@ -53,7 +53,7 @@ export default function HelpPage() {
         <div className="container help-hero">
           <span className="eyebrow">Help center</span>
           <h1>How can we help?</h1>
-          <p>Clear answers for the few things Owed asks you to think about.</p>
+          <p>Clear answers for the few things Owwed asks you to think about.</p>
         </div>
         <div className="container help-topics">
           {helpTopics.map(([title, intro, steps], index) => (

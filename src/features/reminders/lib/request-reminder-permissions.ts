@@ -9,7 +9,7 @@ import { saveNotificationsPermissionAsked } from "@/features/reminders/lib/remin
 
 const EXPLAINER_TITLE = "Get notifications on promised dates?";
 const EXPLAINER_MESSAGE =
-  "Owed can notify you when someone was due to pay. We never contact the person who owes. Notifications stay on your device and in the app.";
+  "Owwed can notify you when someone was due to pay. We never contact the person who owes. Notifications stay on your device and in the app.";
 
 /**
  * Called when the user turns a reminder on. Primes + requests OS permission

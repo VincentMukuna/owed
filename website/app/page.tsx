@@ -19,7 +19,7 @@ import { Footer, Header, StoreButtons } from "./site-components";
 
 
 export const metadata: Metadata = {
-  title: "Owed: Private Debt Tracker for Friends & Family",
+  title: "Owwed: Private Debt Tracker for Friends & Family",
   description:
     "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.",
 };
@@ -76,25 +76,25 @@ const features: { icon: IconType; title: string; text: string }[] = [
 
 const faqs = [
   [
-    "What is Owed?",
-    "Owed is a private app for recording money you’ve lent and money you owe. It keeps amounts, due dates, payments, reminders, and people together on your device.",
+    "What is Owwed?",
+    "Owwed is a private app for recording money you’ve lent and money you owe. It keeps amounts, due dates, payments, reminders, and people together on your device.",
   ],
   [
-    "Does Owed send money or split bills?",
-    "No. Owed records informal money promises; it doesn’t move money, connect to a bank, or contact anyone on your behalf.",
+    "Does Owwed send money or split bills?",
+    "No. Owwed records informal money promises; it doesn’t move money, connect to a bank, or contact anyone on your behalf.",
   ],
-  ["Is Owed free?", "Yes. Owed has no subscriptions and no ads."],
+  ["Is Owwed free?", "Yes. Owwed has no subscriptions and no ads."],
   [
     "Does it require an account?",
     "No. You can start immediately without creating an account or sharing an email address.",
   ],
   [
-    "Does Owed upload my data?",
+    "Does Owwed upload my data?",
     "No. Your debts, people, and payments stay on your device by default.",
   ],
   [
     "Can I back up my data?",
-    "Yes. You can create and restore a backup yourself. Owed never uploads a backup unless you explicitly choose where to save or share it.",
+    "Yes. You can create and restore a backup yourself. Owwed never uploads a backup unless you explicitly choose where to save or share it.",
   ],
   [
     "Can I track money I owe?",
@@ -110,7 +110,7 @@ export default function Home() {
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
-    name: "Owed",
+    name: "Owwed",
     applicationCategory: "FinanceApplication",
     operatingSystem: "iOS, Android",
     description:
@@ -143,16 +143,16 @@ export default function Home() {
               </p>
             </div>
           </div>
-          <div className="container hero-visual" aria-label="Owed app shown on three phones">
+          <div className="container hero-visual" aria-label="Owwed app shown on three phones">
             <img
               className="theme-image-light"
               src="/screens/hero.png"
-              alt="The Owed home, debts, and people screens on three phones"
+              alt="The Owwed home, debts, and people screens on three phones"
             />
             <img
               className="theme-image-dark"
               src="/screens/hero-dark.png"
-              alt="The Owed home, debts, and people screens in dark mode on three phones"
+              alt="The Owwed home, debts, and people screens in dark mode on three phones"
             />
           </div>
         </section>
@@ -160,7 +160,7 @@ export default function Home() {
         <section className="screen-story" aria-labelledby="screens-title">
           <div className="container section-heading split-heading">
             <div>
-              <span className="eyebrow">What Owed does</span>
+              <span className="eyebrow">What Owwed does</span>
               <h2 id="screens-title">
                 Every money promise,
                 <br />
@@ -169,7 +169,7 @@ export default function Home() {
             </div>
             <p>
               Whether you covered dinner, lent money to a friend, or still need to pay someone back,
-              Owed shows what’s outstanding and what’s already been paid.
+              Owwed shows what’s outstanding and what’s already been paid.
             </p>
           </div>
           <div className="container screen-grid">
@@ -185,13 +185,13 @@ export default function Home() {
                   <img
                     className="theme-image-light"
                     src={screen.image}
-                    alt={`${screen.title} screen in the Owed app`}
+                    alt={`${screen.title} screen in the Owwed app`}
                     loading="lazy"
                   />
                   <img
                     className="theme-image-dark"
                     src={screen.darkImage}
-                    alt={`${screen.title} screen in the Owed app in dark mode`}
+                    alt={`${screen.title} screen in the Owwed app in dark mode`}
                     loading="lazy"
                   />
                 </div>
@@ -202,7 +202,7 @@ export default function Home() {
 
         <section className="why-section" id="features" aria-labelledby="why-title">
           <div className="container section-heading centered">
-            <span className="eyebrow">Why Owed</span>
+            <span className="eyebrow">Why Owwed</span>
             <h2 id="why-title">Made to be quietly useful.</h2>
             <p>
               No ecosystem to join. No dashboard to maintain. Just a reliable place to remember.
@@ -242,7 +242,7 @@ export default function Home() {
               <span className="face-id-blob" aria-hidden="true" />
               <img
                 src="/screens/home-dark.jpeg"
-                alt="Owed home screen in dark mode"
+                alt="Owwed home screen in dark mode"
                 loading="lazy"
               />
               <div className="floating-note">
@@ -257,7 +257,7 @@ export default function Home() {
             <span className="eyebrow">Privacy</span>
             <h2 id="privacy-title">Your data belongs to you.</h2>
             <p>
-              Owed stores your information on your device by default. No account, bank connection,
+              Owwed stores your information on your device by default. No account, bank connection,
               tracking, or cloud storage is required. You choose if and when to create a backup.
             </p>
           </div>
@@ -306,7 +306,7 @@ export default function Home() {
                 <br />
                 simple idea.
               </h2>
-              <p>Owed focuses on one job: helping you remember money between people.</p>
+              <p>Owwed focuses on one job: helping you remember money between people.</p>
             </div>
           </div>
         </section>
@@ -335,12 +335,12 @@ export default function Home() {
 
         <section className="download-section" id="download">
           <div className="container download-card">
-            <span className="eyebrow light">Get Owed</span>
+            <span className="eyebrow light">Get Owwed</span>
             <h2 style={{ maxWidth: "550px" }}>
               Your private debt tracker is ready
               <br />
             </h2>
-            <p>Owed is on the App Store soon. Join the Android waitlist.</p>
+            <p>Owwed is on the App Store soon. Join the Android waitlist.</p>
             <StoreButtons compact />
           </div>
         </section>

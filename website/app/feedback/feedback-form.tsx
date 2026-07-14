@@ -9,7 +9,7 @@ import {
 
 const detailPlaceholders: Record<FeedbackCategory, string> = {
   bug: "What happened? What did you expect instead?",
-  feature_request: "What would you like Owed to help you do?",
+  feature_request: "What would you like Owwed to help you do?",
   feedback: "What should feel clearer, faster, or easier?",
 };
 

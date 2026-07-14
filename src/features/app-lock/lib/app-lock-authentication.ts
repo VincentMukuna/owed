@@ -68,7 +68,7 @@ export async function authenticateWithBiometrics(): Promise<boolean> {
 
   try {
     const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: "Unlock Owed",
+      promptMessage: "Unlock Owwed",
       promptSubtitle: "Use your phone's biometrics",
       cancelLabel: "Use PIN",
       fallbackLabel: "",

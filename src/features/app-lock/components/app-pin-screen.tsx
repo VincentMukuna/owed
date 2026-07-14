@@ -192,7 +192,7 @@ export function AppPinScreen({
         <View style={[styles.intro, compact && styles.introCompact]}>
           {showBrandMark ? (
             <View
-              accessibilityLabel="Owed"
+              accessibilityLabel="Owwed"
               style={[styles.logoWrap, compact && styles.logoWrapCompact]}
             >
               <Wallet

@@ -42,7 +42,7 @@ export function useExportDebtsCsv() {
       }
 
       await Sharing.shareAsync(file.uri, {
-        dialogTitle: "Export Owed Data",
+        dialogTitle: "Export Owwed Data",
         mimeType: DEBT_CSV_MIME_TYPE,
         UTI: DEBT_CSV_UTI,
       });

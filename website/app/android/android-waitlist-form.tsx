@@ -38,8 +38,8 @@ export function AndroidWaitlistForm() {
         <h2>{status === "duplicate" ? "You’re already on the list." : "You’re on the list."}</h2>
         <p>
           {status === "duplicate"
-            ? "We’ll email this address when Owed is ready on Google Play."
-            : "We’ll email you when Owed is ready on Google Play."}
+            ? "We’ll email this address when Owwed is ready on Google Play."
+            : "We’ll email you when Owwed is ready on Google Play."}
         </p>
       </div>
     );
