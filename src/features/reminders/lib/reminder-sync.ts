@@ -1,28 +1,24 @@
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { canScheduleOsNotifications } from "@/features/reminders/lib/notification-permissions";
-import { cancelReminderNotification, cancelReminderNotifications, scheduleReminderNotification } from "@/features/reminders/lib/notification-service";
-import { buildCollapsedReminderContent, buildReminderNotificationContent, computeDueRemindAt, computeOverdueRemindAt, groupKeyFor, isReminderInPast, toReminderISO } from "@/features/reminders/lib/reminder-scheduler";
+import {
+  cancelReminderNotifications,
+  scheduleReminderNotification,
+} from "@/features/reminders/lib/notification-service";
+import {
+  buildCollapsedReminderContent,
+  buildReminderNotificationContent,
+  computeDueRemindAt,
+  computeOverdueRemindAt,
+  groupKeyFor,
+  isReminderInPast,
+  toReminderISO,
+} from "@/features/reminders/lib/reminder-scheduler";
 import { reminderRepository } from "@/features/reminders/repositories/reminder-repository";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { queryClient } from "@/lib/api/query-client";
 import type { DebtSummary } from "@/lib/db/mappers";
 import type { Reminder, ReminderType } from "@/types";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 /** Max pending OS notifications to register at once (iOS hard-caps an app at 64). */
 const NOTIFICATION_WINDOW_SIZE = 50;
@@ -40,18 +36,10 @@ function reminderKey(debtId: string, type: ReminderType, remindAt: string): stri
   return `${debtId}|${type}|${remindAt}`;
 }
 
-async function markReminderSent(reminder: Reminder): Promise<void> {
-  if (reminder.notificationId) {
-    await cancelReminderNotification(reminder.notificationId);
+function collectOsId(ids: string[], notificationId: string | undefined): void {
+  if (notificationId) {
+    ids.push(notificationId);
   }
-  await reminderRepository.update(reminder.id, { status: "sent", notificationId: null });
-}
-
-async function cancelReminderRecord(reminder: Reminder): Promise<void> {
-  if (reminder.notificationId) {
-    await cancelReminderNotification(reminder.notificationId);
-  }
-  await reminderRepository.update(reminder.id, { status: "cancelled", notificationId: null });
 }
 
 type ReminderBucket = {
@@ -61,6 +49,27 @@ type ReminderBucket = {
   members: Reminder[];
 };
 
+type SchedulePlanItem =
+  | {
+      kind: "group";
+      remindAt: string;
+      reminderIds: string[];
+      title: string;
+      body: string;
+      type: ReminderType;
+      dueDate: string;
+    }
+  | {
+      kind: "single";
+      remindAt: string;
+      reminderIds: string[];
+      title: string;
+      body: string;
+      debtId: string;
+      reminderId: string;
+      type: ReminderType;
+    };
+
 function parseGroupKey(groupKey: string): { type: ReminderType; dueDate: string } {
   const separator = groupKey.indexOf(":");
   return {
@@ -69,24 +78,10 @@ function parseGroupKey(groupKey: string): { type: ReminderType; dueDate: string 
   };
 }
 
-/**
- * Rebuilds OS notifications for every scheduled reminder: cancels what's
- * registered, then schedules the nearest window of buckets fresh (so content
- * always reflects current balances and collapse state).
- */
-async function syncOsNotifications(eligibleById: Map<string, DebtSummary>): Promise<void> {
-  if (!(await canScheduleOsNotifications())) {
-    return;
-  }
-
-  const scheduled = await reminderRepository.listScheduled();
-
-  const existingIds = scheduled
-    .map((reminder) => reminder.notificationId)
-    .filter((id): id is string => Boolean(id));
-  await cancelReminderNotifications(existingIds);
-  await reminderRepository.clearScheduledNotificationIds();
-
+function buildSchedulePlan(
+  scheduled: Reminder[],
+  eligibleById: Map<string, DebtSummary>,
+): SchedulePlanItem[] {
   const buckets = new Map<string, ReminderBucket>();
   for (const reminder of scheduled) {
     if (!reminder.groupKey) {
@@ -104,6 +99,8 @@ async function syncOsNotifications(eligibleById: Map<string, DebtSummary>): Prom
   const inWindow = [...buckets.values()]
     .sort((a, b) => a.remindAt.localeCompare(b.remindAt))
     .slice(0, NOTIFICATION_WINDOW_SIZE);
+
+  const plan: SchedulePlanItem[] = [];
 
   for (const bucket of inWindow) {
     const members = bucket.members
@@ -134,19 +131,15 @@ async function syncOsNotifications(eligibleById: Map<string, DebtSummary>): Prom
         currency: sorted[0].debt.currency,
       });
 
-      const notificationId = await scheduleReminderNotification({
+      plan.push({
+        kind: "group",
         remindAt: bucket.remindAt,
+        reminderIds: members.map((entry) => entry.reminder.id),
         title: content.title,
         body: content.body,
-        data: { kind: "group", type: bucket.type, focusDate: bucket.dueDate },
+        type: bucket.type,
+        dueDate: bucket.dueDate,
       });
-
-      if (notificationId) {
-        await reminderRepository.setRemindersNotificationId(
-          members.map((entry) => entry.reminder.id),
-          notificationId,
-        );
-      }
       continue;
     }
 
@@ -159,47 +152,56 @@ async function syncOsNotifications(eligibleById: Map<string, DebtSummary>): Prom
         currency: debt.currency,
       });
 
-      const notificationId = await scheduleReminderNotification({
+      plan.push({
+        kind: "single",
         remindAt: bucket.remindAt,
+        reminderIds: [reminder.id],
         title: content.title,
         body: content.body,
-        data: { kind: "single", debtId: debt.id, reminderId: reminder.id, type: bucket.type },
+        debtId: debt.id,
+        reminderId: reminder.id,
+        type: bucket.type,
       });
-
-      if (notificationId) {
-        await reminderRepository.setRemindersNotificationId([reminder.id], notificationId);
-      }
     }
   }
+
+  return plan;
 }
 
-async function syncOnce(): Promise<void> {
-  const now = new Date();
+/**
+ * DB-only reconciliation. Collects OS notification ids to cancel after the
+ * DB phase — never awaits notification APIs mid-write.
+ */
+async function reconcileReminderRows(now: Date): Promise<{
+  eligibleById: Map<string, DebtSummary>;
+  osIdsToCancel: string[];
+  scheduledForOs: Reminder[];
+}> {
   const nowIso = now.toISOString();
+  const osIdsToCancel: string[] = [];
 
-  // 1. Scheduled reminders whose time has passed become inbox entries.
   const missed = await reminderRepository.listScheduledBeforeOrAt(nowIso);
   for (const reminder of missed) {
-    await markReminderSent(reminder);
+    collectOsId(osIdsToCancel, reminder.notificationId);
+    await reminderRepository.update(reminder.id, { status: "sent", notificationId: null });
   }
 
-  // 2. Scheduled reminders for paid / archived / reminder-off debts are cancelled.
   const ineligible = await reminderRepository.listIneligibleScheduled();
   for (const reminder of ineligible) {
-    await cancelReminderRecord(reminder);
+    collectOsId(osIdsToCancel, reminder.notificationId);
+    await reminderRepository.update(reminder.id, { status: "cancelled", notificationId: null });
   }
 
   const { defaultReminderTime, overdueReminderEnabled } = useSettingsStore.getState();
 
-  // 3. If overdue reminders are off, cancel any that are still scheduled.
   if (!overdueReminderEnabled) {
     const scheduledOverdue = await reminderRepository.listScheduledByType("overdue");
     for (const reminder of scheduledOverdue) {
-      await cancelReminderRecord(reminder);
+      collectOsId(osIdsToCancel, reminder.notificationId);
+      await reminderRepository.update(reminder.id, { status: "cancelled", notificationId: null });
     }
   }
 
-  // 4. Ensure each eligible debt has the reminder rows it should.
   const summaries = await debtRepository.listSummaries();
   const eligible = summaries.filter(isDebtReminderEligible);
   const eligibleById = new Map(eligible.map((debt) => [debt.id, debt]));
@@ -239,7 +241,8 @@ async function syncOnce(): Promise<void> {
 
       const stale = scheduledByDebtType.get(`${debt.id}|${type}`);
       if (stale && stale.remindAt !== remindAtIso) {
-        await cancelReminderRecord(stale);
+        collectOsId(osIdsToCancel, stale.notificationId);
+        await reminderRepository.update(stale.id, { status: "cancelled", notificationId: null });
       }
 
       await reminderRepository.create({
@@ -252,14 +255,71 @@ async function syncOnce(): Promise<void> {
     }
   }
 
-  // 5. Soft-archive old inbox/cancelled rows (never deleted).
   const archiveBefore = new Date(now.getTime() - ARCHIVE_AFTER_DAYS * MS_PER_DAY).toISOString();
   await reminderRepository.markArchivedBefore(archiveBefore);
 
-  // 6. Rebuild the windowed set of OS notifications.
-  await syncOsNotifications(eligibleById);
+  const scheduledForOs = await reminderRepository.listScheduled();
+  for (const reminder of scheduledForOs) {
+    collectOsId(osIdsToCancel, reminder.notificationId);
+  }
+  await reminderRepository.clearScheduledNotificationIds();
 
-  // 7. Refresh inbox + badge.
+  return { eligibleById, osIdsToCancel, scheduledForOs };
+}
+
+async function stampNotificationIds(
+  stamps: { reminderIds: string[]; notificationId: string }[],
+): Promise<void> {
+  if (stamps.length === 0) {
+    return;
+  }
+
+  for (const stamp of stamps) {
+    await reminderRepository.setRemindersNotificationId(stamp.reminderIds, stamp.notificationId);
+  }
+}
+
+async function syncOnce(): Promise<void> {
+  const now = new Date();
+
+  const { eligibleById, osIdsToCancel, scheduledForOs } = await reconcileReminderRows(now);
+
+  const uniqueCancelIds = [...new Set(osIdsToCancel)];
+  await cancelReminderNotifications(uniqueCancelIds);
+
+  if (!(await canScheduleOsNotifications())) {
+    await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
+    return;
+  }
+
+  const plan = buildSchedulePlan(
+    scheduledForOs.map((reminder) => ({ ...reminder, notificationId: undefined })),
+    eligibleById,
+  );
+
+  const stamps: { reminderIds: string[]; notificationId: string }[] = [];
+  for (const item of plan) {
+    const notificationId = await scheduleReminderNotification({
+      remindAt: item.remindAt,
+      title: item.title,
+      body: item.body,
+      data:
+        item.kind === "group"
+          ? { kind: "group", type: item.type, focusDate: item.dueDate }
+          : {
+              kind: "single",
+              debtId: item.debtId,
+              reminderId: item.reminderId,
+              type: item.type,
+            },
+    });
+
+    if (notificationId) {
+      stamps.push({ reminderIds: item.reminderIds, notificationId });
+    }
+  }
+
+  await stampNotificationIds(stamps);
   await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
 }
 
@@ -293,30 +353,10 @@ export function runReminderSync(): Promise<void> {
   return current;
 }
 
-function isDatabaseLockedError(error: unknown): boolean {
-  const message = error instanceof Error ? error.message : String(error);
-  return message.includes("database is locked");
-}
-
 async function runGuarded(): Promise<void> {
   try {
     await syncOnce();
   } catch (error) {
-    if (isDatabaseLockedError(error)) {
-      console.log("Database locked error", error);
-      // Brief wait then one retry — Android can still surface SQLITE_BUSY under load
-      // even with WAL/busy_timeout when writes are interleaved with OS notification I/O.
-      await new Promise((resolve) => setTimeout(resolve, 250));
-      try {
-        await syncOnce();
-        return;
-      } catch (retryError) {
-        if (__DEV__) {
-          console.error("[runReminderSync] failed after retry", retryError);
-        }
-        return;
-      }
-    }
     if (__DEV__) {
       console.error("[runReminderSync] failed", error);
     }

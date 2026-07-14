@@ -44,34 +44,46 @@ export default function RootLayout() {
   const navigationTheme = useMemo(() => getNavigationTheme(theme), [theme]);
 
   useEffect(() => {
-    void Promise.all([
-      getDb(),
-      bootstrapCurrency().then(() => hydratePersistedSettings()),
-      hydrateOnboardingState(),
-      hydrateAppLock(),
-      queryClient.prefetchQuery({
-        queryKey: debtKeys.all,
-        queryFn: loadDebts,
-        staleTime: Number.POSITIVE_INFINITY,
-      }),
-      queryClient.prefetchQuery({
-        queryKey: debtKeys.paidThisMonth,
-        queryFn: loadPaidThisMonth,
-        staleTime: Number.POSITIVE_INFINITY,
-      }),
-      queryClient.prefetchQuery({
-        queryKey: activityKeys.recent(HOME_RECENT_ACTIVITY_LIMIT),
-        queryFn: () => loadRecentActivities(HOME_RECENT_ACTIVITY_LIMIT),
-        staleTime: Number.POSITIVE_INFINITY,
-      }),
-      queryClient.prefetchQuery({
-        queryKey: reminderKeys.unreadCount(),
-        queryFn: () => reminderRepository.countUnread(),
-        staleTime: Number.POSITIVE_INFINITY,
-      }),
-    ]).then(() => {
-      setDbReady(true);
-    });
+    let cancelled = false;
+
+    void (async () => {
+      // Open DB first, then hydrate, then warm reads — sync runs after dbReady.
+      await getDb();
+      await Promise.all([
+        bootstrapCurrency().then(() => hydratePersistedSettings()),
+        hydrateOnboardingState(),
+        hydrateAppLock(),
+      ]);
+      await Promise.all([
+        queryClient.prefetchQuery({
+          queryKey: debtKeys.all,
+          queryFn: loadDebts,
+          staleTime: Number.POSITIVE_INFINITY,
+        }),
+        queryClient.prefetchQuery({
+          queryKey: debtKeys.paidThisMonth,
+          queryFn: loadPaidThisMonth,
+          staleTime: Number.POSITIVE_INFINITY,
+        }),
+        queryClient.prefetchQuery({
+          queryKey: activityKeys.recent(HOME_RECENT_ACTIVITY_LIMIT),
+          queryFn: () => loadRecentActivities(HOME_RECENT_ACTIVITY_LIMIT),
+          staleTime: Number.POSITIVE_INFINITY,
+        }),
+        queryClient.prefetchQuery({
+          queryKey: reminderKeys.unreadCount(),
+          queryFn: () => reminderRepository.countUnread(),
+          staleTime: Number.POSITIVE_INFINITY,
+        }),
+      ]);
+      if (!cancelled) {
+        setDbReady(true);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   useEffect(() => {
