@@ -2,18 +2,53 @@ import type { Metadata } from "next";
 import type { IconType } from "react-icons";
 import { FiClock, FiDollarSign, FiLock, FiSmartphone } from "react-icons/fi";
 
+
+
 import { Footer, Header, StoreButtons } from "./site-components";
+
+
+
+
+
+
+
+
+
+
+
+
 
 export const metadata: Metadata = {
   title: "Owed: Private Debt Tracker for Friends & Family",
-  description: "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.",
+  description:
+    "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.",
 };
 
 const productScreens = [
-  { image: "/screens/home.jpeg", darkImage: "/screens/home-dark.jpeg", title: "Home", text: "See everything unsettled at a glance." },
-  { image: "/screens/debts.jpeg", darkImage: "/screens/debts-dark.jpeg", title: "Debts", text: "Keep every promise, due date, and balance together." },
-  { image: "/screens/people.jpeg", darkImage: "/screens/people-dark.jpeg", title: "People", text: "View every promise grouped by person." },
-  { image: "/screens/reminders.jpeg", darkImage: "/screens/reminders-dark.jpeg", title: "Reminders", text: "Know what is due without keeping it in your head." },
+  {
+    image: "/screens/home.jpeg",
+    darkImage: "/screens/home-dark.jpeg",
+    title: "Home",
+    text: "See everything unsettled at a glance.",
+  },
+  {
+    image: "/screens/debts.jpeg",
+    darkImage: "/screens/debts-dark.jpeg",
+    title: "Debts",
+    text: "Keep every promise, due date, and balance together.",
+  },
+  {
+    image: "/screens/people.jpeg",
+    darkImage: "/screens/people-dark.jpeg",
+    title: "People",
+    text: "View every promise grouped by person.",
+  },
+  {
+    image: "/screens/reminders.jpeg",
+    darkImage: "/screens/reminders-dark.jpeg",
+    title: "Reminders",
+    text: "Know what is due without keeping it in your head.",
+  },
 ];
 
 const features: { icon: IconType; title: string; text: string }[] = [
@@ -301,10 +336,9 @@ export default function Home() {
         <section className="download-section" id="download">
           <div className="container download-card">
             <span className="eyebrow light">Get Owed</span>
-            <h2>
-              Ready to get it
+            <h2 style={{ maxWidth: "550px" }}>
+              Your private debt tracker is ready
               <br />
-              out of your head?
             </h2>
             <p>Owed is on the App Store soon. Join the Android waitlist.</p>
             <StoreButtons compact />
