@@ -1,0 +1,113 @@
+import Link from "next/link";
+
+export function Brand() {
+  return (
+    <Link className="brand" href="/" aria-label="Owed home">
+      <span className="brand-mark" aria-hidden="true">O</span>
+      <span>Owed</span>
+    </Link>
+  );
+}
+
+export function StoreButtons({ compact = false }: { compact?: boolean }) {
+  return (
+    <div className={`store-buttons${compact ? " compact" : ""}`}>
+      <span className="store-button" role="link" aria-disabled="true">
+        <span className="store-kicker">Coming soon on the</span>
+        <strong>App Store</strong>
+      </span>
+      <span className="store-button secondary" role="link" aria-disabled="true">
+        <span className="store-kicker">Coming soon on</span>
+        <strong>Google Play</strong>
+      </span>
+    </div>
+  );
+}
+
+export function Header() {
+  return (
+    <header className="site-header">
+      <div className="container nav-shell">
+        <Brand />
+        <nav className="desktop-nav" aria-label="Main navigation">
+          <a href="/#features">Features</a>
+          <a href="/#privacy">Privacy</a>
+          <Link href="/help">Help</Link>
+          <a className="nav-cta" href="/#download">Download</a>
+        </nav>
+        <details className="mobile-menu">
+          <summary aria-label="Open navigation"><span></span><span></span></summary>
+          <nav aria-label="Mobile navigation">
+            <a href="/#features">Features</a>
+            <a href="/#privacy">Privacy</a>
+            <Link href="/help">Help</Link>
+            <a href="/#download">Download</a>
+          </nav>
+        </details>
+      </div>
+    </header>
+  );
+}
+
+export function Footer() {
+  return (
+    <footer className="site-footer">
+      <div className="container footer-grid">
+        <div>
+          <Brand />
+          <p>A private place to remember money between people.</p>
+          <p className="crafted">Built with care by Vincent.</p>
+        </div>
+        <div className="footer-links">
+          <div>
+            <strong>Product</strong>
+            <a href="/#features">Features</a>
+            <a href="/#privacy">Privacy</a>
+            <a href="/#download">Download</a>
+          </div>
+          <div>
+            <strong>Resources</strong>
+            <Link href="/help">Help center</Link>
+            <Link href="/privacy">Privacy policy</Link>
+            <Link href="/terms">Terms of service</Link>
+            <a href="https://github.com/VincentMukuna/owed">GitHub</a>
+          </div>
+        </div>
+      </div>
+      <div className="container footer-bottom">
+        <span>© 2026 Owed</span>
+        <span>Made for real life, not the cloud.</span>
+      </div>
+    </footer>
+  );
+}
+
+export function LegalPage({
+  eyebrow,
+  title,
+  intro,
+  children,
+}: {
+  eyebrow: string;
+  title: string;
+  intro: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <>
+      <Header />
+      <main className="legal-main">
+        <div className="container legal-wrap">
+          <header className="legal-hero">
+            <span className="eyebrow">{eyebrow}</span>
+            <h1>{title}</h1>
+            <p>{intro}</p>
+            <time dateTime="2026-07-14">Last updated July 14, 2026</time>
+          </header>
+          <article className="legal-content">{children}</article>
+        </div>
+      </main>
+      <Footer />
+    </>
+  );
+}
