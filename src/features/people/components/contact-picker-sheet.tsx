@@ -52,6 +52,7 @@ export type ContactPickerSheetRef = {
 };
 
 type ContactPickerSheetProps = {
+  initialSearchQuery?: string;
   onSelectPhone: (number: string) => void;
 };
 
@@ -62,7 +63,7 @@ type ContactPhoneRowView = {
 };
 
 export const ContactPickerSheet = forwardRef<ContactPickerSheetRef, ContactPickerSheetProps>(
-  ({ onSelectPhone }, ref) => {
+  ({ initialSearchQuery = "", onSelectPhone }, ref) => {
     const { theme } = useUnistyles();
     const sheetRef = useRef<BottomSheetModal>(null);
     const inputRef = useRef<TextInput>(null);
@@ -89,6 +90,8 @@ export const ContactPickerSheet = forwardRef<ContactPickerSheetRef, ContactPicke
     const present = useCallback(async () => {
       if (process.env.EXPO_OS === "web") return;
 
+      setQuery(initialSearchQuery.trim());
+
       try {
         let permission = await getPermissionsAsync();
         if (permission.status === "undetermined") {
@@ -108,7 +111,7 @@ export const ContactPickerSheet = forwardRef<ContactPickerSheetRef, ContactPicke
         sheetRef.current?.present();
         setState("error");
       }
-    }, [loadContacts]);
+    }, [initialSearchQuery, loadContacts]);
 
     useImperativeHandle(
       ref,

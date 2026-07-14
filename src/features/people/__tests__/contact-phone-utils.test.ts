@@ -21,6 +21,11 @@ const contacts: ContactPhoneDetails[] = [
     phones: [{ id: "work", label: "work", number: "020 555 0100" }],
   },
   {
+    id: "jose-duplicate",
+    fullName: "Jose Kamau",
+    phones: [{ id: "other", label: "other", number: "+254-700-123-456" }],
+  },
+  {
     id: "no-phone",
     fullName: "No Phone",
     phones: [],
@@ -34,6 +39,23 @@ describe("contact phone utilities", () => {
 
     expect(views).toHaveLength(2);
     expect(jose?.phones).toEqual([{ id: "mobile", label: "mobile", number: "+254 700 123 456" }]);
+  });
+
+  it("keeps a shared number available under different contact names", () => {
+    const views = toContactPhoneViews([
+      {
+        id: "one",
+        fullName: "Amina Noor",
+        phones: [{ id: "mobile", number: "+254 700 123 456" }],
+      },
+      {
+        id: "two",
+        fullName: "Noor Family",
+        phones: [{ id: "home", number: "+254-700-123-456" }],
+      },
+    ]);
+
+    expect(views).toHaveLength(2);
   });
 
   it("sorts contacts by name", () => {

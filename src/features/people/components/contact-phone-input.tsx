@@ -19,13 +19,25 @@ import { ContactPickerSheet, type ContactPickerSheetRef } from "./contact-picker
 type ContactPhoneInputProps = Omit<TextInputProps, "onChangeText" | "style" | "value"> & {
   value: string;
   onChangeText: (value: string) => void;
+  contactSearchQuery?: string;
   style?: StyleProp<TextStyle>;
   containerStyle?: StyleProp<ViewStyle>;
   contactButtonStyle?: StyleProp<ViewStyle>;
 };
 
 export const ContactPhoneInput = forwardRef<TextInput, ContactPhoneInputProps>(
-  ({ value, onChangeText, style, containerStyle, contactButtonStyle, ...inputProps }, ref) => {
+  (
+    {
+      value,
+      onChangeText,
+      contactSearchQuery,
+      style,
+      containerStyle,
+      contactButtonStyle,
+      ...inputProps
+    },
+    ref,
+  ) => {
     const { theme } = useUnistyles();
     const pickerRef = useRef<ContactPickerSheetRef>(null);
 
@@ -58,7 +70,11 @@ export const ContactPhoneInput = forwardRef<TextInput, ContactPhoneInputProps>(
             </PressableScale>
           ) : null}
         </View>
-        <ContactPickerSheet ref={pickerRef} onSelectPhone={onChangeText} />
+        <ContactPickerSheet
+          ref={pickerRef}
+          initialSearchQuery={contactSearchQuery}
+          onSelectPhone={onChangeText}
+        />
       </>
     );
   },

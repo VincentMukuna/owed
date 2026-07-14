@@ -47,9 +47,11 @@ function toPhoneView(phone: ContactPhoneDetails["phones"][number]) {
 
 export function toContactPhoneViews(contacts: ContactPhoneDetails[]): ContactPhoneView[] {
   const result: ContactPhoneView[] = [];
+  const seenContactNumbers = new Set<string>();
 
   for (const contact of contacts) {
-    const seenNumbers = new Set<string>();
+    const name = contact.fullName?.trim() || "Unnamed contact";
+    const searchName = normalizeSearchValue(name);
     const phones: ContactPhoneView["phones"] = [];
 
     for (const phone of contact.phones) {
@@ -57,19 +59,19 @@ export function toContactPhoneViews(contacts: ContactPhoneDetails[]): ContactPho
       if (!mapped) continue;
 
       const comparable = phoneSearchValue(mapped.number);
-      if (seenNumbers.has(comparable)) continue;
+      const contactNumberKey = `${searchName}:${comparable}`;
+      if (!comparable || seenContactNumbers.has(contactNumberKey)) continue;
 
-      seenNumbers.add(comparable);
+      seenContactNumbers.add(contactNumberKey);
       phones.push(mapped);
     }
 
     if (phones.length === 0) continue;
 
-    const name = contact.fullName?.trim() || "Unnamed contact";
     result.push({
       id: contact.id,
       name,
-      searchName: normalizeSearchValue(name),
+      searchName,
       searchNumbers: phones.map((phone) => phoneSearchValue(phone.number)),
       phones,
     });

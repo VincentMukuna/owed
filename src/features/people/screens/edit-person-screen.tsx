@@ -109,6 +109,7 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
         <Field label="Phone number">
           <ContactPhoneInput
             ref={phoneRef}
+            contactSearchQuery={nameValue}
             inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
             onChangeText={setPhone}
             placeholder="Optional"
