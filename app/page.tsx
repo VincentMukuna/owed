@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Footer, Header, StoreButtons } from "./site-components";
 
 export const metadata: Metadata = {
-  title: "Owed — A simpler way to remember money",
-  description: "Built for friends, family, roommates, and everyday life. Private, local-first, and free.",
+  title: "Owed — Private Debt Tracker for Friends & Family",
+  description: "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.",
 };
 
 const productScreens = [
@@ -14,10 +14,10 @@ const productScreens = [
 ];
 
 const features = [
-  ["Track both directions", "Keep money you’re owed and money you owe in the same calm view."],
-  ["Partial payments", "Record what was paid and see the remaining balance instantly."],
-  ["Payment history", "A clear timeline replaces scattered notes and chat searches."],
-  ["Thoughtful reminders", "Set local reminders around the dates that matter."],
+  ["Know what’s owed in both directions", "Keep money you’re owed and money you owe in the same calm view."],
+  ["See what’s paid—and what’s left", "Record partial payments and see the remaining balance instantly."],
+  ["Know when and how much was paid", "A clear timeline replaces scattered notes and chat searches."],
+  ["Remember before a due date slips by", "Set private reminders around the dates that matter."],
   ["People overview", "See every open promise and total balance by person."],
   ["Backup & restore", "Create a portable backup when you choose—never by default."],
   ["Custom categories", "Organize rent, meals, trips, gifts, and everything in between."],
@@ -25,7 +25,8 @@ const features = [
 ];
 
 const faqs = [
-  ["What is Owed?", "Owed is a private memory tool for informal money between people. It helps you remember amounts, dates, notes, payments, and who owes whom."],
+  ["What is Owed?", "Owed is a private app for recording money you’ve lent and money you owe. It keeps amounts, due dates, payments, reminders, and people together on your device."],
+  ["Does Owed send money or split bills?", "No. Owed records informal money promises; it doesn’t move money, connect to a bank, or contact anyone on your behalf."],
   ["Is Owed free?", "Yes. Owed has no subscriptions and no ads."],
   ["Does it require an account?", "No. You can start immediately without creating an account or sharing an email address."],
   ["Does Owed upload my data?", "No. Your information stays on your device by default and is not sent to Owed servers."],
@@ -41,7 +42,7 @@ export default function Home() {
     name: "Owed",
     applicationCategory: "FinanceApplication",
     operatingSystem: "iOS, Android",
-    description: "Built for friends, family, roommates, and everyday life. Private, local-first, and free.",
+    description: "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   };
 
@@ -53,9 +54,9 @@ export default function Home() {
           <div className="container hero-copy">
             <span className="eyebrow"><span className="status-dot"></span> Private by design</span>
             <h1>A simpler way to<br />remember money.</h1>
-            <p>Built for friends, family, roommates, and everyday life. Private, local-first, and free.</p>
+            <p>Track money you’ve lent, money you owe, payments, reminders, and due dates—all in one private place.</p>
             <StoreButtons />
-            <p className="hero-note">No account. No ads. No bank connection.</p>
+            <p className="hero-note">Built for friends, family, roommates, and everyday life. Local-first and free.</p>
           </div>
           <div className="container hero-visual" aria-label="Owed app shown on three phones">
             <img className="theme-image-light" src="/screens/hero.png" alt="The Owed home, debts, and people screens on three phones" />
@@ -66,10 +67,10 @@ export default function Home() {
         <section className="screen-story" aria-labelledby="screens-title">
           <div className="container section-heading split-heading">
             <div>
-              <span className="eyebrow">The app</span>
-              <h2 id="screens-title">Everything outstanding.<br />Nothing overwhelming.</h2>
+              <span className="eyebrow">What Owed does</span>
+              <h2 id="screens-title">Every money promise,<br />in one place.</h2>
             </div>
-            <p>Owed keeps the full picture close without turning personal promises into complicated finance.</p>
+            <p>Whether you covered dinner, lent money to a friend, or still need to pay someone back, Owed shows what’s outstanding and what’s already been paid.</p>
           </div>
           <div className="container screen-grid">
             {productScreens.map((screen, index) => (
@@ -120,7 +121,7 @@ export default function Home() {
           <div className="container privacy-intro">
             <span className="eyebrow">Privacy</span>
             <h2 id="privacy-title">Your data belongs to you.</h2>
-            <p>Owed stores your information locally by default. Your promises, payments, and people are never uploaded unless you choose to create and share a backup.</p>
+            <p>Owed stores your information on your device by default. No account, bank connection, tracking, or cloud storage is required. You choose if and when to create a backup.</p>
           </div>
           <div className="container privacy-list">
             {["Local-first", "No account required", "No tracking", "No ads", "No bank connections", "No cloud required"].map((item, index) => (

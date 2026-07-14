@@ -14,16 +14,16 @@ export async function generateMetadata(): Promise<Metadata> {
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
   const protocol = requestHeaders.get("x-forwarded-proto") ?? (host.startsWith("localhost") ? "http" : "https");
   const base = new URL(`${protocol}://${host}`);
-  const title = "Owed — A simpler way to remember money";
-  const description = "Built for friends, family, roommates, and everyday life. Private, local-first, and free.";
+  const title = "Owed — Private Debt Tracker for Friends & Family";
+  const socialTitle = "Owed — A simpler way to remember money";
+  const description = "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.";
   return {
     metadataBase: base,
     title: { default: title, template: "%s" },
     description,
-    keywords: ["debt tracker", "IOU tracker", "money tracker", "personal debt tracker", "private debt tracker"],
     icons: { icon: "/favicon.png", apple: "/app-icon.png" },
-    openGraph: { type: "website", siteName: "Owed", title, description, images: [{ url: new URL("/og.png", base).toString(), width: 1536, height: 1024, alt: "Owed — a simpler way to remember money" }] },
-    twitter: { card: "summary_large_image", title, description, images: [new URL("/og.png", base).toString()] },
+    openGraph: { type: "website", siteName: "Owed", title: socialTitle, description, images: [{ url: new URL("/og.png", base).toString(), width: 1536, height: 1024, alt: "Owed — a simpler way to remember money" }] },
+    twitter: { card: "summary_large_image", title: socialTitle, description, images: [new URL("/og.png", base).toString()] },
     alternates: { canonical: "/" },
   };
 }
