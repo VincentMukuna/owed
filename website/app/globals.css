@@ -88,7 +88,7 @@ img { display:block; max-width:100%; }
 .privacy-row { display:grid; grid-template-columns:70px 1fr 40px; align-items:center; min-height:94px; border-bottom:1px solid var(--line); }
 .privacy-row > span:first-child { color:#8b9089; font-size:11px; letter-spacing:.12em; }
 .privacy-row strong { font-size:24px; letter-spacing:-.025em; font-weight:560; }
-.privacy-row .check { display:grid; place-items:center; width:31px; height:31px; border-radius:50%; color:var(--green); background:var(--mint); font-size:14px; }
+.privacy-row .check { display:grid; place-items:center; width:31px; height:31px; border-radius:50%; color:var(--green-2); background:var(--mint); font-size:14px; }
 .privacy-link { display:flex; justify-content:flex-end; padding-top:34px; }
 .privacy-link a { font-size:14px; font-weight:650; }
 .privacy-link span { margin-left:12px; }
