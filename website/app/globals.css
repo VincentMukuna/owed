@@ -1866,7 +1866,7 @@ html[data-theme="dark"] .feedback-again {
     }
   
     .screen-grid {
-      width: calc(100% + 14px);
+      width: 100%;
       gap: 16px;
     }
   
@@ -1942,6 +1942,7 @@ html[data-theme="dark"] .feedback-again {
   
     .feature-grid {
       grid-template-columns: 1fr;
+      order: 2;
     }
   
     .feature-item {
