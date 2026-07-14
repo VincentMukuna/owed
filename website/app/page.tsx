@@ -40,7 +40,7 @@ const faqs = [
   ["Does Owed send money or split bills?", "No. Owed records informal money promises; it doesn’t move money, connect to a bank, or contact anyone on your behalf."],
   ["Is Owed free?", "Yes. Owed has no subscriptions and no ads."],
   ["Does it require an account?", "No. You can start immediately without creating an account or sharing an email address."],
-  ["Does Owed upload my data?", "No. Your information stays on your device by default and is not sent to Owed servers."],
+  ["Does Owed upload my data?", "No. Your debts, people, and payments stay on your device by default. The only things Owed receives are optional feedback you send, and an optional Android waitlist email on the website."],
   ["Can I back up my data?", "Yes. You can create and restore a backup yourself. Owed never uploads a backup unless you explicitly choose where to save or share it."],
   ["Can I track money I owe?", "Yes. Each promise can record either money owed to you or money you owe someone else."],
   ["How do reminders work?", "Reminders are scheduled on your device. They help you remember due dates without sending messages to the other person."],
