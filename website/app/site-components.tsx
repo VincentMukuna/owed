@@ -27,13 +27,13 @@ export function StoreButtons({ compact = false }: { compact?: boolean }) {
           <strong>App Store</strong>
         </span>
       </span>
-      <span className="store-button secondary" role="link" aria-disabled="true">
+      <a className="store-button secondary" href="/android">
         <span className="google-play-icon" aria-hidden="true" />
         <span className="store-copy">
-          <span className="store-kicker">Coming soon on</span>
+          <span className="store-kicker">Get notified for</span>
           <strong>Google Play</strong>
         </span>
-      </span>
+      </a>
     </div>
   );
 }
@@ -102,6 +102,7 @@ export function Footer() {
           <div>
             <strong>Resources</strong>
             <a href="/help">Help center</a>
+            <a href="/feedback">Send feedback</a>
             <a href="/privacy">Privacy policy</a>
             <a href="/terms">Terms of service</a>
             <a href="https://github.com/VincentMukuna/owed">GitHub</a>

@@ -14,7 +14,7 @@ export default function PrivacyPage() {
       <section><h2>Device security and deletion</h2><p>Your data is protected by the security of your device. You can also enable the app lock where supported. Deleting app data or uninstalling Owed can remove locally stored records, so create a backup first if you want to keep them.</p></section>
       <section><h2>Children</h2><p>Owed is a general utility and is not directed to children under 13. Because Owed does not operate user accounts or collect personal information, it does not knowingly collect information from children.</p></section>
       <section><h2>Changes</h2><p>If Owed’s data practices change, this policy will be updated before the new practices take effect. A meaningful change will be explained clearly in the app or on this page.</p></section>
-      <section><h2>Questions</h2><p>For privacy questions, open an issue in the <a href="https://github.com/VincentMukuna/owed/issues">Owed support repository</a>. Do not include private financial details in a public issue.</p></section>
+      <section><h2>Questions</h2><p>For privacy questions, use the <a href="/feedback">feedback form</a>. Please do not include private financial details.</p></section>
     </LegalPage>
   );
 }

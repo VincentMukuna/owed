@@ -175,7 +175,7 @@ export default function Home() {
           <div className="container download-card">
             <span className="eyebrow light">Get Owed</span>
             <h2>Ready to get it<br />out of your head?</h2>
-            <p>Owed is preparing for release on iPhone and Android.</p>
+            <p>Owed is on the App Store soon. Android is accepting early interest.</p>
             <StoreButtons compact />
           </div>
         </section>
