@@ -45,7 +45,9 @@ a.store-button { cursor:pointer; }
 .store-button strong { margin-top:2px; font-size:16px; letter-spacing:-.02em; }
 .hero-note { margin:16px auto 0; color:#7d817b; font-size:12px; }
 .hero-visual { margin-top:20px; padding:0; overflow:hidden; border:0; border-radius:0; background:transparent; box-shadow:none; aspect-ratio:1.85 / 1; line-height:0; }
-.hero-visual img { width:100%; height:auto; display:block; border-radius:0; }
+.hero-visual img { width:100%; height:auto; border-radius:0; }
+.hero-visual .theme-image-light { display:block; }
+.hero-visual .theme-image-dark { display:none; }
 .theme-image-dark { display:none; }
 
 .screen-story { padding:144px 0; background:var(--paper); }
@@ -60,8 +62,9 @@ a.store-button { cursor:pointer; }
 .screen-copy > span { padding-top:6px; color:#8b9089; font-size:11px; letter-spacing:.12em; }
 .screen-copy h3 { margin:0; font-size:27px; letter-spacing:-.035em; font-weight:650; }
 .screen-copy p { grid-column:2; max-width:340px; margin:9px 0 0; color:#696f68; line-height:1.55; }
-.phone-frame { width:78%; max-width:360px; height:590px; margin:20px auto 0; padding:8px 8px 0; overflow:hidden; border:1px solid #aaa; border-bottom:0; border-radius:48px 48px 0 0; background:#111; box-shadow:0 30px 60px rgba(30,38,31,.16); }
+.phone-frame { position:relative; width:78%; max-width:360px; height:590px; margin:20px auto 0; padding:8px 8px 0; overflow:hidden; border:1px solid #aaa; border-bottom:0; border-radius:48px 48px 0 0; background:#111; box-shadow:0 30px 60px rgba(30,38,31,.16); }
 .phone-frame img { width:100%; height:auto; border-radius:40px 40px 0 0; }
+.face-id-blob { position:absolute; z-index:2; top:18px; left:50%; width:86px; height:26px; border-radius:999px; background:#0a0a0a; box-shadow:inset 0 0 0 1px rgba(255,255,255,.08); transform:translateX(-50%); pointer-events:none; }
 
 .why-section { padding:140px 0; }
 .centered { max-width:720px; margin-inline:auto; text-align:center; }
@@ -237,6 +240,8 @@ html[data-theme="dark"] .desktop-nav a:not(.nav-cta) { color:#b2b8b1; }
 html[data-theme="dark"] .theme-toggle { border-color:#353b36; }
 html[data-theme="dark"] .theme-toggle:hover { background:#151816; }
 html[data-theme="dark"] .hero-visual { border:0; box-shadow:none; }
+html[data-theme="dark"] .hero-visual .theme-image-light { display:none; }
+html[data-theme="dark"] .hero-visual .theme-image-dark { display:block; }
 html[data-theme="dark"] .hero-copy > p:not(.hero-note),
 html[data-theme="dark"] .legal-content p,
 html[data-theme="dark"] .help-topics ol { color:#a7ada6; }
@@ -279,6 +284,8 @@ html[data-theme="dark"] .feedback-again { color:var(--green-2); }
   html:not([data-theme]) { color-scheme:dark; }
   html:not([data-theme]) .theme-image-light { display:none; }
   html:not([data-theme]) .theme-image-dark { display:block; }
+  html:not([data-theme]) .hero-visual .theme-image-light { display:none; }
+  html:not([data-theme]) .hero-visual .theme-image-dark { display:block; }
 }
 
 @media (max-width:900px) {
@@ -319,10 +326,12 @@ html[data-theme="dark"] .feedback-again { color:var(--green-2); }
   .screen-story, .why-section, .privacy-section, .features-section, .faq-section { padding:92px 0; }
   .section-heading { margin-bottom:42px; }
   .section-heading h2, .privacy-intro h2, .philosophy-copy h2, .faq-copy h2 { font-size:42px; }
-  .screen-card { min-height:570px; padding:27px 22px 0; border-radius:22px; }
+  .screen-grid { width:calc(100% + 28px); margin-inline:-14px; gap:12px; }
+  .screen-card { min-height:570px; padding:27px 22px 0; border-radius:0; border-left:0; border-right:0; }
   .screen-copy { min-height:105px; }
   .phone-frame { width:88%; height:470px; border-radius:40px 40px 0 0; }
   .phone-frame img { border-radius:32px 32px 0 0; }
+  .face-id-blob { top:14px; width:72px; height:22px; }
   .three-up { grid-template-columns:1fr; }
   .three-up article, .three-up article + article { min-height:220px; padding:28px 0; border-right:0; border-bottom:1px solid #cfd2ca; }
   .three-up h3 { margin-top:60px; }
@@ -335,8 +344,8 @@ html[data-theme="dark"] .feedback-again { color:var(--green-2); }
   .feature-item { min-height:230px; }
   .feature-item h3 { margin-top:70px; }
   .faq-grid { gap:50px; }
-  .download-section { padding:12px; }
-  .download-card { width:100%; min-height:590px; padding:70px 22px; border-radius:25px; }
+  .download-section { padding:0; }
+  .download-card { width:100%; min-height:590px; padding:70px 22px; border-radius:0; }
   .download-card h2 { font-size:53px; }
   .site-footer { padding-top:70px; }
   .footer-links { margin-top:35px; }

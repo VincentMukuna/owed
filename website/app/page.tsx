@@ -94,6 +94,7 @@ export default function Home() {
                   <p>{screen.text}</p>
                 </div>
                 <div className="phone-frame">
+                  <span className="face-id-blob" aria-hidden="true" />
                   <img className="theme-image-light" src={screen.image} alt={`${screen.title} screen in the Owed app`} loading="lazy" />
                   <img className="theme-image-dark" src={screen.darkImage} alt={`${screen.title} screen in the Owed app in dark mode`} loading="lazy" />
                 </div>
@@ -124,6 +125,7 @@ export default function Home() {
               <p>Track what matters, stay organized, and move on with your day.</p>
             </div>
             <div className="dark-phone-wrap">
+              <span className="face-id-blob" aria-hidden="true" />
               <img src="/screens/home-dark.jpeg" alt="Owed home screen in dark mode" loading="lazy" />
               <div className="floating-note"><span></span>Your day stays yours.</div>
             </div>
