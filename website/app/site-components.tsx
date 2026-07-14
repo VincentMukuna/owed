@@ -1,6 +1,27 @@
 import { FiMoon, FiSun } from "react-icons/fi";
 import { SiApple } from "react-icons/si";
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export function Brand() {
   return (
     <a className="brand" href="/" aria-label="Owed home">
@@ -60,11 +81,16 @@ export function Header() {
             <a href="/#features">Features</a>
             <a href="/#privacy">Privacy</a>
             <a href="/help">Help</a>
-            <a className="nav-cta" href="/#download">Download</a>
+            <a className="nav-cta" href="/#download">
+              Download
+            </a>
           </nav>
           <ThemeToggle />
           <details className="mobile-menu">
-            <summary aria-label="Open navigation"><span></span><span></span></summary>
+            <summary aria-label="Open navigation">
+              <span></span>
+              <span></span>
+            </summary>
             <nav aria-label="Mobile navigation">
               <a href="/#features">Features</a>
               <a href="/#privacy">Privacy</a>
@@ -106,7 +132,6 @@ export function Footer() {
       </div>
       <div className="container footer-bottom">
         <span>© 2026 Owed</span>
-        <span>Made for real life, not the cloud.</span>
       </div>
     </footer>
   );

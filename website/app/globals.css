@@ -136,7 +136,7 @@ a.store-button { cursor:pointer; }
 .footer-links strong { margin-bottom:8px; font-size:12px; letter-spacing:.1em; text-transform:uppercase; }
 .footer-links a { color:var(--muted); font-size:14px; }
 .footer-links a:hover { color:var(--ink); }
-.footer-bottom { display:flex; justify-content:space-between; margin-top:80px; padding-top:24px; border-top:1px solid var(--line); color:#8a8f87; font-size:11px; }
+.footer-bottom { display:flex; justify-content:center; margin-top:80px; padding-top:24px; border-top:1px solid var(--line); color:#8a8f87; font-size:11px; }
 
 .legal-main, .help-main { background:var(--paper); }
 .legal-wrap { display:grid; grid-template-columns:.8fr 1.2fr; gap:110px; padding-top:110px; padding-bottom:140px; }
