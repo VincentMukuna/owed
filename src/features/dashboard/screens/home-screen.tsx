@@ -411,7 +411,7 @@ const styles = StyleSheet.create((theme) => ({
   },
   heroMeta: {
     fontSize: 12,
-    color: theme.colors.onPrimarySurfaceSubtle,
+    color: theme.colors.onPrimarySurfaceMuted,
     marginTop: 8,
   },
   statsGrid: {

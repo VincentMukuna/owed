@@ -92,16 +92,27 @@ export default function RootLayout() {
     }
 
     let cleanup: (() => void) | undefined;
+    // Appearance.setColorScheme (theme toggle) can briefly inactive→active on Android.
+    // Cooldown avoids kicking a full reminder sync for that flicker.
+    let lastForegroundSyncAt = 0;
+    const FOREGROUND_SYNC_COOLDOWN_MS = 15_000;
 
     void (async () => {
       cleanup = await registerNotificationHandlers();
+      lastForegroundSyncAt = Date.now();
       await runReminderSync();
     })();
 
     const appStateSubscription = AppState.addEventListener("change", (state) => {
-      if (state === "active") {
-        void runReminderSync();
+      if (state !== "active") {
+        return;
       }
+      const now = Date.now();
+      if (now - lastForegroundSyncAt < FOREGROUND_SYNC_COOLDOWN_MS) {
+        return;
+      }
+      lastForegroundSyncAt = now;
+      void runReminderSync();
     });
 
     return () => {

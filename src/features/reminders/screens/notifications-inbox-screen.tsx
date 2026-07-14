@@ -30,13 +30,15 @@ export function NotificationsInboxScreen() {
   const queryClient = useQueryClient();
   const { data: items = [], isPending } = useRemindersInbox();
   const { isPending: isArchivingInbox, mutate: archiveInbox } = useArchiveInbox();
-  const markInboxRead = useMarkInboxRead();
+  // Depend on stable `mutate` only — the full mutation object changes every status tick
+  // and would re-fire this effect in a write loop (Android: "database is locked").
+  const { mutate: markInboxRead } = useMarkInboxRead();
 
   const handleRefresh = useCallback(() => invalidateReminderQueries(queryClient), [queryClient]);
 
   useFocusEffect(
     useCallback(() => {
-      void markInboxRead.mutateAsync();
+      markInboxRead();
     }, [markInboxRead]),
   );
 

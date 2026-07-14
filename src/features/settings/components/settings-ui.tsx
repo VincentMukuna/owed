@@ -54,6 +54,8 @@ type SettingsRowShellProps = {
   children: ReactNode;
 };
 
+const DIVIDER_LEADING_INSET = ROW_HORIZONTAL_PADDING + ICON_COLUMN_WIDTH + 12;
+
 function SettingsRowShell({ icon, leading, bordered = false, children }: SettingsRowShellProps) {
   const iconContent =
     leading ??
@@ -64,11 +66,16 @@ function SettingsRowShell({ icon, leading, bordered = false, children }: Setting
     ) : null);
 
   return (
-    <View style={styles.row}>
-      {iconContent ? <View style={styles.iconColumn}>{iconContent}</View> : null}
-      <View style={styles.rowBody}>
-        {bordered ? <ListInsetDivider trailingInset={ROW_HORIZONTAL_PADDING} /> : null}
-        <View style={styles.rowBodyContent}>{children}</View>
+    <View>
+      {bordered ? (
+        <ListInsetDivider
+          leadingInset={DIVIDER_LEADING_INSET}
+          trailingInset={ROW_HORIZONTAL_PADDING}
+        />
+      ) : null}
+      <View style={styles.row}>
+        {iconContent ? <View style={styles.iconColumn}>{iconContent}</View> : null}
+        <View style={styles.rowBody}>{children}</View>
       </View>
     </View>
   );
@@ -251,16 +258,13 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: 1,
     borderColor: theme.name === "light" ? theme.colors.borderStrong : theme.colors.border,
     overflow: "hidden",
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
   },
   row: {
     flexDirection: "row",
-    alignItems: "stretch",
+    alignItems: "center",
     paddingLeft: ROW_HORIZONTAL_PADDING,
+    paddingRight: ROW_HORIZONTAL_PADDING,
+    paddingVertical: 14,
   },
   pressableRow: {
     alignSelf: "stretch",
@@ -272,7 +276,6 @@ const styles = StyleSheet.create((theme) => ({
     width: ICON_COLUMN_WIDTH,
     alignItems: "center",
     justifyContent: "center",
-    paddingVertical: 14,
     marginRight: 12,
   },
   icon: {
@@ -309,11 +312,6 @@ const styles = StyleSheet.create((theme) => ({
   rowBody: {
     flex: 1,
     minWidth: 0,
-    justifyContent: "center",
-  },
-  rowBodyContent: {
-    paddingRight: ROW_HORIZONTAL_PADDING,
-    paddingVertical: 14,
   },
   rowContent: {
     flexDirection: "row",
@@ -325,6 +323,7 @@ const styles = StyleSheet.create((theme) => ({
     flex: 1,
     minWidth: 0,
     fontSize: 14,
+    lineHeight: 20,
     fontWeight: "500",
     color: theme.colors.text,
   },
@@ -349,6 +348,7 @@ const styles = StyleSheet.create((theme) => ({
   value: {
     flexShrink: 1,
     fontSize: 14,
+    lineHeight: 20,
     color: theme.colors.muted,
     textAlign: "right",
   },

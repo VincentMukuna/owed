@@ -17,6 +17,11 @@ export type BrandColorPalette = {
   primaryForeground: string;
 };
 
+type LightBrandOverrides = {
+  /** When set, overrides `palette.primaryPressed` as the light-mode hero fill. */
+  hero?: string;
+};
+
 type DarkBrandOverrides = {
   primary?: string;
   primaryPressed?: string;
@@ -36,6 +41,7 @@ export type BrandColorThemeDefinition = {
   name: string;
   description: string;
   palette: BrandColorPalette;
+  light?: LightBrandOverrides;
   dark: DarkBrandOverrides;
 };
 
@@ -54,6 +60,10 @@ export const brandColorThemes: Record<BrandColorThemeId, BrandColorThemeDefiniti
       primaryBorder: "#B8D4C4",
       accent: "#2F7D50",
       primaryForeground: "#FFFFFF",
+    },
+    light: {
+      // Between primaryPressed (#142016, too dark) and #215C3D (too light).
+      hero: "#1A3A2A",
     },
     dark: {
       primary: "#2F7D50",
@@ -281,7 +291,7 @@ export function buildBrandColorOverrides(
       tabActive: palette.primary,
       selectedBorder: primaryBorderAlpha(palette.primary, 0.25),
       progressFill: palette.accent,
-      hero: palette.primaryPressed,
+      hero: brand.light?.hero ?? palette.primaryPressed,
       avatarTintBg: palette.primarySoft,
       avatarTintText: palette.primary,
       personAddBg: palette.primarySoft,

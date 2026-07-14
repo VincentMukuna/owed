@@ -9,8 +9,12 @@ export function useMarkInboxRead() {
 
   return useMutation({
     mutationFn: () => reminderRepository.markAllInboxRead(),
+    onMutate: () => {
+      queryClient.setQueryData(reminderKeys.unreadCount(), 0);
+    },
     onSuccess: async () => {
-      await queryClient.invalidateQueries({ queryKey: reminderKeys.all });
+      // Inbox rows are unchanged when marked read — only the badge matters.
+      await queryClient.invalidateQueries({ queryKey: reminderKeys.unreadCount() });
     },
   });
 }

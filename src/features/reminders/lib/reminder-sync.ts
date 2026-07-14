@@ -1,25 +1,28 @@
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { reminderKeys } from "@/features/reminders/hooks/query-keys";
 import { canScheduleOsNotifications } from "@/features/reminders/lib/notification-permissions";
-import {
-  cancelReminderNotification,
-  cancelReminderNotifications,
-  scheduleReminderNotification,
-} from "@/features/reminders/lib/notification-service";
-import {
-  buildCollapsedReminderContent,
-  buildReminderNotificationContent,
-  computeDueRemindAt,
-  computeOverdueRemindAt,
-  groupKeyFor,
-  isReminderInPast,
-  toReminderISO,
-} from "@/features/reminders/lib/reminder-scheduler";
+import { cancelReminderNotification, cancelReminderNotifications, scheduleReminderNotification } from "@/features/reminders/lib/notification-service";
+import { buildCollapsedReminderContent, buildReminderNotificationContent, computeDueRemindAt, computeOverdueRemindAt, groupKeyFor, isReminderInPast, toReminderISO } from "@/features/reminders/lib/reminder-scheduler";
 import { reminderRepository } from "@/features/reminders/repositories/reminder-repository";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { queryClient } from "@/lib/api/query-client";
 import type { DebtSummary } from "@/lib/db/mappers";
 import type { Reminder, ReminderType } from "@/types";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 /** Max pending OS notifications to register at once (iOS hard-caps an app at 64). */
 const NOTIFICATION_WINDOW_SIZE = 50;
@@ -290,10 +293,30 @@ export function runReminderSync(): Promise<void> {
   return current;
 }
 
+function isDatabaseLockedError(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error);
+  return message.includes("database is locked");
+}
+
 async function runGuarded(): Promise<void> {
   try {
     await syncOnce();
   } catch (error) {
+    if (isDatabaseLockedError(error)) {
+      console.log("Database locked error", error);
+      // Brief wait then one retry — Android can still surface SQLITE_BUSY under load
+      // even with WAL/busy_timeout when writes are interleaved with OS notification I/O.
+      await new Promise((resolve) => setTimeout(resolve, 250));
+      try {
+        await syncOnce();
+        return;
+      } catch (retryError) {
+        if (__DEV__) {
+          console.error("[runReminderSync] failed after retry", retryError);
+        }
+        return;
+      }
+    }
     if (__DEV__) {
       console.error("[runReminderSync] failed", error);
     }
