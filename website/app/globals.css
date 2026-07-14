@@ -32,7 +32,8 @@ img { display:block; max-width:100%; }
 .hero-copy { text-align:center; }
 .hero h1 { max-width:880px; margin:28px auto 24px; font-size:clamp(53px,7.1vw,96px); line-height:.95; letter-spacing:-.067em; font-weight:680; }
 .hero-copy > p:not(.hero-note) { max-width:660px; margin:0 auto; color:#60655f; font-size:18px; line-height:1.65; }
-.store-buttons { display:flex; justify-content:center; gap:12px; margin-top:35px; }
+.hero-cta { margin-top:35px; }
+.store-buttons { display:flex; justify-content:center; gap:12px; }
 .store-button { display:flex; align-items:center; justify-content:flex-start; gap:12px; width:196px; min-height:62px; padding:10px 17px; border-radius:15px; color:#f7f7f3; background:var(--ink); text-align:left; opacity:.94; }
 .store-button.secondary { color:var(--ink); background:transparent; border:1px solid #c8cbc4; }
 .store-icon { flex:0 0 auto; width:25px; height:25px; }
@@ -41,8 +42,8 @@ img { display:block; max-width:100%; }
 .store-kicker { font-size:10px; line-height:1.15; letter-spacing:.02em; opacity:.68; }
 .store-button strong { margin-top:2px; font-size:16px; letter-spacing:-.02em; }
 .hero-note { margin:16px auto 0; color:#7d817b; font-size:12px; }
-.hero-visual { margin-top:66px; padding:0; overflow:hidden; border:1px solid rgba(22,25,20,.14); border-radius:38px 38px 0 0; background:transparent; box-shadow:0 -8px 60px rgba(23,60,43,.08); }
-.hero-visual img { width:100%; border-radius:0; }
+.hero-visual { margin-top:20px; padding:0; overflow:hidden; border:0; border-radius:0; background:transparent; box-shadow:none; aspect-ratio:1.85 / 1; line-height:0; }
+.hero-visual img { width:100%; height:auto; display:block; border-radius:0; }
 .theme-image-dark { display:none; }
 
 .screen-story { padding:144px 0; background:var(--paper); }
@@ -116,6 +117,7 @@ img { display:block; max-width:100%; }
 .download-card { display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:660px; border-radius:34px; background:var(--green); color:#f1f2ed; text-align:center; }
 .download-card h2 { margin:22px 0 18px; font-size:clamp(52px,7vw,86px); line-height:.95; letter-spacing:-.065em; font-weight:650; }
 .download-card > p { margin:0; color:#c8d3cc; }
+.download-card .store-buttons { margin-top:35px; }
 .download-card .store-button { background:#f5f6f1; color:var(--ink); }
 .download-card .store-button.secondary { color:#f5f6f1; background:transparent; border-color:rgba(255,255,255,.28); }
 
@@ -173,7 +175,7 @@ html[data-theme="dark"] .site-header { background:rgba(8,10,9,.9); border-bottom
 html[data-theme="dark"] .desktop-nav a:not(.nav-cta) { color:#b2b8b1; }
 html[data-theme="dark"] .theme-toggle { border-color:#353b36; }
 html[data-theme="dark"] .theme-toggle:hover { background:#151816; }
-html[data-theme="dark"] .hero-visual { border-color:rgba(255,255,255,.13); box-shadow:0 -8px 60px rgba(0,0,0,.28); }
+html[data-theme="dark"] .hero-visual { border:0; box-shadow:none; }
 html[data-theme="dark"] .hero-copy > p:not(.hero-note),
 html[data-theme="dark"] .legal-content p,
 html[data-theme="dark"] .help-topics ol { color:#a7ada6; }
@@ -232,9 +234,14 @@ html[data-theme="dark"] .mobile-menu nav { background:#121512; }
   .hero { padding-top:76px; }
   .hero h1 { font-size:50px; }
   .hero-copy > p:not(.hero-note) { font-size:16px; }
-  .store-buttons { flex-direction:column; align-items:center; }
-  .store-button { width:100%; max-width:310px; }
-  .hero-visual { margin-top:50px; padding:0; border-radius:24px 24px 0 0; }
+  .hero-cta { width:100%; max-width:340px; margin-inline:auto; }
+  .store-buttons { flex-direction:row; align-items:stretch; gap:8px; width:100%; }
+  .store-button { width:auto; flex:1 1 0; min-width:0; max-width:none; min-height:56px; padding:9px 12px; gap:8px; border-radius:13px; }
+  .store-icon, .google-play-icon { width:20px; height:20px; }
+  .google-play-icon { height:22px; }
+  .store-kicker { font-size:9px; }
+  .store-button strong { font-size:13px; }
+  .hero-visual { margin-top:24px; padding:0; border-radius:0; aspect-ratio:1.95 / 1; }
   .screen-story, .why-section, .privacy-section, .features-section, .faq-section { padding:92px 0; }
   .section-heading { margin-bottom:42px; }
   .section-heading h2, .privacy-intro h2, .philosophy-copy h2, .faq-copy h2 { font-size:42px; }

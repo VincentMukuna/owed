@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { Footer, Header } from "../site-components";
 
-export const metadata: Metadata = { title: "Help Center — Owed", description: "Answers and support for using Owed." };
+export const metadata: Metadata = { title: "Help Center · Owed", description: "Answers and support for using Owed." };
 
 const helpTopics = [
   ["Getting started", "Add a person, record a promise, and understand your home totals.", ["Open Owed and tap the plus button.", "Choose whether money is owed to you or by you.", "Add the amount, person, optional date, and note, then save."]],

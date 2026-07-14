@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Footer, Header, StoreButtons } from "./site-components";
 
 export const metadata: Metadata = {
-  title: "Owed — Private Debt Tracker for Friends & Family",
+  title: "Owed: Private Debt Tracker for Friends & Family",
   description: "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.",
 };
 
@@ -15,11 +15,11 @@ const productScreens = [
 
 const features = [
   ["Know what’s owed in both directions", "Keep money you’re owed and money you owe in the same calm view."],
-  ["See what’s paid—and what’s left", "Record partial payments and see the remaining balance instantly."],
+  ["See what’s paid and what’s left", "Record partial payments and see the remaining balance instantly."],
   ["Know when and how much was paid", "A clear timeline replaces scattered notes and chat searches."],
   ["Remember before a due date slips by", "Set private reminders around the dates that matter."],
   ["People overview", "See every open promise and total balance by person."],
-  ["Backup & restore", "Create a portable backup when you choose—never by default."],
+  ["Backup & restore", "Create a portable backup when you choose, never by default."],
   ["Custom categories", "Organize rent, meals, trips, gifts, and everything in between."],
   ["Works offline", "Add, edit, and settle promises without a connection."],
 ];
@@ -54,9 +54,11 @@ export default function Home() {
           <div className="container hero-copy">
             <span className="eyebrow"><span className="status-dot"></span> Private by design</span>
             <h1>A simpler way to<br />remember money.</h1>
-            <p>Track money you’ve lent, money you owe, payments, reminders, and due dates—all in one private place.</p>
-            <StoreButtons />
-            <p className="hero-note">Built for friends, family, roommates, and everyday life. Local-first and free.</p>
+            <p>Track money you’ve lent, money you owe, payments, reminders, and due dates, all in one private place.</p>
+            <div className="hero-cta">
+              <StoreButtons />
+              <p className="hero-note">Built for friends, family, roommates, and everyday life. Local-first and free.</p>
+            </div>
           </div>
           <div className="container hero-visual" aria-label="Owed app shown on three phones">
             <img className="theme-image-light" src="/screens/hero.png" alt="The Owed home, debts, and people screens on three phones" />

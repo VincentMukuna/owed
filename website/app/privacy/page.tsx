@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPage } from "../site-components";
 
-export const metadata: Metadata = { title: "Privacy Policy — Owed", description: "How Owed handles your information and keeps your data local." };
+export const metadata: Metadata = { title: "Privacy Policy · Owed", description: "How Owed handles your information and keeps your data local." };
 
 export default function PrivacyPage() {
   return (

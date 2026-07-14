@@ -1,6 +1,13 @@
 import { FiMoon, FiSun } from "react-icons/fi";
 import { SiApple } from "react-icons/si";
 
+
+
+
+
+
+
+
 export function Brand() {
   return (
     <a className="brand" href="/" aria-label="Owed home">
@@ -33,7 +40,14 @@ export function StoreButtons({ compact = false }: { compact?: boolean }) {
 
 function ThemeToggle() {
   return (
-    <button className="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
+    <button
+      suppressHydrationWarning
+      className="theme-toggle"
+      type="button"
+      data-theme-toggle
+      aria-label="Switch to dark mode"
+      aria-pressed="false"
+    >
       <FiSun className="theme-icon theme-sun" aria-hidden="true" />
       <FiMoon className="theme-icon theme-moon" aria-hidden="true" />
       <span className="sr-only">Toggle color theme</span>

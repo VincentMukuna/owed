@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { LegalPage } from "../site-components";
 
-export const metadata: Metadata = { title: "Terms of Service — Owed", description: "The terms for using the Owed personal money tracker." };
+export const metadata: Metadata = { title: "Terms of Service · Owed", description: "The terms for using the Owed personal money tracker." };
 
 export default function TermsPage() {
   return (
