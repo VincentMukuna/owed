@@ -1,5 +1,4 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { Footer, Header } from "../site-components";
 
 export const metadata: Metadata = { title: "Help Center — Owed", description: "Answers and support for using Owed." };
@@ -13,6 +12,6 @@ const helpTopics = [
 
 export default function HelpPage() {
   return (
-    <><Header /><main className="help-main"><div className="container help-hero"><span className="eyebrow">Help center</span><h1>How can we help?</h1><p>Clear answers for the few things Owed asks you to think about.</p></div><div className="container help-topics">{helpTopics.map(([title, intro, steps]) => <article key={title as string}><span className="help-index">0{helpTopics.findIndex((topic) => topic[0] === title) + 1}</span><h2>{title as string}</h2><p>{intro as string}</p><ol>{(steps as string[]).map((step) => <li key={step}>{step}</li>)}</ol></article>)}</div><section className="container support-card"><div><span className="eyebrow light">Still stuck?</span><h2>Tell us what happened.</h2><p>Open a GitHub issue with your device model, operating-system version, and what you expected to happen. Please leave out names, amounts, and other private financial details.</p></div><a href="https://github.com/VincentMukuna/owed/issues/new">Open a support issue →</a></section><div className="container help-legal">Looking for the details? <Link href="/privacy">Privacy policy</Link> · <Link href="/terms">Terms of service</Link></div></main><Footer /></>
+    <><Header /><main className="help-main"><div className="container help-hero"><span className="eyebrow">Help center</span><h1>How can we help?</h1><p>Clear answers for the few things Owed asks you to think about.</p></div><div className="container help-topics">{helpTopics.map(([title, intro, steps]) => <article key={title as string}><span className="help-index">0{helpTopics.findIndex((topic) => topic[0] === title) + 1}</span><h2>{title as string}</h2><p>{intro as string}</p><ol>{(steps as string[]).map((step) => <li key={step}>{step}</li>)}</ol></article>)}</div><section className="container support-card"><div><span className="eyebrow light">Still stuck?</span><h2>Tell us what happened.</h2><p>Open a GitHub issue with your device model, operating-system version, and what you expected to happen. Please leave out names, amounts, and other private financial details.</p></div><a href="https://github.com/VincentMukuna/owed/issues/new">Open a support issue →</a></section><div className="container help-legal">Looking for the details? <a href="/privacy">Privacy policy</a> · <a href="/terms">Terms of service</a></div></main><Footer /></>
   );
 }

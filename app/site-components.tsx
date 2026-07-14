@@ -1,11 +1,9 @@
-import Link from "next/link";
-
 export function Brand() {
   return (
-    <Link className="brand" href="/" aria-label="Owed home">
+    <a className="brand" href="/" aria-label="Owed home">
       <span className="brand-mark" aria-hidden="true">O</span>
       <span>Owed</span>
-    </Link>
+    </a>
   );
 }
 
@@ -32,7 +30,7 @@ export function Header() {
         <nav className="desktop-nav" aria-label="Main navigation">
           <a href="/#features">Features</a>
           <a href="/#privacy">Privacy</a>
-          <Link href="/help">Help</Link>
+          <a href="/help">Help</a>
           <a className="nav-cta" href="/#download">Download</a>
         </nav>
         <details className="mobile-menu">
@@ -40,7 +38,7 @@ export function Header() {
           <nav aria-label="Mobile navigation">
             <a href="/#features">Features</a>
             <a href="/#privacy">Privacy</a>
-            <Link href="/help">Help</Link>
+            <a href="/help">Help</a>
             <a href="/#download">Download</a>
           </nav>
         </details>
@@ -67,9 +65,9 @@ export function Footer() {
           </div>
           <div>
             <strong>Resources</strong>
-            <Link href="/help">Help center</Link>
-            <Link href="/privacy">Privacy policy</Link>
-            <Link href="/terms">Terms of service</Link>
+            <a href="/help">Help center</a>
+            <a href="/privacy">Privacy policy</a>
+            <a href="/terms">Terms of service</a>
             <a href="https://github.com/VincentMukuna/owed">GitHub</a>
           </div>
         </div>
