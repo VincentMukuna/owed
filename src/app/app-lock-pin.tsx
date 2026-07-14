@@ -1,1 +1,1 @@
-export { AppLockPinSetupScreen as default } from "@/features/app-lock/screens/app-lock-pin-setup-screen";
+export { AppLockPinCreateScreen as default } from "@/features/app-lock/screens/app-lock-pin-create-screen";

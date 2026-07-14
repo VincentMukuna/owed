@@ -1,11 +1,9 @@
 import { useCallback, useState } from "react";
 
-import { Alert } from "react-native";
-
 import { usePreventRemove } from "expo-router/react-navigation";
 
 import { AppPinScreen, announcePinFeedback } from "@/features/app-lock/components/app-pin-screen";
-import { authenticateWithBiometrics } from "@/features/app-lock/lib/app-lock-authentication";
+import { offerBiometricsThenFinish } from "@/features/app-lock/lib/offer-biometrics-then-finish";
 import type { BiometricAvailability } from "@/features/app-lock/types";
 import { errorNotification } from "@/lib/haptics";
 
@@ -16,6 +14,7 @@ type PinSetupFlowProps = {
   onComplete: (pin: string, biometricsEnabled: boolean) => Promise<void>;
 };
 
+/** In-place create→confirm for hosts outside the nav stack (e.g. lock overlay). */
 export function PinSetupFlow({
   biometricAvailability,
   offerBiometrics,
@@ -73,51 +72,14 @@ export function PinSetupFlow({
       }
 
       if (offerBiometrics && biometricAvailability.available) {
-        const biometricName =
-          biometricAvailability.icon === "face"
-            ? "Face ID"
-            : biometricAvailability.icon === "fingerprint"
-              ? "fingerprint"
-              : "biometrics";
-        const biometricDescription =
-          biometricAvailability.icon === "fingerprint"
-            ? "Use your fingerprint for quicker access to Owwed. Your PIN will still work."
-            : `Use ${biometricName} for quicker access to Owwed. Your PIN will still work.`;
         setValue("");
-        Alert.alert(
-          `Use ${biometricName}?`,
-          biometricDescription,
-          [
-            {
-              text: "Not now",
-              style: "cancel",
-              onPress: () => void finish(false),
-            },
-            {
-              text: "Sure",
-              onPress: () => {
-                void (async () => {
-                  const authenticated = await authenticateWithBiometrics();
-                  await finish(authenticated);
-                })();
-              },
-            },
-          ],
-          { cancelable: false },
-        );
+        offerBiometricsThenFinish(biometricAvailability, finish);
         return;
       }
 
       void finish(false);
     },
-    [
-      biometricAvailability.available,
-      biometricAvailability.icon,
-      createdPin,
-      finish,
-      offerBiometrics,
-      stage,
-    ],
+    [biometricAvailability, createdPin, finish, offerBiometrics, stage],
   );
 
   const handleDigit = useCallback(
