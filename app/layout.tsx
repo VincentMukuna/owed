@@ -5,6 +5,10 @@ import "./globals.css";
 
 const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
 
+const themeBootScript = `(function(){try{var saved=localStorage.getItem('owed-theme');var dark=saved?saved==='dark':window.matchMedia('(prefers-color-scheme: dark)').matches;var theme=dark?'dark':'light';document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;}catch(e){}})();`;
+
+const themeControlsScript = `(function(){var media=window.matchMedia('(prefers-color-scheme: dark)');function apply(theme){document.documentElement.dataset.theme=theme;document.documentElement.style.colorScheme=theme;document.querySelectorAll('[data-theme-toggle]').forEach(function(button){var dark=theme==='dark';button.setAttribute('aria-pressed',String(dark));button.setAttribute('aria-label',dark?'Switch to light mode':'Switch to dark mode');});}function current(){return document.documentElement.dataset.theme||'light';}document.addEventListener('click',function(event){var target=event.target;if(!(target instanceof Element))return;var button=target.closest('[data-theme-toggle]');if(!button)return;var next=current()==='dark'?'light':'dark';localStorage.setItem('owed-theme',next);apply(next);});media.addEventListener('change',function(event){if(!localStorage.getItem('owed-theme'))apply(event.matches?'dark':'light');});if(document.readyState==='loading'){document.addEventListener('DOMContentLoaded',function(){apply(current());});}else{apply(current());}})();`;
+
 export async function generateMetadata(): Promise<Metadata> {
   const requestHeaders = await headers();
   const host = requestHeaders.get("x-forwarded-host") ?? requestHeaders.get("host") ?? "localhost:3000";
@@ -25,5 +29,13 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
-  return <html lang="en"><body className={geist.variable}>{children}</body></html>;
+  return (
+    <html lang="en" suppressHydrationWarning>
+      <head><script dangerouslySetInnerHTML={{ __html: themeBootScript }} /></head>
+      <body className={geist.variable}>
+        {children}
+        <script dangerouslySetInnerHTML={{ __html: themeControlsScript }} />
+      </body>
+    </html>
+  );
 }

@@ -1,4 +1,5 @@
-import { SiApple, SiGoogleplay } from "react-icons/si";
+import { FiMoon, FiSun } from "react-icons/fi";
+import { SiApple } from "react-icons/si";
 
 export function Brand() {
   return (
@@ -20,7 +21,7 @@ export function StoreButtons({ compact = false }: { compact?: boolean }) {
         </span>
       </span>
       <span className="store-button secondary" role="link" aria-disabled="true">
-        <SiGoogleplay className="store-icon play-icon" aria-hidden="true" />
+        <span className="google-play-icon" aria-hidden="true" />
         <span className="store-copy">
           <span className="store-kicker">Coming soon on</span>
           <strong>Google Play</strong>
@@ -30,26 +31,39 @@ export function StoreButtons({ compact = false }: { compact?: boolean }) {
   );
 }
 
+function ThemeToggle() {
+  return (
+    <button className="theme-toggle" type="button" data-theme-toggle aria-label="Switch to dark mode" aria-pressed="false">
+      <FiSun className="theme-icon theme-sun" aria-hidden="true" />
+      <FiMoon className="theme-icon theme-moon" aria-hidden="true" />
+      <span className="sr-only">Toggle color theme</span>
+    </button>
+  );
+}
+
 export function Header() {
   return (
     <header className="site-header">
       <div className="container nav-shell">
         <Brand />
-        <nav className="desktop-nav" aria-label="Main navigation">
-          <a href="/#features">Features</a>
-          <a href="/#privacy">Privacy</a>
-          <a href="/help">Help</a>
-          <a className="nav-cta" href="/#download">Download</a>
-        </nav>
-        <details className="mobile-menu">
-          <summary aria-label="Open navigation"><span></span><span></span></summary>
-          <nav aria-label="Mobile navigation">
+        <div className="nav-actions">
+          <nav className="desktop-nav" aria-label="Main navigation">
             <a href="/#features">Features</a>
             <a href="/#privacy">Privacy</a>
             <a href="/help">Help</a>
-            <a href="/#download">Download</a>
+            <a className="nav-cta" href="/#download">Download</a>
           </nav>
-        </details>
+          <ThemeToggle />
+          <details className="mobile-menu">
+            <summary aria-label="Open navigation"><span></span><span></span></summary>
+            <nav aria-label="Mobile navigation">
+              <a href="/#features">Features</a>
+              <a href="/#privacy">Privacy</a>
+              <a href="/help">Help</a>
+              <a href="/#download">Download</a>
+            </nav>
+          </details>
+        </div>
       </div>
     </header>
   );

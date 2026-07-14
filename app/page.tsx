@@ -7,10 +7,10 @@ export const metadata: Metadata = {
 };
 
 const productScreens = [
-  { image: "/screens/home.jpeg", title: "Home", text: "See everything unsettled at a glance." },
-  { image: "/screens/debts.jpeg", title: "Debts", text: "Keep every promise, due date, and balance together." },
-  { image: "/screens/people.jpeg", title: "People", text: "View every promise grouped by person." },
-  { image: "/screens/reminders.jpeg", title: "Reminders", text: "Know what is due without keeping it in your head." },
+  { image: "/screens/home.jpeg", darkImage: "/screens/home-dark.jpeg", title: "Home", text: "See everything unsettled at a glance." },
+  { image: "/screens/debts.jpeg", darkImage: "/screens/debts-dark.jpeg", title: "Debts", text: "Keep every promise, due date, and balance together." },
+  { image: "/screens/people.jpeg", darkImage: "/screens/people-dark.jpeg", title: "People", text: "View every promise grouped by person." },
+  { image: "/screens/reminders.jpeg", darkImage: "/screens/reminders-dark.jpeg", title: "Reminders", text: "Know what is due without keeping it in your head." },
 ];
 
 const features = [
@@ -57,8 +57,9 @@ export default function Home() {
             <StoreButtons />
             <p className="hero-note">No account. No ads. No bank connection.</p>
           </div>
-          <div className="container hero-visual" aria-label="Owed app shown on three phones">
-            <img src="/screens/hero.png" alt="The Owed home, debts, and people screens on three phones" />
+          <div className="hero-visual" aria-label="Owed app shown on three phones">
+            <img className="theme-image-light" src="/screens/hero.png" alt="The Owed home, debts, and people screens on three phones" />
+            <img className="theme-image-dark" src="/screens/hero-dark.png" alt="The Owed home, debts, and people screens in dark mode on three phones" />
           </div>
         </section>
 
@@ -79,7 +80,8 @@ export default function Home() {
                   <p>{screen.text}</p>
                 </div>
                 <div className="phone-frame">
-                  <img src={screen.image} alt={`${screen.title} screen in the Owed app`} loading="lazy" />
+                  <img className="theme-image-light" src={screen.image} alt={`${screen.title} screen in the Owed app`} loading="lazy" />
+                  <img className="theme-image-dark" src={screen.darkImage} alt={`${screen.title} screen in the Owed app in dark mode`} loading="lazy" />
                 </div>
               </article>
             ))}
