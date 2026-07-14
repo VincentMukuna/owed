@@ -57,7 +57,7 @@ export default function Home() {
             <StoreButtons />
             <p className="hero-note">No account. No ads. No bank connection.</p>
           </div>
-          <div className="hero-visual" aria-label="Owed app shown on three phones">
+          <div className="container hero-visual" aria-label="Owed app shown on three phones">
             <img className="theme-image-light" src="/screens/hero.png" alt="The Owed home, debts, and people screens on three phones" />
             <img className="theme-image-dark" src="/screens/hero-dark.png" alt="The Owed home, debts, and people screens in dark mode on three phones" />
           </div>
