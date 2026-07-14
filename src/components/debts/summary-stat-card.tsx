@@ -34,12 +34,7 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: 12,
     padding: 14,
     borderWidth: 1,
-    borderColor: theme.colors.border,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
+    borderColor: theme.name === "light" ? theme.colors.borderStrong : theme.colors.border,
   },
   label: {
     fontSize: 11,

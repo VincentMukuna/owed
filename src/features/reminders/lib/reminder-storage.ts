@@ -1,11 +1,10 @@
-import { UnistylesRuntime } from "react-native-unistyles";
-
 import { APP_CONFIG } from "@/constants/config";
 import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { getItem, setItem, storageKeys } from "@/lib/storage/local-storage";
 import { applyBrandColorTheme } from "@/styles/apply-brand-theme";
 import { type BrandColorThemeId, DEFAULT_BRAND_COLOR_THEME } from "@/styles/brand-themes";
-import { type AppThemeName, type ThemePreference, appThemes } from "@/styles/themes";
+import { applyThemePreferenceToRuntime } from "@/styles/sync-native-appearance";
+import { type ThemePreference } from "@/styles/themes";
 
 export type PersistedSettings = {
   defaultCurrency?: string;
@@ -25,24 +24,9 @@ export async function persistSettings(partial: PersistedSettings): Promise<void>
   await setItem(storageKeys.settings, { ...current, ...partial });
 }
 
-function resolveCurrentThemeName(): AppThemeName {
-  return UnistylesRuntime.themeName === "dark" ? "dark" : "light";
-}
-
 function applyThemePreference(themePreference: ThemePreference): void {
   useSettingsStore.getState().setThemePreference(themePreference);
-
-  if (themePreference === "auto") {
-    UnistylesRuntime.setAdaptiveThemes(true);
-    UnistylesRuntime.setRootViewBackgroundColor(
-      appThemes[resolveCurrentThemeName()].colors.background,
-    );
-    return;
-  }
-
-  UnistylesRuntime.setAdaptiveThemes(false);
-  UnistylesRuntime.setTheme(themePreference);
-  UnistylesRuntime.setRootViewBackgroundColor(appThemes[themePreference].colors.background);
+  applyThemePreferenceToRuntime(themePreference);
 }
 
 function applyBrandColorThemePreference(brandColorTheme: BrandColorThemeId): void {

@@ -1,15 +1,15 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { AppState, StyleSheet } from "react-native";
 
-import { Stack } from "expo-router";
+import { Stack, ThemeProvider } from "expo-router";
 import * as SplashScreen from "expo-splash-screen";
 import { StatusBar } from "expo-status-bar";
 
 import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import { QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { UnistylesRuntime, useUnistyles } from "react-native-unistyles";
+import { useUnistyles } from "react-native-unistyles";
 
 import { Toast } from "@/components/shared/toast";
 import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
@@ -28,17 +28,20 @@ import { reminderRepository } from "@/features/reminders/repositories/reminder-r
 import { bootstrapCurrency } from "@/features/settings/lib/bootstrap-currency";
 import { queryClient } from "@/lib/api/query-client";
 import { getDb } from "@/lib/db/client";
+import { getNavigationTheme } from "@/lib/navigation/navigation-theme";
 import {
   LOADING_DETAIL_HEADER_OPTIONS,
   getModalScreenOptions,
   getStackScreenOptions,
 } from "@/lib/navigation/stack-options";
+import { syncNativeBackgroundColor } from "@/styles/sync-native-appearance";
 
 export default function RootLayout() {
   const { theme } = useUnistyles();
   const [dbReady, setDbReady] = useState(false);
   const stackOptions = getStackScreenOptions(theme);
   const modalOptions = getModalScreenOptions(theme);
+  const navigationTheme = useMemo(() => getNavigationTheme(theme), [theme]);
 
   useEffect(() => {
     void Promise.all([
@@ -108,7 +111,7 @@ export default function RootLayout() {
   }, [dbReady]);
 
   useEffect(() => {
-    UnistylesRuntime.setRootViewBackgroundColor(theme.colors.background);
+    syncNativeBackgroundColor(theme.colors.background);
   }, [theme.colors.background]);
 
   return (
@@ -117,13 +120,14 @@ export default function RootLayout() {
         <StatusBar style={dbReady && theme.name === "dark" ? "light" : "dark"} />
         {dbReady ? (
           <AppLockGate>
-            <BottomSheetModalProvider>
-              <Stack
-                screenOptions={{
-                  headerShown: false,
-                  contentStyle: { backgroundColor: theme.colors.background },
-                }}
-              >
+            <ThemeProvider value={navigationTheme}>
+              <BottomSheetModalProvider>
+                <Stack
+                  screenOptions={{
+                    headerShown: false,
+                    contentStyle: { backgroundColor: theme.colors.background },
+                  }}
+                >
                 <Stack.Screen name="index" />
                 <Stack.Screen name="onboarding" options={{ animation: "fade" }} />
                 <Stack.Screen name="(tabs)" />
@@ -348,7 +352,8 @@ export default function RootLayout() {
                   }}
                 />
               </Stack>
-            </BottomSheetModalProvider>
+              </BottomSheetModalProvider>
+            </ThemeProvider>
             <Toast />
           </AppLockGate>
         ) : null}

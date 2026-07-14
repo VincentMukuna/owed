@@ -109,41 +109,41 @@ export function DevToolsSection() {
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Developer</Text>
       <View style={styles.card}>
-        <DevToolRow
-          description={`${SEED_PEOPLE_COUNT} people, ${SEED_DEBT_COUNT} debts, ${SEED_PAYMENT_ACTIVITY_COUNT} payments over ~18 months.`}
-          disabled={seedDebts.isPending}
-          icon="🧾"
-          onPress={() => seedDebts.mutate()}
-          title="Seed sample data"
-          value={seedDebts.isPending ? "Seeding" : "Run"}
-        />
-        <DevToolRow
-          bordered
-          description={`${SEED_REMINDER_TEST_COUNT} due today and ${SEED_REMINDER_TEST_COUNT} overdue debts for grouped notification QA.`}
-          disabled={seedReminderTest.isPending}
-          icon="🔔"
-          onPress={() => seedReminderTest.mutate()}
-          title="Seed reminder test"
-          value={seedReminderTest.isPending ? "Seeding" : "Run"}
-        />
-        <DevToolRow
-          bordered
-          description="Mark onboarding incomplete and reopen the onboarding flow."
-          disabled={resetOnboarding.isPending}
-          icon="👋"
-          onPress={confirmOnboardingReset}
-          title="Reset onboarding"
-          value={resetOnboarding.isPending ? "Resetting" : "Reset"}
-        />
-        <DevToolRow
-          bordered
-          description="Delete debts, people, payments, activity, and pending notifications."
-          disabled={resetDatabase.isPending}
-          icon="🧹"
-          onPress={confirmReset}
-          title="Clear all records"
-          value={resetDatabase.isPending ? "Clearing" : "Clear"}
-        />
+          <DevToolRow
+            description={`${SEED_PEOPLE_COUNT} people, ${SEED_DEBT_COUNT} debts, ${SEED_PAYMENT_ACTIVITY_COUNT} payments over ~18 months.`}
+            disabled={seedDebts.isPending}
+            icon="🧾"
+            onPress={() => seedDebts.mutate()}
+            title="Seed sample data"
+            value={seedDebts.isPending ? "Seeding" : "Run"}
+          />
+          <DevToolRow
+            bordered
+            description={`${SEED_REMINDER_TEST_COUNT} due today and ${SEED_REMINDER_TEST_COUNT} overdue debts for grouped notification QA.`}
+            disabled={seedReminderTest.isPending}
+            icon="🔔"
+            onPress={() => seedReminderTest.mutate()}
+            title="Seed reminder test"
+            value={seedReminderTest.isPending ? "Seeding" : "Run"}
+          />
+          <DevToolRow
+            bordered
+            description="Mark onboarding incomplete and reopen the onboarding flow."
+            disabled={resetOnboarding.isPending}
+            icon="👋"
+            onPress={confirmOnboardingReset}
+            title="Reset onboarding"
+            value={resetOnboarding.isPending ? "Resetting" : "Reset"}
+          />
+          <DevToolRow
+            bordered
+            description="Delete debts, people, payments, activity, and pending notifications."
+            disabled={resetDatabase.isPending}
+            icon="🧹"
+            onPress={confirmReset}
+            title="Clear all records"
+            value={resetDatabase.isPending ? "Clearing" : "Clear"}
+          />
       </View>
     </View>
   );
@@ -164,11 +164,11 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.card,
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: theme.colors.border,
+    borderColor: theme.name === "light" ? theme.colors.borderStrong : theme.colors.border,
     overflow: "hidden",
     shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
+    shadowOpacity: 0.04,
     shadowRadius: 2,
     elevation: 1,
   },

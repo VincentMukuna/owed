@@ -87,9 +87,10 @@ const sharedTypography = {
 };
 
 const neutralLightColors = {
-  background: "#F7F5F1",
-  surface: "#EFEFEC",
-  surfaceMuted: "#E0E0DA",
+  // Bright cream that still contrasts with white grouped cards / Settings groups.
+  background: "#F6F4EF",
+  surface: "#F0EFEA",
+  surfaceMuted: "#E8E7E1",
   card: "#FFFFFF",
   text: "#1A1A18",
   muted: "#75756D",
@@ -106,14 +107,14 @@ const neutralLightColors = {
   warning: "#D97706",
   shadow: "#000000",
   overlay: "rgba(0, 0, 0, 0.35)",
-  sheet: "#FBFBF8",
+  sheet: "#FCFBF8",
   sheetHandle: "#DDDDD8",
   selected: "#FFFFFF",
-  footerGradient: ["rgba(247,245,241,0)", "rgba(247,245,241,0.95)", "#F7F5F1"] as const,
+  footerGradient: ["rgba(246,244,239,0)", "rgba(246,244,239,0.95)", "#F6F4EF"] as const,
   tabInactive: "#C0C0B8",
   switchTrackOff: "#DDDDD8",
   progressTrack: "#F1F5F9",
-  message: "#F7F5F1",
+  message: "#F6F4EF",
   onPrimarySurfaceMuted: "rgba(255,255,255,0.5)",
   onPrimarySurfaceSubtle: "rgba(255,255,255,0.4)",
   onPrimarySurface: "rgba(255,255,255,0.04)",
@@ -146,9 +147,10 @@ const neutralLightColors = {
 
 const neutralDarkColors = {
   background: "#0B0B0C",
-  surface: "#151516",
-  surfaceMuted: "#232325",
-  card: "#1B1B1D",
+  surface: "#101011",
+  // Elevated cards on detail/home (stats strips, summary cards, settings rows).
+  surfaceMuted: "#181819",
+  card: "#141415",
   text: "#F3F3F0",
   muted: "#A7A7A0",
   mutedLight: "#74746D",
@@ -166,11 +168,11 @@ const neutralDarkColors = {
   overlay: "rgba(0, 0, 0, 0.58)",
   sheet: "#111112",
   sheetHandle: "#3A3A3D",
-  selected: "#242426",
+  selected: "#1C1C1E",
   footerGradient: ["rgba(11,11,12,0)", "rgba(11,11,12,0.95)", "#0B0B0C"] as const,
   tabInactive: "#74746D",
   switchTrackOff: "#3A3A3D",
-  progressTrack: "#29292B",
+  progressTrack: "#222224",
   message: "#121213",
   onPrimarySurfaceMuted: "rgba(255,255,255,0.62)",
   onPrimarySurfaceSubtle: "rgba(255,255,255,0.5)",
@@ -182,7 +184,7 @@ const neutralDarkColors = {
   paidText: "#6EE7B7",
   paidAmount: "#A7F3D0",
   paidMuted: "#34D399",
-  personNeutralBg: "#29292B",
+  personNeutralBg: "#222224",
   personNeutralText: "#DADAD5",
   status: darkStatusColors,
   activity: {
