@@ -1,4 +1,15 @@
 import type { Metadata } from "next";
+import type { IconType } from "react-icons";
+import {
+  FiBell,
+  FiCheckCircle,
+  FiClock,
+  FiHardDrive,
+  FiLock,
+  FiRepeat,
+  FiUsers,
+  FiWifiOff,
+} from "react-icons/fi";
 import { Footer, Header, StoreButtons } from "./site-components";
 
 export const metadata: Metadata = {
@@ -13,15 +24,15 @@ const productScreens = [
   { image: "/screens/reminders.jpeg", darkImage: "/screens/reminders-dark.jpeg", title: "Reminders", text: "Know what is due without keeping it in your head." },
 ];
 
-const features = [
-  ["Know what’s owed in both directions", "Keep money you’re owed and money you owe in the same calm view."],
-  ["See what’s paid and what’s left", "Record partial payments and see the remaining balance instantly."],
-  ["Know when and how much was paid", "A clear timeline replaces scattered notes and chat searches."],
-  ["Remember before a due date slips by", "Set private reminders around the dates that matter."],
-  ["People overview", "See every open promise and total balance by person."],
-  ["Backup & restore", "Create a portable backup when you choose, never by default."],
-  ["Custom categories", "Organize rent, meals, trips, gifts, and everything in between."],
-  ["Works offline", "Add, edit, and settle promises without a connection."],
+const features: { icon: IconType; title: string; text: string }[] = [
+  { icon: FiRepeat, title: "Know what’s owed in both directions", text: "Keep money you’re owed and money you owe in the same calm view." },
+  { icon: FiCheckCircle, title: "See what’s paid and what’s left", text: "Record partial payments and see the remaining balance instantly." },
+  { icon: FiClock, title: "Know when and how much was paid", text: "A clear timeline replaces scattered notes and chat searches." },
+  { icon: FiBell, title: "Remember before a due date slips by", text: "Set private reminders around the dates that matter." },
+  { icon: FiUsers, title: "People overview", text: "See every open promise and total balance by person." },
+  { icon: FiHardDrive, title: "Backup & restore", text: "Create a portable backup when you choose, never by default." },
+  { icon: FiLock, title: "App Lock", text: "Protect the app with a PIN, Face ID, or fingerprint when you step away." },
+  { icon: FiWifiOff, title: "Works offline", text: "Add, edit, and settle promises without a connection." },
 ];
 
 const faqs = [
@@ -139,8 +150,14 @@ export default function Home() {
             <p>Enough structure to keep you clear. Never so much that the app becomes another chore.</p>
           </div>
           <div className="container feature-grid">
-            {features.map(([title, text], index) => (
-              <article className="feature-item" key={title}><span>{String(index + 1).padStart(2, "0")}</span><h3>{title}</h3><p>{text}</p></article>
+            {features.map(({ icon: Icon, title, text }) => (
+              <article className="feature-item" key={title}>
+                <span className="feature-icon-wrap">
+                  <Icon className="feature-icon" aria-hidden="true" />
+                </span>
+                <h3>{title}</h3>
+                <p>{text}</p>
+              </article>
             ))}
           </div>
         </section>

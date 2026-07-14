@@ -96,7 +96,8 @@ img { display:block; max-width:100%; }
 .features-section { padding:140px 0; }
 .feature-grid { display:grid; grid-template-columns:repeat(4,1fr); border-top:1px solid #cfd2ca; border-left:1px solid #cfd2ca; }
 .feature-item { min-height:280px; padding:28px; border-right:1px solid #cfd2ca; border-bottom:1px solid #cfd2ca; }
-.feature-item > span { color:#8b9089; font-size:11px; letter-spacing:.12em; }
+.feature-icon-wrap { display:grid; place-items:center; width:40px; height:40px; border-radius:12px; color:var(--green-2); background:var(--mint); }
+.feature-icon { display:block; width:20px; height:20px; stroke-width:1.75; }
 .feature-item h3 { margin:92px 0 11px; font-size:20px; letter-spacing:-.03em; }
 .feature-item p { margin:0; color:var(--muted); font-size:14px; line-height:1.6; }
 
