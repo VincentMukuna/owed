@@ -2,8 +2,8 @@ import type { Metadata } from "next";
 import { Footer, Header, StoreButtons } from "./site-components";
 
 export const metadata: Metadata = {
-  title: "Owed — Remember what matters, not who owes what",
-  description: "A simple, private debt and IOU tracker for money between friends, family, roommates, and coworkers.",
+  title: "Owed — A simpler way to remember money",
+  description: "Built for friends, family, roommates, and everyday life. Private, local-first, and free.",
 };
 
 const productScreens = [
@@ -41,7 +41,7 @@ export default function Home() {
     name: "Owed",
     applicationCategory: "FinanceApplication",
     operatingSystem: "iOS, Android",
-    description: "A private, local-first debt and IOU tracker for informal money between people.",
+    description: "Built for friends, family, roommates, and everyday life. Private, local-first, and free.",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   };
 
@@ -52,8 +52,8 @@ export default function Home() {
         <section className="hero">
           <div className="container hero-copy">
             <span className="eyebrow"><span className="status-dot"></span> Private by design</span>
-            <h1>Remember what matters,<br />not who owes what.</h1>
-            <p>Owed helps you keep track of informal money between friends, family, roommates, and coworkers—privately on your device.</p>
+            <h1>A simpler way to<br />remember money.</h1>
+            <p>Built for friends, family, roommates, and everyday life. Private, local-first, and free.</p>
             <StoreButtons />
             <p className="hero-note">No account. No ads. No bank connection.</p>
           </div>
