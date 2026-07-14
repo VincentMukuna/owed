@@ -56,7 +56,6 @@ export function AppLockSettingsScreen() {
             <SettingsSwiftNavRow
               iconBackgroundColor="#2563EB"
               onPress={() => router.push(authRoute("change-pin"))}
-              showsChevron
               systemImage="key"
               title="Change PIN"
             />
@@ -66,6 +65,7 @@ export function AppLockSettingsScreen() {
                 selectionChange();
                 lockApp({ suppressAutoBiometrics: true });
               }}
+              showsChevron={false}
               systemImage="lock"
               title="Lock now"
             />

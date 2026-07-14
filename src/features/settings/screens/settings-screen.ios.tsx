@@ -98,6 +98,7 @@ export function SettingsScreen() {
             onPress={() => {
               void exportDebts();
             }}
+            showsChevron={false}
             systemImage="tablecells"
             title="Export Data"
             value={isExporting ? "Exporting…" : undefined}

@@ -193,7 +193,7 @@ export function SettingsSwiftNavRow({
   iconColor = "#FFFFFF",
   title,
   value,
-  showsChevron = false,
+  showsChevron = true,
   disabled: isDisabled = false,
   onPress,
 }: SettingsSwiftNavRowProps) {
@@ -218,9 +218,8 @@ export function SettingsSwiftNavRow({
         />
         <Text modifiers={rowTitleModifiers}>{title}</Text>
         <Spacer />
-        {value ? (
-          <Text modifiers={rowValueModifiers}>{value}</Text>
-        ) : showsChevron ? (
+        {value ? <Text modifiers={rowValueModifiers}>{value}</Text> : null}
+        {showsChevron ? (
           <Image color={theme.colors.iconMuted} size={14} systemName="chevron.right" />
         ) : null}
       </HStack>
@@ -301,10 +300,11 @@ export function SettingsSwiftDetailRow({
         ...(isDisabled ? [disabled(true)] : []),
       ]}
     >
-      <HStack alignment="center" modifiers={[rowHitArea]}>
+      <HStack alignment="center" modifiers={[rowHitArea]} spacing={4}>
         {titleContent}
         <Spacer />
         {value ? <Text modifiers={theme.rowValueModifiers}>{value}</Text> : null}
+        <Image color={theme.theme.colors.iconMuted} size={14} systemName="chevron.right" />
       </HStack>
     </Button>
   );

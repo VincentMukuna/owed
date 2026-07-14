@@ -109,6 +109,7 @@ export function AppLockSettingsScreen() {
                   selectionChange();
                   lockApp({ suppressAutoBiometrics: true });
                 }}
+                showsChevron={false}
               />
             </SettingsCard>
           </SettingsSection>

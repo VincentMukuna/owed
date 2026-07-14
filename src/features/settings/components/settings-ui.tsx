@@ -175,7 +175,7 @@ export function SettingsDetailRow({
                 {value}
               </Text>
             ) : null}
-            {onPress && !value ? (
+            {onPress ? (
               <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
             ) : null}
           </View>
