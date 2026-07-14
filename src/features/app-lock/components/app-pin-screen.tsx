@@ -1,32 +1,42 @@
-import { useEffect } from "react";
+import { type ReactNode, useEffect } from "react";
 
-import { AccessibilityInfo, Pressable, Text, View, useWindowDimensions } from "react-native";
 
-import {
-  ChevronLeft,
-  Delete,
-  Fingerprint,
-  LockKeyhole,
-  ScanFace,
-  Wallet,
-} from "lucide-react-native";
-import Animated, {
-  ZoomIn,
-  ZoomOut,
-  cancelAnimation,
-  useAnimatedStyle,
-  useReducedMotion,
-  useSharedValue,
-  withDelay,
-  withRepeat,
-  withSequence,
-  withTiming,
-} from "react-native-reanimated";
+
+import { AccessibilityInfo, Platform, Pressable, Text, View, useWindowDimensions } from "react-native";
+
+
+
+import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
+
+
+
+import { ChevronLeft, Delete, Fingerprint, LockKeyhole, ScanFace, Wallet } from "lucide-react-native";
+import Animated, { ZoomIn, ZoomOut, cancelAnimation, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from "react-native-reanimated";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
+
+
 import { PressableScale } from "@/components/shared/pressable-scale";
 import type { BiometricAvailability } from "@/features/app-lock/types";
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 const PIN_LENGTH = 4;
 const KEYPAD_ROWS = [
@@ -34,6 +44,9 @@ const KEYPAD_ROWS = [
   ["4", "5", "6"],
   ["7", "8", "9"],
 ] as const;
+
+const canUseLiquidGlass =
+  Platform.OS === "ios" && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
 type AppPinScreenProps = {
   title: string;
@@ -65,18 +78,18 @@ function BiometricIcon({
   color: string;
 }) {
   if (availability?.icon === "face") {
-    return <ScanFace color={color} size={28} strokeWidth={1.8} />;
+    return <ScanFace color={color} size={26} strokeWidth={1.8} />;
   }
 
   if (availability?.icon === "fingerprint") {
-    return <Fingerprint color={color} size={28} strokeWidth={1.8} />;
+    return <Fingerprint color={color} size={26} strokeWidth={1.8} />;
   }
 
   if (trustedDeviceAuthentication) {
-    return <LockKeyhole color={color} size={26} strokeWidth={1.8} />;
+    return <LockKeyhole color={color} size={24} strokeWidth={1.8} />;
   }
 
-  return <Fingerprint color={color} size={28} strokeWidth={1.8} />;
+  return <Fingerprint color={color} size={26} strokeWidth={1.8} />;
 }
 
 function PinCursor({ reduceMotion }: { reduceMotion: boolean }) {
@@ -95,6 +108,79 @@ function PinCursor({ reduceMotion }: { reduceMotion: boolean }) {
   const animatedStyle = useAnimatedStyle(() => ({ opacity: opacity.value }));
 
   return <Animated.View style={[styles.pinCursor, animatedStyle]} />;
+}
+
+function HeroMark({
+  brand,
+  compact,
+  foreground,
+}: {
+  brand: boolean;
+  compact: boolean;
+  foreground: string;
+}) {
+  return (
+    <View
+      accessibilityLabel={brand ? "Owwed" : undefined}
+      accessibilityElementsHidden={!brand}
+      importantForAccessibility={brand ? "yes" : "no-hide-descendants"}
+      style={[styles.logoWrap, compact && styles.logoWrapCompact]}
+    >
+      <View style={styles.logoHighlight} />
+      {brand ? (
+        <Wallet color={foreground} size={compact ? 24 : 28} strokeWidth={1.5} />
+      ) : (
+        <LockKeyhole color={foreground} size={compact ? 24 : 26} strokeWidth={1.8} />
+      )}
+    </View>
+  );
+}
+
+function PinKey({
+  accessibilityLabel,
+  compact,
+  disabled = false,
+  onPress,
+  children,
+}: {
+  accessibilityLabel: string;
+  compact: boolean;
+  disabled?: boolean;
+  onPress?: () => void;
+  children?: ReactNode;
+}) {
+  const { theme } = useUnistyles();
+  // Clear glass + HDR light surfaces get too bright; keep glass for dark only.
+  const useGlass = canUseLiquidGlass && theme.name === "dark";
+
+  if (!onPress) {
+    return <View style={[styles.keySlot, compact && styles.keySlotCompact]} />;
+  }
+
+  return (
+    <PressableScale
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      disabled={disabled}
+      onPress={onPress}
+      scaleTo={0.92}
+      style={[styles.keySlot, compact && styles.keySlotCompact]}
+    >
+      <View
+        style={[
+          styles.keyBody,
+          compact && styles.keyBodyCompact,
+          useGlass ? null : styles.keyFallback,
+          disabled && styles.keyDisabled,
+        ]}
+      >
+        {useGlass ? (
+          <GlassView colorScheme="dark" glassEffectStyle="regular" style={styles.keyGlass} />
+        ) : null}
+        {children}
+      </View>
+    </PressableScale>
+  );
 }
 
 export function AppPinScreen({
@@ -188,20 +274,19 @@ export function AppPinScreen({
         </Pressable>
       ) : null}
 
-      <View style={[styles.content, compact && styles.contentCompact]}>
+      <View
+        style={[
+          styles.content,
+          underNativeHeader && styles.contentUnderHeader,
+          compact && styles.contentCompact,
+        ]}
+      >
         <View style={[styles.intro, compact && styles.introCompact]}>
-          {showBrandMark ? (
-            <View
-              accessibilityLabel="Owwed"
-              style={[styles.logoWrap, compact && styles.logoWrapCompact]}
-            >
-              <Wallet
-                color={theme.colors.primaryForeground}
-                size={compact ? 24 : 28}
-                strokeWidth={1.5}
-              />
-            </View>
-          ) : null}
+          <HeroMark
+            brand={showBrandMark}
+            compact={compact}
+            foreground={theme.colors.primaryForeground}
+          />
           <Text accessibilityRole="header" style={styles.title}>
             {title}
           </Text>
@@ -255,63 +340,49 @@ export function AppPinScreen({
               {KEYPAD_ROWS.map((row) => (
                 <View key={row[0]} style={styles.keypadRow}>
                   {row.map((digit) => (
-                    <PressableScale
+                    <PinKey
                       accessibilityLabel={digit}
-                      accessibilityRole="button"
+                      compact={compact}
                       key={digit}
                       onPress={() => onDigit(digit)}
-                      scaleTo={0.9}
-                      style={styles.key}
                     >
                       <Text style={[styles.keyText, compact && styles.keyTextCompact]}>
                         {digit}
                       </Text>
-                    </PressableScale>
+                    </PinKey>
                   ))}
                 </View>
               ))}
 
               <View style={styles.keypadRow}>
-                <View style={styles.key}>
-                  {onBiometric ? (
-                    <PressableScale
-                      accessibilityLabel={biometricLabel}
-                      accessibilityRole="button"
-                      onPress={onBiometric}
-                      scaleTo={0.9}
-                      style={styles.key}
-                    >
-                      <BiometricIcon
-                        availability={biometricAvailability}
-                        color={theme.colors.primary}
-                        trustedDeviceAuthentication={trustedDeviceAuthentication}
-                      />
-                    </PressableScale>
-                  ) : null}
-                </View>
-
-                <PressableScale
-                  accessibilityLabel="0"
-                  accessibilityRole="button"
-                  onPress={() => onDigit("0")}
-                  scaleTo={0.9}
-                  style={styles.key}
-                >
-                  <Text style={[styles.keyText, compact && styles.keyTextCompact]}>0</Text>
-                </PressableScale>
-
-                <View style={styles.key}>
-                  <PressableScale
-                    accessibilityLabel="Delete digit"
-                    accessibilityRole="button"
-                    disabled={value.length === 0}
-                    onPress={onDelete}
-                    scaleTo={0.9}
-                    style={styles.key}
+                {onBiometric ? (
+                  <PinKey
+                    accessibilityLabel={biometricLabel}
+                    compact={compact}
+                    onPress={onBiometric}
                   >
-                    <Delete color={theme.colors.icon} size={27} strokeWidth={1.8} />
-                  </PressableScale>
-                </View>
+                    <BiometricIcon
+                      availability={biometricAvailability}
+                      color={theme.colors.primary}
+                      trustedDeviceAuthentication={trustedDeviceAuthentication}
+                    />
+                  </PinKey>
+                ) : (
+                  <PinKey accessibilityLabel="" compact={compact} />
+                )}
+
+                <PinKey accessibilityLabel="0" compact={compact} onPress={() => onDigit("0")}>
+                  <Text style={[styles.keyText, compact && styles.keyTextCompact]}>0</Text>
+                </PinKey>
+
+                <PinKey
+                  accessibilityLabel="Delete digit"
+                  compact={compact}
+                  disabled={value.length === 0}
+                  onPress={onDelete}
+                >
+                  <Delete color={theme.colors.icon} size={compact ? 24 : 26} strokeWidth={1.8} />
+                </PinKey>
               </View>
             </View>
           </View>
@@ -368,6 +439,9 @@ const styles = StyleSheet.create((theme) => ({
     paddingBottom: 6,
     justifyContent: "space-between",
   },
+  contentUnderHeader: {
+    paddingTop: 16,
+  },
   contentCompact: {
     paddingTop: 18,
     paddingBottom: 0,
@@ -383,16 +457,31 @@ const styles = StyleSheet.create((theme) => ({
     width: 64,
     height: 64,
     borderRadius: 22,
+    borderCurve: "continuous",
     backgroundColor: theme.colors.primary,
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 12,
+    overflow: "hidden",
+    shadowColor: theme.colors.shadow,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: theme.name === "dark" ? 0.16 : 0,
+    shadowRadius: theme.name === "dark" ? 8 : 0,
+    elevation: theme.name === "dark" ? 3 : 0,
   },
   logoWrapCompact: {
     width: 54,
     height: 54,
     borderRadius: 18,
     marginBottom: 8,
+  },
+  logoHighlight: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 24,
+    backgroundColor: "rgba(255, 255, 255, 0.24)",
   },
   title: {
     color: theme.colors.text,
@@ -473,19 +562,16 @@ const styles = StyleSheet.create((theme) => ({
   },
   keypadShell: {
     width: "100%",
-    maxWidth: 430,
-    flex: 1,
-    maxHeight: 360,
-    minHeight: 280,
+    maxWidth: 292,
     alignSelf: "center",
-    paddingVertical: 10,
+    paddingVertical: 8,
   },
   keypadShellCompact: {
-    minHeight: 250,
+    maxWidth: 268,
+    paddingVertical: 4,
   },
   keypad: {
-    flex: 1,
-    justifyContent: "space-around",
+    gap: 18,
   },
   keypadFooter: {
     width: "100%",
@@ -515,25 +601,54 @@ const styles = StyleSheet.create((theme) => ({
   },
   keypadRow: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "center",
     alignItems: "center",
+    gap: 22,
   },
-  key: {
-    width: "24%",
-    minHeight: 58,
+  keySlot: {
+    width: 76,
+    height: 76,
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 24,
+  },
+  keySlotCompact: {
+    width: 68,
+    height: 68,
+  },
+  keyBody: {
+    width: 76,
+    height: 76,
+    borderRadius: 38,
+    alignItems: "center",
+    justifyContent: "center",
+    overflow: "hidden",
+  },
+  keyBodyCompact: {
+    width: 68,
+    height: 68,
+    borderRadius: 34,
+  },
+  keyGlass: {
+    ...StyleSheet.absoluteFillObject,
+    borderRadius: 999,
+  },
+  keyFallback: {
+    backgroundColor: theme.colors.surface,
+    borderWidth: 1,
+    borderColor: theme.colors.border,
+  },
+  keyDisabled: {
+    opacity: 0.65,
   },
   keyText: {
     color: theme.colors.text,
-    fontSize: 32,
-    lineHeight: 39,
+    fontSize: 30,
+    lineHeight: 36,
     fontWeight: "400",
     fontVariant: ["tabular-nums"],
   },
   keyTextCompact: {
-    fontSize: 28,
-    lineHeight: 34,
+    fontSize: 26,
+    lineHeight: 32,
   },
 }));
