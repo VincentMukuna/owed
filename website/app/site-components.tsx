@@ -1,17 +1,12 @@
 import { FiMoon, FiSun } from "react-icons/fi";
 import { SiApple } from "react-icons/si";
 
-
-
-
-
-
-
-
 export function Brand() {
   return (
     <a className="brand" href="/" aria-label="Owed home">
-      <span className="brand-mark" aria-hidden="true">O</span>
+      <span className="brand-mark" aria-hidden="true">
+        O
+      </span>
       <span>Owed</span>
     </a>
   );
@@ -20,17 +15,17 @@ export function Brand() {
 export function StoreButtons({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`store-buttons${compact ? " compact" : ""}`}>
-      <span className="store-button" role="link" aria-disabled="true">
+      <a className="store-button" href="https://testflight.apple.com/join/B16wcXJ5">
         <SiApple className="store-icon" aria-hidden="true" />
         <span className="store-copy">
-          <span className="store-kicker">Coming soon on the</span>
+          <span className="store-kicker">Coming soon</span>
           <strong>App Store</strong>
         </span>
-      </span>
+      </a>
       <a className="store-button secondary" href="/android">
         <span className="google-play-icon" aria-hidden="true" />
         <span className="store-copy">
-          <span className="store-kicker">Get notified for</span>
+          <span className="store-kicker">Join the waitlist </span>
           <strong>Google Play</strong>
         </span>
       </a>

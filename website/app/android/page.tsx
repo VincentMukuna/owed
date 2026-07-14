@@ -5,7 +5,7 @@ import { AndroidWaitlistForm } from "./android-waitlist-form";
 export const metadata: Metadata = {
   title: "Android Waitlist · Owed",
   description:
-    "Get notified when Owed launches on Google Play. Leave your email for a one-time Android release note.",
+    "Join the waitlist for Owed on Google Play. Leave your email for a one-time Android release note.",
   alternates: { canonical: "/android" },
 };
 
@@ -19,7 +19,7 @@ export default function AndroidPage() {
             <span className="status-dot" />
             Android
           </span>
-          <h1>Get notified for Google Play.</h1>
+          <h1>Join the Waitlist.</h1>
           <p>Leave your email and we’ll tell you when Owed is ready on Android.</p>
           <AndroidWaitlistForm />
         </div>

@@ -11,16 +11,12 @@ export default function TabLayout() {
   const isAndroid = Platform.OS === "android";
   const isLight = theme.name === "light";
   const androidIndicatorColor = isLight ? theme.colors.primarySoft : theme.colors.primary;
-  const androidDefaultIconColor = isLight
-    ? theme.colors.icon
-    : theme.colors.primaryForeground;
+  const androidDefaultIconColor = isLight ? theme.colors.icon : theme.colors.primaryForeground;
   const androidDefaultLabelColor = isLight ? theme.colors.text : theme.colors.primaryForeground;
   const androidSelectedIconColor = isLight
     ? theme.colors.tabActive
     : theme.colors.primaryForeground;
-  const androidSelectedLabelColor = isLight
-    ? theme.colors.text
-    : theme.colors.primaryForeground;
+  const androidSelectedLabelColor = isLight ? theme.colors.text : theme.colors.primaryForeground;
   const androidRippleColor = theme.colors.primarySoft;
   const androidTriggerProps = isAndroid
     ? {
@@ -71,33 +67,21 @@ export default function TabLayout() {
       tabBarRespectsIMEInsets
       tintColor={isAndroid ? androidSelectedIconColor : theme.colors.tint}
     >
-      <NativeTabs.Trigger
-        {...androidTriggerProps}
-        contentStyle={triggerContentStyle}
-        name="home"
-      >
+      <NativeTabs.Trigger {...androidTriggerProps} contentStyle={triggerContentStyle} name="home">
         <NativeTabs.Trigger.Label>Home</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "home", selected: "home_filled" }}
           sf={{ default: "house", selected: "house.fill" }}
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger
-        {...androidTriggerProps}
-        contentStyle={triggerContentStyle}
-        name="debts"
-      >
+      <NativeTabs.Trigger {...androidTriggerProps} contentStyle={triggerContentStyle} name="debts">
         <NativeTabs.Trigger.Label>Debts</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "list", selected: "list" }}
           sf={{ default: "list.bullet", selected: "list.bullet" }}
         />
       </NativeTabs.Trigger>
-      <NativeTabs.Trigger
-        {...androidTriggerProps}
-        contentStyle={triggerContentStyle}
-        name="people"
-      >
+      <NativeTabs.Trigger {...androidTriggerProps} contentStyle={triggerContentStyle} name="people">
         <NativeTabs.Trigger.Label>People</NativeTabs.Trigger.Label>
         <NativeTabs.Trigger.Icon
           md={{ default: "group", selected: "group" }}

@@ -90,7 +90,7 @@ export function AndroidWaitlistForm() {
             disabled={status === "submitting"}
           />
           <button type="submit" disabled={status === "submitting"}>
-            {status === "submitting" ? "Joining…" : "Notify me"}
+            {status === "submitting" ? "Joining…" : "Join"}
           </button>
         </div>
         <span id={errorId} className="android-field-error">
@@ -102,7 +102,7 @@ export function AndroidWaitlistForm() {
           </p>
         ) : null}
       </div>
-      <p className="android-form-note">One email when Android is ready.</p>
+      <p className="android-form-note">One email when Android launches on Google Play.</p>
     </form>
   );
 }
