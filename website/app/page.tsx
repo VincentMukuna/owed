@@ -53,7 +53,7 @@ export default function Home() {
         <section className="hero">
           <div className="container hero-copy">
             <span className="eyebrow"><span className="status-dot"></span> Private by design</span>
-            <h1>A simpler way to<br />remember money.</h1>
+            <h1>A simpler way<br />to remember money.</h1>
             <p>Track money you’ve lent, money you owe, payments, reminders, and due dates, all in one private place.</p>
             <div className="hero-cta">
               <StoreButtons />
