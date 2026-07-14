@@ -1,27 +1,6 @@
 import { FiMoon, FiSun } from "react-icons/fi";
 import { SiApple } from "react-icons/si";
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 export function Brand() {
   return (
     <a className="brand" href="/" aria-label="Owed home">
@@ -46,7 +25,7 @@ export function StoreButtons({ compact = false }: { compact?: boolean }) {
       <a className="store-button secondary" href="/android">
         <span className="google-play-icon" aria-hidden="true" />
         <span className="store-copy">
-          <span className="store-kicker">Join the waitlist </span>
+          <span className="store-kicker">Join the waitlist</span>
           <strong>Google Play</strong>
         </span>
       </a>
