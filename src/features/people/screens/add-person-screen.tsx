@@ -12,6 +12,7 @@ import {
   KeyboardDoneAccessory,
 } from "@/components/ui/keyboard-done-accessory";
 
+import { ContactPhoneInput } from "../components/contact-phone-input";
 import { useAddPerson } from "../hooks/use-add-person";
 
 export function AddPersonScreen() {
@@ -79,11 +80,9 @@ export function AddPersonScreen() {
         </Field>
 
         <Field label="Phone number">
-          <TextInput
+          <ContactPhoneInput
             ref={phoneRef}
-            autoCapitalize="none"
             inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
-            keyboardType="phone-pad"
             onChangeText={setPhone}
             placeholder="Optional"
             placeholderTextColor={theme.colors.placeholder}

@@ -15,6 +15,7 @@
       }
     },
     "android": {
+      "blockedPermissions": ["android.permission.WRITE_CONTACTS"],
       "adaptiveIcon": {
         "backgroundColor": "#1A3A2A",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -50,6 +51,12 @@
       "@react-native-community/datetimepicker",
       "expo-localization",
       "expo-sharing",
+      [
+        "expo-contacts",
+        {
+          "contactsPermission": "Allow Owed to access your contacts so you can quickly choose a phone number."
+        }
+      ],
       [
         "expo-local-authentication",
         {

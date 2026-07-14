@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/keyboard-done-accessory";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 
+import { ContactPhoneInput } from "../components/contact-phone-input";
 import { usePersonDetail } from "../hooks/use-person-detail";
 import { useUpdatePerson } from "../hooks/use-update-person";
 
@@ -106,11 +107,9 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
         </Field>
 
         <Field label="Phone number">
-          <TextInput
+          <ContactPhoneInput
             ref={phoneRef}
-            autoCapitalize="none"
             inputAccessoryViewID={KEYBOARD_DONE_ACCESSORY_ID}
-            keyboardType="phone-pad"
             onChangeText={setPhone}
             placeholder="Optional"
             placeholderTextColor={theme.colors.placeholder}
