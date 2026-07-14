@@ -8,6 +8,7 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
 import { useAppLockStore } from "@/features/app-lock/store/use-app-lock-store";
+import { useExportDebtsCsv } from "@/features/data-export/hooks/use-export-debts-csv";
 import {
   SettingsSwiftList,
   SettingsSwiftNavRow,
@@ -43,6 +44,7 @@ export function SettingsScreen() {
   const brandColorTheme = useSettingsStore((state) => state.brandColorTheme);
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
   const appLockEnabled = useAppLockStore((state) => state.enabled);
+  const { exportDebts, isExporting } = useExportDebtsCsv();
   const { handleAboutPress, handleHelpCenterPress, handleShareFeedbackPress } = useGetHelpActions();
 
   const brandColorLabel = getBrandColorTheme(brandColorTheme).name;
@@ -90,6 +92,16 @@ export function SettingsScreen() {
         </SettingsSwiftSection>
 
         <SettingsSwiftSection title="Data">
+          <SettingsSwiftNavRow
+            disabled={isExporting}
+            iconBackgroundColor="#0D9488"
+            onPress={() => {
+              void exportDebts();
+            }}
+            systemImage="tablecells"
+            title="Export Data"
+            value={isExporting ? "Exporting…" : undefined}
+          />
           <SettingsSwiftNavRow
             iconBackgroundColor="#2563EB"
             onPress={() => router.push("/backup-restore" as Href)}

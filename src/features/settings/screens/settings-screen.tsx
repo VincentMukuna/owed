@@ -4,11 +4,19 @@ import { ScrollView, Text, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
-import { Bell, HardDriveDownload, Palette, ShieldCheck, WalletCards } from "lucide-react-native";
+import {
+  Bell,
+  FileSpreadsheet,
+  HardDriveDownload,
+  Palette,
+  ShieldCheck,
+  WalletCards,
+} from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { TabScreen, useTabScrollPadding } from "@/components/navigation/tab-screen";
 import { useAppLockStore } from "@/features/app-lock/store/use-app-lock-store";
+import { useExportDebtsCsv } from "@/features/data-export/hooks/use-export-debts-csv";
 import { GetHelpSection } from "@/features/settings/components/get-help-section";
 import {
   SettingsCard,
@@ -47,6 +55,7 @@ export function SettingsScreen() {
   const brandColorTheme = useSettingsStore((state) => state.brandColorTheme);
   const defaultReminderTime = useSettingsStore((state) => state.defaultReminderTime);
   const appLockEnabled = useAppLockStore((state) => state.enabled);
+  const { exportDebts, isExporting } = useExportDebtsCsv();
 
   const brandColorLabel = getBrandColorTheme(brandColorTheme).name;
   const appearanceSummary = `${THEME_LABELS[themePreference]} · ${brandColorLabel}`;
@@ -117,6 +126,21 @@ export function SettingsScreen() {
         <SettingsSection title="Data">
           <SettingsCard>
             <SettingsNavRow
+              busyLabel={isExporting ? "Exporting…" : undefined}
+              disabled={isExporting}
+              label="Export Data"
+              leading={
+                <SettingsIconTile backgroundColor="#0D9488">
+                  <FileSpreadsheet color="#FFFFFF" size={SETTINGS_ICON_SIZE} strokeWidth={2.2} />
+                </SettingsIconTile>
+              }
+              onPress={() => {
+                void exportDebts();
+              }}
+              showsChevron={false}
+            />
+            <SettingsNavRow
+              bordered
               label="Backup & Restore"
               leading={
                 <SettingsIconTile backgroundColor="#2563EB">

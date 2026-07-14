@@ -79,6 +79,7 @@ type SettingsNavRowProps = {
   leading?: ReactNode;
   label: string;
   value?: string;
+  showsChevron?: boolean;
   disabled?: boolean;
   bordered?: boolean;
   danger?: boolean;
@@ -91,6 +92,7 @@ export function SettingsNavRow({
   leading,
   label,
   value,
+  showsChevron = true,
   disabled = false,
   bordered = false,
   danger = false,
@@ -120,7 +122,7 @@ export function SettingsNavRow({
                 {value}
               </Text>
             ) : null}
-            {busyLabel ? null : (
+            {busyLabel || !showsChevron ? null : (
               <ChevronRight color={theme.colors.iconMuted} size={16} strokeWidth={2} />
             )}
           </View>
