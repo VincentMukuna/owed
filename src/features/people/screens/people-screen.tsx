@@ -131,7 +131,7 @@ export function PeopleScreen() {
         <Text style={styles.emptyCopy}>
           {isSearching
             ? "Try searching by name or phone number."
-            : "Add people connected to money promises, then log what is unsettled."}
+            : "Add people connected to debts, then track what is unsettled."}
         </Text>
       </View>
     ),

@@ -7,7 +7,7 @@ import {
 } from "@/features/reminders/lib/notification-permissions";
 import { saveNotificationsPermissionAsked } from "@/features/reminders/lib/reminder-storage";
 
-const EXPLAINER_TITLE = "Get notifications on promised dates?";
+const EXPLAINER_TITLE = "Get notifications on due dates?";
 const EXPLAINER_MESSAGE =
   "Owwed can notify you when someone was due to pay. We never contact the person who owes. Notifications stay on your device and in the app.";
 

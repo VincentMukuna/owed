@@ -276,7 +276,7 @@ export function AddDebtScreen() {
               })}
             </View>
           }
-          label="Promised date"
+          label="Due date"
         >
           <PressableScale
             onPress={() => {
@@ -315,7 +315,7 @@ export function AddDebtScreen() {
             <Ionicons color={theme.colors.muted} name="notifications" size={16} />
             <View style={styles.prefCopy}>
               <Text style={styles.prefTitle}>Notify me</Text>
-              <Text style={styles.prefSub}>On the promised date, not sent to them</Text>
+              <Text style={styles.prefSub}>On the due date, not sent to them</Text>
             </View>
             <Switch
               onValueChange={(value) => {

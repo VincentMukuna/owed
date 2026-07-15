@@ -143,7 +143,7 @@ export function DevToolsSection() {
         />
         <DevToolRow
           bordered
-          description={`Replaces current records with ${REALISTIC_SEED_PEOPLE_COUNT} people, ${REALISTIC_SEED_DEBT_COUNT} realistic promises, and ${REALISTIC_SEED_PAYMENT_COUNT} repayments in USD. Shows every Home section.`}
+          description={`Replaces current records with ${REALISTIC_SEED_PEOPLE_COUNT} people, ${REALISTIC_SEED_DEBT_COUNT} realistic debts, and ${REALISTIC_SEED_PAYMENT_COUNT} repayments in USD. Shows every Home section.`}
           disabled={seedRealisticUsage.isPending || seedDebts.isPending}
           icon="📸"
           onPress={confirmRealisticSeed}

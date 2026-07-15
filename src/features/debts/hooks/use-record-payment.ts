@@ -23,7 +23,7 @@ export function useRecordPayment() {
 
       const isFullPayment = variables.input.amount >= variables.remainingBeforePayment;
       const fullMessage =
-        debt.direction === "i_owe_them" ? "Promise settled." : "Promise marked as paid.";
+        debt.direction === "i_owe_them" ? "Debt settled." : "Debt marked as paid.";
       showToast(isFullPayment ? fullMessage : "Payment recorded.");
     },
     onError: () => {

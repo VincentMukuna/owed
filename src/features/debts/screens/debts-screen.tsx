@@ -321,7 +321,7 @@ function DebtsFiltersSheetContentInner({
       </View>
 
       <View style={styles.tabsWrap}>
-        <Text style={styles.filterLabel}>Promised date</Text>
+        <Text style={styles.filterLabel}>Due date</Text>
         <View style={styles.dateRangeRow}>
           <DateRangeField
             placeholder="From"
@@ -740,7 +740,7 @@ export function DebtsScreen() {
     }
 
     if (focus.kind === "attention") {
-      return `${count} ${count === 1 ? "promise needs" : "promises need"} attention`;
+      return `${count} ${count === 1 ? "debt needs" : "debts need"} attention`;
     }
 
     if (focus.kind === "range") {
@@ -749,7 +749,7 @@ export function DebtsScreen() {
 
     if (focus.kind === "filter") {
       if (focus.filter === "active") {
-        return `${count} active ${count === 1 ? "promise" : "promises"}`;
+        return `${count} active ${count === 1 ? "debt" : "debts"}`;
       }
 
       if (focus.filter === "overdue") {
@@ -765,7 +765,7 @@ export function DebtsScreen() {
 
     return focus.type === "overdue"
       ? `${count} overdue from ${formatDueDate(focus.date)}`
-      : `${count} promised on ${formatDueDate(focus.date)}`;
+      : `${count} due on ${formatDueDate(focus.date)}`;
   }, [focus, visibleDebts.length]);
 
   const emptyState = useMemo(
@@ -786,7 +786,7 @@ export function DebtsScreen() {
               ? "Money people owe you will appear here."
               : direction === "i_owe_them"
                 ? "Money you need to pay back will appear here."
-                : "Add a promise to remember money between you and someone else."}
+                : "Add a debt to remember money between you and someone else."}
         </Text>
       </View>
     ),

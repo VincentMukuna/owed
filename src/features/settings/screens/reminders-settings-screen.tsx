@@ -98,7 +98,7 @@ export function RemindersSettingsScreen() {
         {permissionState !== "allowed" ? (
           <View style={styles.banner}>
             <Text style={styles.bannerText}>
-              Turn on notifications to get reminders on promised dates.
+              Turn on notifications to get reminders on due dates.
             </Text>
             <PressableScale
               onPress={() => void handlePermissionPress()}
@@ -111,7 +111,7 @@ export function RemindersSettingsScreen() {
 
         <SettingsSection>
           <SettingsHelperText>
-            Owwed sends a daily reminder at your chosen time for debts with promised dates.
+            Owwed sends a daily reminder at your chosen time for debts on their due dates.
           </SettingsHelperText>
           <SettingsCard>
             <SettingsDetailRow

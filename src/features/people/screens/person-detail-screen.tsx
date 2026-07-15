@@ -151,7 +151,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
 
           <View style={styles.section}>
             <Text style={styles.sectionLabel}>
-              Promises ({filteredDebts.length}
+              Debts ({filteredDebts.length}
               {directionFilter && filteredDebts.length !== person.debts.length
                 ? ` of ${person.debts.length}`
                 : ""}
@@ -174,9 +174,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
                   : `Nothing you owe ${firstName} right now.`}
               </Text>
             ) : (
-              <Text style={styles.emptyCopy}>
-                Add the first promise between you and {firstName}.
-              </Text>
+              <Text style={styles.emptyCopy}>Add the first debt between you and {firstName}.</Text>
             )}
           </View>
 
@@ -199,7 +197,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
           style={[styles.footer, { paddingBottom: insets.bottom + 20 }]}
         >
           <PressableScale onPress={openAddDebt} style={styles.primaryBtn}>
-            <Text style={styles.primaryBtnText}>Add promise for {firstName}</Text>
+            <Text style={styles.primaryBtnText}>Add debt for {firstName}</Text>
           </PressableScale>
         </LinearGradient>
       </View>
@@ -209,7 +207,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
 
 function formatAcrossCaption(count: number): string {
   const label = count >= 10 ? "9+" : String(count);
-  return `across ${label} ${count === 1 ? "promise" : "promises"}`;
+  return `across ${label} ${count === 1 ? "debt" : "debts"}`;
 }
 
 function StatColumn({

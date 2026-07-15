@@ -72,7 +72,7 @@ export function DueDatePickerModal({ visible, value, onClose, onSave }: DueDateP
     <Pressable onPress={onClose} style={styles.backdrop}>
       <Pressable onPress={(event) => event.stopPropagation()} style={styles.sheet}>
         <View style={styles.sheetHeader}>
-          <Text style={styles.sheetTitle}>Promised date</Text>
+          <Text style={styles.sheetTitle}>Due date</Text>
           <PressableScale onPress={handleDone} style={styles.doneButton}>
             <Text style={styles.doneText}>Done</Text>
           </PressableScale>

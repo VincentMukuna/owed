@@ -111,8 +111,7 @@ export function NotificationsInboxScreen() {
             </View>
             <Text style={styles.emptyTitle}>No notifications yet</Text>
             <Text style={styles.emptyCopy}>
-              When a promised date arrives, you&apos;ll see a notification here, only on your
-              device.
+              When a due date arrives, you&apos;ll see a notification here, only on your device.
             </Text>
           </View>
         </ScrollView>

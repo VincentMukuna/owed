@@ -12,7 +12,7 @@ import type { PersonListItemView } from "../view-models";
 
 function buildSubtitle(person: PersonListItemView): string {
   if (person.status === "none") {
-    return "No promises yet";
+    return "No debts yet";
   }
   if (person.status === "settled") {
     return "All settled up";

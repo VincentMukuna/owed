@@ -74,8 +74,8 @@ export function buildReminderNotificationContent(input: {
   }
 
   return {
-    title: "Promised today",
-    body: `${input.personName} promised to pay ${amount} today.`,
+    title: "Due today",
+    body: `${input.personName} owes you ${amount} today.`,
   };
 }
 
@@ -97,7 +97,7 @@ export function buildCollapsedReminderContent(input: {
   if (input.direction === "mixed") {
     return {
       title: input.type === "overdue" ? "Overdue" : "Due today",
-      body: `${input.totalCount} promises need attention, ${amount} unsettled.`,
+      body: `${input.totalCount} debts need attention, ${amount} unsettled.`,
     };
   }
 
@@ -128,7 +128,7 @@ export function buildCollapsedReminderContent(input: {
   }
 
   return {
-    title: "Promised today",
-    body: `${people} promised you ${amount} today.`,
+    title: "Due today",
+    body: `${people} owe you ${amount} today.`,
   };
 }

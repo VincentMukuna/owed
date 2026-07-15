@@ -231,8 +231,7 @@ export function HomeScreen() {
             </PressableScale>
           </View>
           <Text style={styles.heroMeta}>
-            Across {briefing.activeCount} active{" "}
-            {briefing.activeCount === 1 ? "promise" : "promises"}
+            Across {briefing.activeCount} active {briefing.activeCount === 1 ? "debt" : "debts"}
           </Text>
         </View>
 
@@ -249,7 +248,7 @@ export function HomeScreen() {
           <View style={styles.statsGrid}>
             <View style={styles.statCell}>
               <SummaryStatCard
-                label="Active promises"
+                label="Active debts"
                 onPress={() => openDebtsFilter("active")}
                 value={String(briefing.activeCount)}
                 color={theme.colors.status.active.dot}
@@ -327,7 +326,7 @@ export function HomeScreen() {
               </View>
               <Text style={styles.emptyTitle}>No money tracked yet.</Text>
               <Text style={styles.emptyCopy}>
-                Add a promise to remember money between you and someone else.
+                Add a debt to remember money between you and someone else.
               </Text>
             </View>
           </View>

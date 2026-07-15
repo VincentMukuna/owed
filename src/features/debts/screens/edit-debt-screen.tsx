@@ -156,7 +156,7 @@ export function EditDebtScreen() {
           </View>
         </Field>
 
-        <Field label="Promised date">
+        <Field label="Due date">
           <PressableScale
             onPress={() => {
               selectionChange();
@@ -187,7 +187,7 @@ export function EditDebtScreen() {
           <View style={styles.reminderRow}>
             <View style={styles.reminderCopy}>
               <Text style={styles.reminderTitle}>Remind me</Text>
-              <Text style={styles.reminderSub}>On the promised date</Text>
+              <Text style={styles.reminderSub}>On the due date</Text>
             </View>
             <Switch
               onValueChange={(value) => {

@@ -107,7 +107,7 @@ const UpcomingDebtCard = memo(({ debt, onAction, onPress, width }: UpcomingDebtC
             {formatCurrency(debt.remaining, debt.currency)}
           </Text>
           <Text numberOfLines={1} style={styles.reason}>
-            {debt.reason || "Personal promise"}
+            {debt.reason || "Personal debt"}
           </Text>
         </View>
         <View style={styles.dueBlock}>

@@ -71,7 +71,7 @@ export const DEFAULT_DEBT_SORT: DebtSortPreference = {
 
 export const DEBT_SORT_CRITERIA: SortChoice<DebtSortCriterion>[] = [
   { label: "Needs attention", value: "attention" },
-  { label: "Promised date", value: "due-date" },
+  { label: "Due date", value: "due-date" },
   { label: "Amount remaining", value: "amount" },
   { label: "Recently added", value: "created" },
   { label: "Person", value: "person" },

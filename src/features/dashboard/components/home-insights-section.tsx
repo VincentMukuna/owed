@@ -74,11 +74,11 @@ export function HomeInsightsSection({
         value:
           attentionCount === 0
             ? "All clear"
-            : `${attentionCount} ${attentionCount === 1 ? "promise" : "promises"}`,
+            : `${attentionCount} ${attentionCount === 1 ? "debt" : "debts"}`,
         copy:
           attentionCount === 0
-            ? `${activeCount} active ${activeCount === 1 ? "promise" : "promises"}`
-            : "Due soon or past the promised date",
+            ? `${activeCount} active ${activeCount === 1 ? "debt" : "debts"}`
+            : "Due soon or past the due date",
         onPress: attentionCount === 0 ? onActivePress : onAttentionPress,
       },
       {
@@ -86,7 +86,7 @@ export function HomeInsightsSection({
         id: "settled",
         label: "Settled this month",
         value: formatCurrency(paidThisMonth),
-        copy: "Value cleared from completed promises",
+        copy: "Value cleared from settled debts",
         onPress: onSettledPress,
       },
     ];

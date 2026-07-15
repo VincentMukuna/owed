@@ -36,7 +36,7 @@ const FAQ_ITEMS: FaqItem[] = [
     id: "what-is-owwed",
     question: "What is Owwed?",
     answer:
-      "Owwed helps you remember informal money promises between you and other people.\n\nTrack both:\n- Money people owe you\n- Money you owe others\n\nEverything stays private on your device.",
+      "Owwed helps you remember informal debts between you and other people.\n\nTrack both:\n- Money people owe you\n- Money you owe others\n\nEverything stays private on your device.",
   },
   {
     id: "account",
