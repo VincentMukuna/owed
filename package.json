@@ -73,9 +73,10 @@
   "scripts": {
     "start": "expo start",
     "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo run:android",
-    "ios": "expo run:ios",
+    "android": "expo run:android --device",
+    "ios": "expo run:ios --device",
     "web": "expo start --web",
+    "website": "expo start --web",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "expo lint",
