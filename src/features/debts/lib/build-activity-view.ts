@@ -57,7 +57,7 @@ export function buildActivityView(
         event.debtDirection === "i_owe_them"
           ? `You added ${formatCurrency(amount, currency)} you owe ${event.personName}`
           : `You added ${formatCurrency(amount, currency)} owed by ${event.personName}`;
-      sub = reason;
+      sub = reason || "Debt created";
       break;
     case "payment_recorded":
       text =

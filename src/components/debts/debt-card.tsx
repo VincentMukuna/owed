@@ -53,8 +53,8 @@ export const DebtCard = memo(
                     />
                   ) : null}
                 </View>
-                <Text muted style={styles.reason} numberOfLines={1}>
-                  {debt.reason}
+                <Text muted style={styles.subtitle} numberOfLines={1}>
+                  {debt.subtitle ?? debt.reason}
                 </Text>
               </View>
               <View style={styles.amountCol}>
@@ -149,7 +149,7 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: "600",
     lineHeight: 20,
   },
-  reason: {
+  subtitle: {
     fontSize: 12,
     lineHeight: 17,
   },

@@ -1,3 +1,4 @@
+import { formatDebtFallbackMeta } from "@/features/debts/lib/debt-card-meta";
 import {
   formatAddedDate,
   formatDueDate,
@@ -33,6 +34,8 @@ export function toDebtCardView(debt: DebtSummary | DebtWithRelations, now?: Date
 
   const payments =
     "payments" in debt ? debt.payments.map((payment) => toPaymentView(payment, now)) : [];
+  const reason = debt.reason?.trim() || "";
+
   return {
     id: debt.id,
     name: debt.person.name,
@@ -44,7 +47,8 @@ export function toDebtCardView(debt: DebtSummary | DebtWithRelations, now?: Date
     currency: debt.currency,
     dueDate: formatDueDate(debt.dueDate),
     dueDateISO: debt.dueDate,
-    reason: debt.reason?.trim() || "",
+    reason,
+    subtitle: reason || formatDebtFallbackMeta(debt.dueDate, status, now),
     status,
     createdAt: debt.createdAt,
     addedDate: formatAddedDate(debt.createdAt),

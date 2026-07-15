@@ -25,6 +25,8 @@ export type DebtCardView = {
   /** Raw ISO due date (YYYY-MM-DD) for filtering; `dueDate` is the display string. */
   dueDateISO: string;
   reason: string;
+  /** Description when present; otherwise concise, useful debt metadata. */
+  subtitle?: string;
   status: CardDebtStatus;
   /** Raw creation timestamp for deterministic list ordering. */
   createdAt: string;
