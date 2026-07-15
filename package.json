@@ -77,6 +77,8 @@
     "ios": "expo run:ios --device",
     "web": "npm --prefix website run dev",
     "website": "npm --prefix website run dev",
+    "screenshots": "node ./scripts/screenshots.mjs",
+    "screenshots:check": "node ./scripts/screenshots.mjs --check",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "expo lint",

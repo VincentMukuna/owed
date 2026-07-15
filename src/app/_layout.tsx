@@ -153,6 +153,7 @@ export default function RootLayout() {
                 >
                 <Stack.Screen name="index" />
                 <Stack.Screen name="onboarding" options={{ animation: "fade" }} />
+                <Stack.Screen name="screenshot-automation" options={{ animation: "none" }} />
                 <Stack.Screen name="(tabs)" />
                 <Stack.Screen
                   name="add-debt"

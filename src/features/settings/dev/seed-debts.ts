@@ -628,9 +628,12 @@ function buildPayments(
   return payments;
 }
 
-async function seedUsage(profile: SeedProfile, realistic = false): Promise<SeedResult> {
+async function seedUsage(
+  profile: SeedProfile,
+  realistic = false,
+  now: Date = new Date(),
+): Promise<SeedResult> {
   const db = await getDb();
-  const now = new Date();
   const start = usageStart(now, profile.usageWindowMonths);
   const people = realistic
     ? buildRealisticPeople(now)
@@ -745,6 +748,6 @@ export function seedDebts(currency: string = APP_CONFIG.defaultCurrency): Promis
   return seedUsage({ ...STRESS_SEED_PROFILE, currency: currency.toUpperCase() });
 }
 
-export function simulateRealisticUsage(): Promise<SeedResult> {
-  return seedUsage(realisticSeedProfile(), true);
+export function simulateRealisticUsage(now: Date = new Date()): Promise<SeedResult> {
+  return seedUsage(realisticSeedProfile(), true, now);
 }
