@@ -1,40 +1,24 @@
 import type { Metadata } from "next";
 
-
-
 import { LegalPage } from "../site-components";
 
 export const metadata: Metadata = {
   title: "Privacy Policy · Owwed",
-  description: "How Owwed handles your information and keeps your data local.",
+  description: "How Owwed collects, uses, stores, and protects personal information.",
 };
 
 export default function PrivacyPage() {
   return (
     <LegalPage
-      eyebrow="Privacy policy"
-      title="Your data belongs to you."
-      intro="Owwed is built around a simple promise: your personal money records should remain personal."
+      title="Privacy Policy"
+      intro="This policy explains what information Owwed processes, where it is stored, and the choices available to you."
     >
       <section>
-        <h2>The short version</h2>
+        <h2>Information stored on your device</h2>
         <p>
-          Owwed stores the people, promises, payments, notes, and reminders you add locally on your
-          device. You do not need an account, and Owwed does not operate a cloud account service that
-          receives this information.
-        </p>
-        <p>
-          The only information Owwed receives from you is what you choose to send: optional product
-          feedback.
-        </p>
-      </section>
-
-      <section>
-        <h2>Information that stays on your device</h2>
-        <p>
-          Debt records, people, payment history, reminder settings, app lock credentials, contacts
-          you choose while adding a person, and backups you create remain on your device by default.
-          Owwed does not upload that information to its servers.
+          Owwed stores debt records, people, payment history, notes, reminder settings, app lock
+          credentials, selected contact information, and backups locally on your device by default.
+          Owwed does not operate a cloud account service or upload this information to its servers.
         </p>
         <p>
           Owwed does not use analytics, advertising SDKs, or third-party trackers. It does not
@@ -43,105 +27,86 @@ export default function PrivacyPage() {
       </section>
 
       <section>
-        <h2>Optional feedback</h2>
+        <h2>Information you submit</h2>
         <p>
-          If you use Share feedback in the app or the feedback form on this website, Owwed stores the
-          message you send so the product can be improved. That may include:
+          If you submit feedback through the app or website, Owwed stores the category, title,
+          description, and any email address you choose to provide. The submission may also include
+          basic device and app information, including platform, app version, build number, operating
+          system version, device model, and locale.
         </p>
-        <ul>
-          <li>category, title, and description</li>
-          <li>an email address, only if you choose to provide one</li>
-          <li>
-            basic device and app context such as platform, app version, build number, OS version,
-            device model, and locale
-          </li>
-        </ul>
         <p>
-          Feedback is optional and user-initiated. Please do not include private financial details.
-          Feedback is used only to understand and respond to product issues or requests, not for
-          advertising or tracking across other companies’ apps or websites.
+          Feedback is optional and is used to review and respond to product issues or requests. It
+          is not used for advertising or cross-service tracking. Do not include private financial
+          information in a feedback submission.
         </p>
-      </section>
-
-      <section>
-        <h2>Android waitlist</h2>
         <p>
-          If you join the Android waitlist on this website, Owwed stores the email address you
-          provide so it can send a one-time notice when Google Play is available. That email is not
-          used for marketing beyond that notice unless you ask otherwise later.
+          If you join the Android waitlist, Owwed stores the email address you provide and uses it to
+          send a notice when the app becomes available on Google Play. The address is not used for
+          other marketing unless you later provide consent.
         </p>
       </section>
 
       <section>
-        <h2>Contacts</h2>
+        <h2>Device permissions</h2>
         <p>
-          If you grant contact access, Owwed lets you choose a phone number while adding or editing a
-          person. Contact access is optional, read-only, and used on your device. Owwed does not
-          upload your address book.
+          Contact access is optional and read-only. If granted, it is used on your device to select
+          a phone number while adding or editing a person. Owwed does not upload your address book.
+        </p>
+        <p>
+          If you enable reminders, Owwed uses the dates you provide to schedule notifications on
+          your device. These notifications are not sent to other people, and Owwed does not receive
+          your debt information to provide them.
         </p>
       </section>
 
       <section>
-        <h2>Notifications</h2>
+        <h2>External services</h2>
         <p>
-          If you enable reminders, Owwed schedules notifications on your device using the dates you
-          provide. These reminders are not messages to the other person and do not require Owwed to
-          receive your debt information.
+          When you change currency, Owwed may request a public exchange-rate suggestion from a
+          third-party rate service. The request is used to return a suggested rate and does not
+          include your debt records.
         </p>
       </section>
 
       <section>
-        <h2>Currency suggestions</h2>
+        <h2>Backups, security, and deletion</h2>
         <p>
-          When you change currency, Owwed may briefly request a public exchange-rate suggestion from
-          a third-party rate service to help fill in a conversion field. That request is only used
-          to return a suggested rate in the moment. Your debt records are not sent with it.
-        </p>
-      </section>
-
-      <section>
-        <h2>Backups</h2>
-        <p>
-          You can create a backup file from the app. You decide where that file is saved or shared.
-          Once a backup leaves Owwed, the privacy and security of the destination you choose applies.
-          Keep backup files somewhere you trust.
-        </p>
-      </section>
-
-      <section>
-        <h2>Device security and deletion</h2>
-        <p>
-          Your local data is protected by the security of your device. You can also enable the app
-          lock where supported. Deleting app data or uninstalling Owwed can remove locally stored
-          records, so create a backup first if you want to keep them.
+          Backup files are created locally. You choose where they are saved or shared. After a
+          backup leaves Owwed, it is subject to the privacy and security practices of the destination
+          you select.
         </p>
         <p>
-          To ask about deletion of optional feedback or waitlist email you previously submitted, use
-          the <a href="/feedback">feedback form</a>.
+          Local data is protected by your device security and, where supported and enabled, the
+          Owwed app lock. Deleting app data or uninstalling Owwed may permanently remove locally
+          stored records.
+        </p>
+        <p>
+          To request deletion of feedback or a waitlist email you submitted, use the{" "}
+          <a href="/feedback">feedback form</a>.
         </p>
       </section>
 
       <section>
         <h2>Children</h2>
         <p>
-          Owwed is a general utility and is not directed to children under 13. Owwed does not
-          knowingly collect personal information from children.
+          Owwed is not directed to children under 13 and does not knowingly collect personal
+          information from children under 13.
         </p>
       </section>
 
       <section>
-        <h2>Changes</h2>
+        <h2>Changes to this policy</h2>
         <p>
-          If Owwed’s data practices change, this policy will be updated before the new practices take
-          effect. A meaningful change will be explained clearly in the app or on this page.
+          This policy may be updated when Owwed’s data practices change. Material changes will be
+          disclosed in the app or on this page before they take effect.
         </p>
       </section>
 
       <section>
-        <h2>Questions</h2>
+        <h2>Contact</h2>
         <p>
-          For privacy questions, use the <a href="/feedback">feedback form</a>. Please do not
-          include private financial details.
+          Submit privacy questions through the <a href="/feedback">feedback form</a>. Do not include
+          private financial information.
         </p>
       </section>
     </LegalPage>

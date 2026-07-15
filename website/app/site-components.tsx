@@ -117,12 +117,10 @@ export function Footer() {
 }
 
 export function LegalPage({
-  eyebrow,
   title,
   intro,
   children,
 }: {
-  eyebrow: string;
   title: string;
   intro: string;
   children: React.ReactNode;
@@ -133,7 +131,6 @@ export function LegalPage({
       <main className="legal-main">
         <div className="container legal-wrap">
           <header className="legal-hero">
-            <span className="eyebrow">{eyebrow}</span>
             <h1>{title}</h1>
             <p>{intro}</p>
             <time dateTime="2026-07-14">Last updated July 14, 2026</time>

@@ -899,15 +899,15 @@ a.store-button {
 
 .legal-wrap {
   display: grid;
-  grid-template-columns: .8fr 1.2fr;
-  gap: 110px;
+  grid-template-columns: minmax(0, 780px);
+  justify-content: center;
+  gap: 70px;
   padding-top: 110px;
   padding-bottom: 140px;
 }
 
 .legal-hero {
-  position: sticky;
-  top: 130px;
+  position: static;
   align-self: start;
 }
 
@@ -935,13 +935,14 @@ a.store-button {
 }
 
 .legal-content {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
   padding-top: 10px;
 }
 
 .legal-content section {
   padding: 0 0 42px;
   margin: 0 0 42px;
-  border-bottom: 1px solid var(--line);
 }
 
 .legal-content h2 {
