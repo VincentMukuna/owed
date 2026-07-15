@@ -35,7 +35,7 @@ function PreviewDebtCard() {
         <View style={styles.previewBody}>
           <View style={styles.previewTop}>
             <View style={styles.previewMeta}>
-              <Text style={styles.previewName}>Brian Mwangi</Text>
+              <Text style={styles.previewName}>John Doe</Text>
               <Text style={styles.previewReason}>Transport + drinks</Text>
             </View>
             <View style={styles.previewAmountCol}>
