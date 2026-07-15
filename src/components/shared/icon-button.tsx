@@ -9,16 +9,22 @@ import { StyleSheet } from "react-native-unistyles";
 import { PressableScale } from "@/components/shared/pressable-scale";
 
 type IconButtonProps = {
+  accessibilityLabel?: string;
   onPress?: () => void;
   children: ReactNode;
 };
 
-export function IconButton({ onPress, children }: IconButtonProps) {
+export function IconButton({ accessibilityLabel, onPress, children }: IconButtonProps) {
   const canUseLiquidGlass =
     Platform.OS === "ios" && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
   return (
-    <PressableScale onPress={onPress} style={styles.pressable}>
+    <PressableScale
+      accessibilityLabel={accessibilityLabel}
+      accessibilityRole="button"
+      onPress={onPress}
+      style={styles.pressable}
+    >
       {canUseLiquidGlass ? (
         <View style={styles.glassButton}>
           <GlassView isInteractive glassEffectStyle="clear" style={styles.glassBackdrop} />

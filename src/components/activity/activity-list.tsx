@@ -1,8 +1,8 @@
-import { memo, useCallback } from "react";
+import { forwardRef, memo, useCallback } from "react";
 
 import { RefreshControl, type RefreshControlProps, Text, View } from "react-native";
 
-import { FlashList } from "@shopify/flash-list";
+import { FlashList, type FlashListRef } from "@shopify/flash-list";
 import {
   Archive,
   Banknote,
@@ -74,14 +74,17 @@ export const ActivityRow = memo(({ activity }: { activity: ActivityView }) => {
 
 ActivityRow.displayName = "ActivityRow";
 
-export const ActivityList = memo(
-  ({
-    activities,
-    contentContainerStyle,
-    isFetchingNextPage = false,
-    onEndReached,
-    refreshControlProps,
-  }: ActivityListProps) => {
+const ActivityListInner = forwardRef<FlashListRef<ActivityView>, ActivityListProps>(
+  (
+    {
+      activities,
+      contentContainerStyle,
+      isFetchingNextPage = false,
+      onEndReached,
+      refreshControlProps,
+    },
+    ref,
+  ) => {
     const renderItem = useCallback(
       ({ item, index }: { item: ActivityView; index: number }) => (
         <ListRowContainer leadingInset={LIST_LEADING_INSET_ICON_MD} showDivider={index > 0}>
@@ -107,6 +110,7 @@ export const ActivityList = memo(
 
     return (
       <FlashList
+        ref={ref}
         contentContainerStyle={contentContainerStyle}
         data={activities}
         keyExtractor={keyExtractor}
@@ -122,6 +126,10 @@ export const ActivityList = memo(
     );
   },
 );
+
+ActivityListInner.displayName = "ActivityList";
+
+export const ActivityList = memo(ActivityListInner);
 
 ActivityList.displayName = "ActivityList";
 

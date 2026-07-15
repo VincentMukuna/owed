@@ -17,9 +17,11 @@ type PersonSummaryRow = {
   owed_to_you_open_count: number;
   you_owe_open_count: number;
   overdue_count: number;
+  earliest_overdue_date: string | null;
   owed_to_you_overdue_count: number;
   you_owe_overdue_count: number;
   due_soon_count: number;
+  earliest_due_soon_date: string | null;
   owed_to_you_due_soon_count: number;
   you_owe_due_soon_count: number;
   paid_debt_count: number;
@@ -46,12 +48,16 @@ function personSummarySelect(scoped: boolean): string {
       COALESCE(SUM(CASE WHEN ${REMAINING} > 0 AND d.direction = 'they_owe_me' THEN 1 ELSE 0 END), 0) AS owed_to_you_open_count,
       COALESCE(SUM(CASE WHEN ${REMAINING} > 0 AND d.direction = 'i_owe_them' THEN 1 ELSE 0 END), 0) AS you_owe_open_count,
       COALESCE(SUM(CASE WHEN ${REMAINING} > 0 AND d.due_date < ? THEN 1 ELSE 0 END), 0) AS overdue_count,
+      MIN(CASE WHEN ${REMAINING} > 0 AND d.due_date < ? THEN d.due_date END) AS earliest_overdue_date,
       COALESCE(SUM(CASE WHEN ${REMAINING} > 0 AND d.direction = 'they_owe_me' AND d.due_date < ? THEN 1 ELSE 0 END), 0) AS owed_to_you_overdue_count,
       COALESCE(SUM(CASE WHEN ${REMAINING} > 0 AND d.direction = 'i_owe_them' AND d.due_date < ? THEN 1 ELSE 0 END), 0) AS you_owe_overdue_count,
       COALESCE(
         SUM(CASE WHEN ${REMAINING} > 0 AND d.due_date >= ? AND d.due_date <= ? THEN 1 ELSE 0 END),
         0
       ) AS due_soon_count,
+      MIN(
+        CASE WHEN ${REMAINING} > 0 AND d.due_date >= ? AND d.due_date <= ? THEN d.due_date END
+      ) AS earliest_due_soon_date,
       COALESCE(
         SUM(CASE WHEN ${REMAINING} > 0 AND d.direction = 'they_owe_me' AND d.due_date >= ? AND d.due_date <= ? THEN 1 ELSE 0 END),
         0
@@ -92,9 +98,11 @@ function rowToPersonSummary(row: PersonSummaryRow): PersonSummary {
     owedToYouOpenCount: row.owed_to_you_open_count,
     youOweOpenCount: row.you_owe_open_count,
     overdueCount: row.overdue_count,
+    earliestOverdueDate: row.earliest_overdue_date ?? undefined,
     owedToYouOverdueCount: row.owed_to_you_overdue_count,
     youOweOverdueCount: row.you_owe_overdue_count,
     dueSoonCount: row.due_soon_count,
+    earliestDueSoonDate: row.earliest_due_soon_date ?? undefined,
     owedToYouDueSoonCount: row.owed_to_you_due_soon_count,
     youOweDueSoonCount: row.you_owe_due_soon_count,
     paidDebtCount: row.paid_debt_count,
@@ -116,6 +124,9 @@ export const personRepository = {
       today,
       today,
       today,
+      today,
+      dueSoonStart,
+      dueSoonEnd,
       dueSoonStart,
       dueSoonEnd,
       dueSoonStart,
@@ -135,6 +146,9 @@ export const personRepository = {
       today,
       today,
       today,
+      today,
+      dueSoonStart,
+      dueSoonEnd,
       dueSoonStart,
       dueSoonEnd,
       dueSoonStart,

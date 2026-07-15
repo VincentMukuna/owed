@@ -27,6 +27,7 @@ import {
   type BottomSheetBackdropProps,
   BottomSheetModal,
   BottomSheetModalProvider,
+  BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import type { FlashListRef } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
@@ -48,16 +49,25 @@ import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import {
+  DEBT_SORT_CRITERIA,
+  DEFAULT_DEBT_SORT,
   type DebtDateRangeFilter,
   type DebtDirectionFilter,
   type DebtFilterKey,
+  type DebtSortCriterion,
   computeDebtDirectionCounts,
   computeDebtTabCounts,
+  debtSortDirections,
+  defaultDebtSortDirection,
   filterDebtsByDueDate,
   filterSearchAndSortDebts,
+  isDebtSortPreference,
 } from "@/features/debts/lib/debt-list-utils";
 import { formatDueDate, toISODate } from "@/features/debts/lib/format-dates";
 import type { DebtCardView } from "@/features/debts/view-models";
+import { SortOptionsContent } from "@/features/view-options/components/sort-options-content";
+import { useViewPreference } from "@/features/view-options/hooks/use-view-preference";
+import type { SortDirection } from "@/features/view-options/types";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { selectionChange } from "@/lib/haptics";
 import { invalidateDebtQueries } from "@/lib/query/invalidate-queries";
@@ -235,12 +245,17 @@ type DebtsFiltersSheetContentProps = {
   direction: DebtDirectionFilter;
   directionTabs: FilterTabItem<DebtDirectionFilter>[];
   filter: DebtFilterKey;
-  hasActiveFilters: boolean;
+  hasViewChanges: boolean;
   onClearRangeDate: (target: DateRangeTarget) => void;
   onOpenDatePicker: (target: DateRangeTarget) => void;
-  onResetFilters: () => void;
+  onResetView: () => void;
   onSelectDirection: (key: DebtDirectionFilter) => void;
   onSelectFilter: (key: DebtFilterKey) => void;
+  onSelectSortCriterion: (criterion: DebtSortCriterion) => void;
+  onSelectSortDirection: (direction: SortDirection) => void;
+  sortCriterion: DebtSortCriterion;
+  sortDirection: SortDirection;
+  sortDirections: ReturnType<typeof debtSortDirections>;
   tabs: FilterTabItem<DebtFilterKey>[];
 };
 
@@ -250,26 +265,31 @@ function DebtsFiltersSheetContentInner({
   direction,
   directionTabs,
   filter,
-  hasActiveFilters,
+  hasViewChanges,
   onClearRangeDate,
   onOpenDatePicker,
-  onResetFilters,
+  onResetView,
   onSelectDirection,
   onSelectFilter,
+  onSelectSortCriterion,
+  onSelectSortDirection,
+  sortCriterion,
+  sortDirection,
+  sortDirections,
   tabs,
 }: DebtsFiltersSheetContentProps) {
   return (
     <View style={styles.sheetContent}>
       <View style={styles.sheetHeader}>
-        <Text style={styles.sheetTitle}>Filters</Text>
+        <Text style={styles.sheetTitle}>View options</Text>
         <PressableScale
           hitSlop={8}
-          onPress={onResetFilters}
+          onPress={onResetView}
           style={styles.sheetReset}
-          disabled={!hasActiveFilters}
+          disabled={!hasViewChanges}
         >
-          <Text style={[styles.sheetResetText, !hasActiveFilters && styles.sheetResetMuted]}>
-            Reset
+          <Text style={[styles.sheetResetText, !hasViewChanges && styles.sheetResetMuted]}>
+            Reset all
           </Text>
         </PressableScale>
       </View>
@@ -312,6 +332,15 @@ function DebtsFiltersSheetContentInner({
           />
         </View>
       </View>
+
+      <SortOptionsContent
+        criteria={DEBT_SORT_CRITERIA}
+        criterion={sortCriterion}
+        direction={sortDirection}
+        directions={sortDirections}
+        onSelectCriterion={onSelectSortCriterion}
+        onSelectDirection={onSelectSortDirection}
+      />
     </View>
   );
 }
@@ -344,7 +373,18 @@ export function DebtsScreen() {
   const listRef = useRef<FlashListRef<DebtCardView>>(null);
   const searchRef = useRef<DebtSearchBarRef>(null);
   const filtersSheetRef = useRef<BottomSheetModal>(null);
-  const filterSheetSnapPoints = useMemo(() => ["56%"], []);
+  const filterSheetSnapPoints = useMemo(() => ["88%"], []);
+  const {
+    isHydrated: isSortHydrated,
+    reset: resetSort,
+    setValue: setSort,
+    value: sort,
+  } = useViewPreference({
+    defaultValue: DEFAULT_DEBT_SORT,
+    isValid: isDebtSortPreference,
+    surface: "debts",
+  });
+  const sortDirections = useMemo(() => debtSortDirections(sort.criterion), [sort.criterion]);
   const todayIso = useMemo(() => toISODate(new Date()), []);
   const focus = useMemo<DebtFocus | null>(() => {
     const focusType = params.focusType;
@@ -424,26 +464,48 @@ export function DebtsScreen() {
   const visibleDebts = useMemo(
     () =>
       focus?.kind === "date"
-        ? filterDebtsByDueDate(debts, focus.date)
+        ? filterDebtsByDueDate(debts, focus.date, sort)
         : focus?.kind === "paid-this-month"
-          ? filterSearchAndSortDebts(debts, "paid-this-month", deferredSearchQuery, "all")
+          ? filterSearchAndSortDebts(
+              debts,
+              "paid-this-month",
+              deferredSearchQuery,
+              "all",
+              undefined,
+              sort,
+            )
           : focus?.kind === "filter"
-            ? filterSearchAndSortDebts(debts, focus.filter, deferredSearchQuery, "all")
+            ? filterSearchAndSortDebts(
+                debts,
+                focus.filter,
+                deferredSearchQuery,
+                "all",
+                undefined,
+                sort,
+              )
             : focus?.kind === "direction"
-              ? filterSearchAndSortDebts(debts, "all", deferredSearchQuery, focus.direction)
+              ? filterSearchAndSortDebts(
+                  debts,
+                  "all",
+                  deferredSearchQuery,
+                  focus.direction,
+                  undefined,
+                  sort,
+                )
               : filterSearchAndSortDebts(
                   debts,
                   deferredFilter,
                   deferredSearchQuery,
                   deferredDirection,
                   dateRange,
+                  sort,
                 ),
-    [debts, deferredFilter, deferredSearchQuery, deferredDirection, dateRange, focus],
+    [debts, deferredFilter, deferredSearchQuery, deferredDirection, dateRange, focus, sort],
   );
 
   useEffect(() => {
     listRef.current?.scrollToTop({ animated: false });
-  }, [deferredFilter, deferredSearchQuery, deferredDirection, dateRange, focus]);
+  }, [deferredFilter, deferredSearchQuery, deferredDirection, dateRange, focus, sort]);
 
   useEffect(() => {
     if (!searchOpen) {
@@ -572,13 +634,26 @@ export function DebtsScreen() {
     [clearDashboardFocusParams],
   );
 
-  const resetFilters = useCallback(() => {
+  const selectSortCriterion = useCallback(
+    (criterion: DebtSortCriterion) => {
+      setSort({ criterion, direction: defaultDebtSortDirection(criterion) });
+    },
+    [setSort],
+  );
+
+  const selectSortDirection = useCallback(
+    (sortDirection: SortDirection) => setSort({ ...sort, direction: sortDirection }),
+    [setSort, sort],
+  );
+
+  const resetViewOptions = useCallback(() => {
     selectionChange();
     setDirection("all");
     setFilter("all");
     setDateRange({});
+    resetSort();
     router.setParams({ focusDate: "", focusType: "", direction: "", filter: "" });
-  }, []);
+  }, [resetSort]);
 
   const closeSearch = useCallback(() => {
     setSearchQuery("");
@@ -599,6 +674,10 @@ export function DebtsScreen() {
   const isSearching = searchQuery.trim().length > 0;
   const hasDateRangeFilter = Boolean(dateRange.from || dateRange.to);
   const hasActiveFilters = direction !== "all" || filter !== "all" || hasDateRangeFilter;
+  const hasCustomSort =
+    sort.criterion !== DEFAULT_DEBT_SORT.criterion ||
+    sort.direction !== DEFAULT_DEBT_SORT.direction;
+  const hasViewChanges = hasActiveFilters || hasCustomSort;
   const datePickerValue =
     datePickerTarget === "to"
       ? (dateRange.to ?? dateRange.from ?? todayIso)
@@ -660,7 +739,7 @@ export function DebtsScreen() {
     [direction, isSearching, theme.colors.mutedLight],
   );
 
-  if (isPending) {
+  if (isPending || !isSortHydrated) {
     return (
       <TabScreen>
         <LoadingSpinner />
@@ -688,16 +767,17 @@ export function DebtsScreen() {
             <>
               <Text style={styles.title}>Debts</Text>
               <View style={styles.headerActions}>
-                <IconButton onPress={toggleFilters}>
+                <IconButton
+                  accessibilityLabel={`View options${hasViewChanges ? ", custom view active" : ""}`}
+                  onPress={toggleFilters}
+                >
                   <SlidersHorizontal
-                    color={
-                      hasActiveFilters || filtersOpen ? theme.colors.primary : theme.colors.text
-                    }
+                    color={hasViewChanges || filtersOpen ? theme.colors.primary : theme.colors.text}
                     size={17}
                     strokeWidth={2}
                   />
                 </IconButton>
-                <IconButton onPress={openSearch}>
+                <IconButton accessibilityLabel="Search debts" onPress={openSearch}>
                   <Search color={theme.colors.text} size={17} strokeWidth={2} />
                 </IconButton>
               </View>
@@ -742,20 +822,27 @@ export function DebtsScreen() {
         handleIndicatorStyle={styles.sheetHandle}
         backgroundStyle={styles.sheetBackground}
       >
-        <DebtsFiltersSheetContent
-          canUseLiquidGlass={canUseLiquidGlass}
-          dateRange={dateRange}
-          direction={direction}
-          directionTabs={directionTabs}
-          filter={filter}
-          hasActiveFilters={hasActiveFilters}
-          onClearRangeDate={clearRangeDate}
-          onOpenDatePicker={openDatePicker}
-          onResetFilters={resetFilters}
-          onSelectDirection={selectDirection}
-          onSelectFilter={selectFilter}
-          tabs={tabs}
-        />
+        <BottomSheetScrollView showsVerticalScrollIndicator={false}>
+          <DebtsFiltersSheetContent
+            canUseLiquidGlass={canUseLiquidGlass}
+            dateRange={dateRange}
+            direction={direction}
+            directionTabs={directionTabs}
+            filter={filter}
+            hasViewChanges={hasViewChanges}
+            onClearRangeDate={clearRangeDate}
+            onOpenDatePicker={openDatePicker}
+            onResetView={resetViewOptions}
+            onSelectDirection={selectDirection}
+            onSelectFilter={selectFilter}
+            onSelectSortCriterion={selectSortCriterion}
+            onSelectSortDirection={selectSortDirection}
+            sortCriterion={sort.criterion}
+            sortDirection={sort.direction}
+            sortDirections={sortDirections}
+            tabs={tabs}
+          />
+        </BottomSheetScrollView>
       </BottomSheetModal>
 
       <DueDatePickerModal

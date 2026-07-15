@@ -16,9 +16,11 @@ export type PersonListItemView = {
   owedToYouOpenCount: number;
   youOweOpenCount: number;
   overdueCount: number;
+  earliestOverdueDate?: string;
   owedToYouOverdueCount: number;
   youOweOverdueCount: number;
   dueSoonCount: number;
+  earliestDueSoonDate?: string;
   owedToYouDueSoonCount: number;
   youOweDueSoonCount: number;
   status: PersonStatus;

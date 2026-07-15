@@ -4,6 +4,7 @@ import { ACTIVITY_PAGE_SIZE } from "@/features/activity/constants";
 import { activityKeys } from "@/features/debts/hooks/query-keys";
 import { buildActivityView } from "@/features/debts/lib/build-activity-view";
 import {
+  type ActivityChronologicalOrder,
   type ActivityPageCursor,
   activityRepository,
 } from "@/features/debts/repositories/activity-repository";
@@ -16,9 +17,10 @@ export type ActivityPage = {
 
 export async function loadActivityPage(
   cursor: ActivityPageCursor | undefined,
+  order: ActivityChronologicalOrder = "desc",
 ): Promise<ActivityPage> {
   const now = new Date();
-  const events = await activityRepository.listPage(ACTIVITY_PAGE_SIZE, cursor);
+  const events = await activityRepository.listPage(ACTIVITY_PAGE_SIZE, cursor, order);
   const items = events.map((event) => buildActivityView(event, now));
   const last = events.at(-1);
 
@@ -30,12 +32,13 @@ export async function loadActivityPage(
   return { items, nextCursor };
 }
 
-export function useActivities() {
+export function useActivities(order: ActivityChronologicalOrder = "desc", enabled = true) {
   return useInfiniteQuery({
-    queryKey: activityKeys.infinite(),
-    queryFn: ({ pageParam }) => loadActivityPage(pageParam),
+    queryKey: activityKeys.infinite(order),
+    queryFn: ({ pageParam }) => loadActivityPage(pageParam, order),
     initialPageParam: undefined as ActivityPageCursor | undefined,
     getNextPageParam: (lastPage) => lastPage.nextCursor,
+    enabled,
     staleTime: Number.POSITIVE_INFINITY,
   });
 }

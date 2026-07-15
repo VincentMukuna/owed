@@ -76,12 +76,16 @@ export type PersonSummary = {
   youOweOpenCount: number;
   /** Open debts whose due date is before today (timing-based, ignores partial). */
   overdueCount: number;
+  /** Earliest promised date among open overdue debts. */
+  earliestOverdueDate?: string;
   /** Open overdue debts where this person owes the user. */
   owedToYouOverdueCount: number;
   /** Open overdue debts where the user owes this person. */
   youOweOverdueCount: number;
   /** Open debts due today through `dueSoonDays` ahead, none overdue. */
   dueSoonCount: number;
+  /** Earliest promised date among open due-soon debts. */
+  earliestDueSoonDate?: string;
   /** Open due-soon debts where this person owes the user. */
   owedToYouDueSoonCount: number;
   /** Open due-soon debts where the user owes this person. */

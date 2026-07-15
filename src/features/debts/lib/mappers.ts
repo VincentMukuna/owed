@@ -33,7 +33,6 @@ export function toDebtCardView(debt: DebtSummary | DebtWithRelations, now?: Date
 
   const payments =
     "payments" in debt ? debt.payments.map((payment) => toPaymentView(payment, now)) : [];
-
   return {
     id: debt.id,
     name: debt.person.name,
@@ -47,6 +46,7 @@ export function toDebtCardView(debt: DebtSummary | DebtWithRelations, now?: Date
     dueDateISO: debt.dueDate,
     reason: debt.reason?.trim() || "",
     status,
+    createdAt: debt.createdAt,
     addedDate: formatAddedDate(debt.createdAt),
     payments,
     reminder: debt.reminderEnabled,

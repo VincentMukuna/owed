@@ -26,6 +26,8 @@ export type DebtCardView = {
   dueDateISO: string;
   reason: string;
   status: CardDebtStatus;
+  /** Raw creation timestamp for deterministic list ordering. */
+  createdAt: string;
   addedDate: string;
   payments: PaymentView[];
   reminder: boolean;

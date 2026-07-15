@@ -7,7 +7,7 @@ export const debtKeys = {
 
 export const activityKeys = {
   all: ["activities"] as const,
-  infinite: () => ["activities", "infinite"] as const,
+  infinite: (order: "asc" | "desc" = "desc") => ["activities", "infinite", order] as const,
   recent: (limit: number) => ["activities", "recent", limit] as const,
 };
 

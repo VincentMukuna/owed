@@ -4,9 +4,10 @@ import { Pressable, Text, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
+import { BottomSheetModal, BottomSheetModalProvider } from "@gorhom/bottom-sheet";
 import type { FlashListRef } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
-import { Search, Users } from "lucide-react-native";
+import { ArrowUpDown, Search, Users } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { DebtSearchBar, type DebtSearchBarRef } from "@/components/debts/debt-search-bar";
@@ -14,13 +15,25 @@ import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
 import { IconButton } from "@/components/shared/icon-button";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { SortOptionsContent } from "@/features/view-options/components/sort-options-content";
+import { ViewOptionsSheet } from "@/features/view-options/components/view-options-sheet";
+import { useViewPreference } from "@/features/view-options/hooks/use-view-preference";
+import type { SortDirection } from "@/features/view-options/types";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { selectionChange } from "@/lib/haptics";
 import { invalidatePeopleQueries } from "@/lib/query/invalidate-queries";
 
 import { PeopleList } from "../components/people-list";
 import { usePeopleList } from "../hooks/use-people-list";
-import { filterAndSortPeople } from "../lib/people-list-utils";
+import {
+  DEFAULT_PEOPLE_SORT,
+  PEOPLE_SORT_CRITERIA,
+  type PeopleSortCriterion,
+  defaultPeopleSortDirection,
+  filterAndSortPeople,
+  isPeopleSortPreference,
+  peopleSortDirections,
+} from "../lib/people-list-utils";
 
 export function PeopleScreen() {
   const { theme } = useUnistyles();
@@ -31,15 +44,30 @@ export function PeopleScreen() {
   const deferredSearchQuery = useDeferredValue(searchQuery);
   const listRef = useRef<FlashListRef<(typeof people)[number]>>(null);
   const searchRef = useRef<DebtSearchBarRef>(null);
+  const viewOptionsRef = useRef<BottomSheetModal>(null);
+  const {
+    isHydrated: isSortHydrated,
+    reset: resetSort,
+    setValue: setSort,
+    value: sort,
+  } = useViewPreference({
+    defaultValue: DEFAULT_PEOPLE_SORT,
+    isValid: isPeopleSortPreference,
+    surface: "people",
+  });
 
   const visiblePeople = useMemo(
-    () => filterAndSortPeople(people, deferredSearchQuery),
-    [people, deferredSearchQuery],
+    () => filterAndSortPeople(people, deferredSearchQuery, sort),
+    [people, deferredSearchQuery, sort],
   );
+  const sortDirections = useMemo(() => peopleSortDirections(sort.criterion), [sort.criterion]);
+  const sortIsDefault =
+    sort.criterion === DEFAULT_PEOPLE_SORT.criterion &&
+    sort.direction === DEFAULT_PEOPLE_SORT.direction;
 
   useEffect(() => {
     listRef.current?.scrollToTop({ animated: false });
-  }, [deferredSearchQuery]);
+  }, [deferredSearchQuery, sort]);
 
   useEffect(() => {
     if (!searchOpen) {
@@ -67,6 +95,23 @@ export function PeopleScreen() {
     router.push("/add-person" as Href);
   }, []);
 
+  const openViewOptions = useCallback(() => {
+    selectionChange();
+    viewOptionsRef.current?.present();
+  }, []);
+
+  const selectSortCriterion = useCallback(
+    (criterion: PeopleSortCriterion) => {
+      setSort({ criterion, direction: defaultPeopleSortDirection(criterion) });
+    },
+    [setSort],
+  );
+
+  const selectSortDirection = useCallback(
+    (direction: SortDirection) => setSort({ ...sort, direction }),
+    [setSort, sort],
+  );
+
   const handleRefresh = useCallback(() => invalidatePeopleQueries(queryClient), [queryClient]);
   const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
@@ -93,7 +138,7 @@ export function PeopleScreen() {
     [isSearching, theme.colors.mutedLight],
   );
 
-  if (isPending) {
+  if (isPending || !isSortHydrated) {
     return (
       <TabScreen>
         <LoadingSpinner />
@@ -102,41 +147,66 @@ export function PeopleScreen() {
   }
 
   return (
-    <TabScreen>
-      <View style={styles.header}>
-        {searchOpen ? (
-          <>
-            <DebtSearchBar
-              ref={searchRef}
-              onChangeText={setSearchQuery}
-              value={searchQuery}
-              variant="header"
-            />
-            <Pressable hitSlop={8} onPress={closeSearch} style={styles.cancel}>
-              <Text style={styles.cancelText}>Cancel</Text>
-            </Pressable>
-          </>
-        ) : (
-          <>
-            <Text style={styles.title}>People</Text>
-            <IconButton onPress={openSearch}>
-              <Search color={theme.colors.text} size={17} strokeWidth={2} />
-            </IconButton>
-          </>
-        )}
-      </View>
+    <BottomSheetModalProvider>
+      <TabScreen>
+        <View style={styles.header}>
+          {searchOpen ? (
+            <>
+              <DebtSearchBar
+                ref={searchRef}
+                onChangeText={setSearchQuery}
+                value={searchQuery}
+                variant="header"
+              />
+              <Pressable hitSlop={8} onPress={closeSearch} style={styles.cancel}>
+                <Text style={styles.cancelText}>Cancel</Text>
+              </Pressable>
+            </>
+          ) : (
+            <>
+              <Text style={styles.title}>People</Text>
+              <View style={styles.headerActions}>
+                <IconButton
+                  accessibilityLabel={`Sort people${sortIsDefault ? "" : ", custom order active"}`}
+                  onPress={openViewOptions}
+                >
+                  <ArrowUpDown
+                    color={sortIsDefault ? theme.colors.text : theme.colors.primary}
+                    size={17}
+                    strokeWidth={2}
+                  />
+                </IconButton>
+                <IconButton accessibilityLabel="Search people" onPress={openSearch}>
+                  <Search color={theme.colors.text} size={17} strokeWidth={2} />
+                </IconButton>
+              </View>
+            </>
+          )}
+        </View>
 
-      <PeopleList
-        ref={listRef}
-        contentContainerStyle={styles.scroll}
-        ListEmptyComponent={emptyState}
-        onPersonPress={openPerson}
-        people={visiblePeople}
-        refreshControlProps={refreshControlProps}
-      />
+        <PeopleList
+          ref={listRef}
+          contentContainerStyle={styles.scroll}
+          ListEmptyComponent={emptyState}
+          onPersonPress={openPerson}
+          people={visiblePeople}
+          refreshControlProps={refreshControlProps}
+        />
 
-      <FabButton accessibilityLabel="Add person" onPress={openAddPerson} />
-    </TabScreen>
+        <FabButton accessibilityLabel="Add person" onPress={openAddPerson} />
+      </TabScreen>
+
+      <ViewOptionsSheet isDefault={sortIsDefault} onReset={resetSort} sheetRef={viewOptionsRef}>
+        <SortOptionsContent
+          criteria={PEOPLE_SORT_CRITERIA}
+          criterion={sort.criterion}
+          direction={sort.direction}
+          directions={sortDirections}
+          onSelectCriterion={selectSortCriterion}
+          onSelectDirection={selectSortDirection}
+        />
+      </ViewOptionsSheet>
+    </BottomSheetModalProvider>
   );
 }
 
@@ -154,6 +224,11 @@ const styles = StyleSheet.create((theme) => ({
     fontSize: 28,
     fontWeight: "700",
     color: theme.colors.text,
+  },
+  headerActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 8,
   },
   cancel: {
     flexShrink: 0,

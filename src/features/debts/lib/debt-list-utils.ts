@@ -1,5 +1,9 @@
 import type { CardDebtStatus, DebtCardView } from "@/features/debts/view-models";
+import type { SortChoice, SortDirection, SortPreference } from "@/features/view-options/types";
 import type { DebtDirection } from "@/types";
+
+import { normalizePersonName } from "./person-name";
+import { statusDateParams } from "./status-engine";
 
 const ACTIVE_STATUSES = new Set<CardDebtStatus>(["active", "due-soon", "partial"]);
 
@@ -41,6 +45,80 @@ export type DebtDateRangeFilter = {
   from?: string;
   to?: string;
 };
+
+export type DebtSortCriterion = "amount" | "attention" | "created" | "due-date" | "person";
+export type DebtSortPreference = SortPreference<DebtSortCriterion>;
+
+export const DEFAULT_DEBT_SORT: DebtSortPreference = {
+  criterion: "attention",
+  direction: "fixed",
+};
+
+export const DEBT_SORT_CRITERIA: SortChoice<DebtSortCriterion>[] = [
+  { label: "Needs attention", value: "attention" },
+  { label: "Promised date", value: "due-date" },
+  { label: "Amount remaining", value: "amount" },
+  { label: "Recently added", value: "created" },
+  { label: "Person", value: "person" },
+];
+
+function isSortDirection(value: unknown): value is SortDirection {
+  return value === "asc" || value === "desc" || value === "fixed";
+}
+
+export function isDebtSortPreference(value: unknown): value is DebtSortPreference {
+  if (typeof value !== "object" || value === null) return false;
+
+  const candidate = value as Partial<DebtSortPreference>;
+  const validCriterion = DEBT_SORT_CRITERIA.some((option) => option.value === candidate.criterion);
+  if (!validCriterion || !isSortDirection(candidate.direction)) return false;
+  return candidate.criterion === "attention"
+    ? candidate.direction === "fixed"
+    : candidate.direction !== "fixed";
+}
+
+export function defaultDebtSortDirection(criterion: DebtSortCriterion): SortDirection {
+  if (criterion === "attention") return "fixed";
+  if (criterion === "person" || criterion === "due-date") return "asc";
+  return "desc";
+}
+
+export function debtSortDirections(criterion: DebtSortCriterion): SortChoice<SortDirection>[] {
+  if (criterion === "attention") return [];
+  if (criterion === "person") {
+    return [
+      { label: "A-Z", value: "asc" },
+      { label: "Z-A", value: "desc" },
+    ];
+  }
+  if (criterion === "due-date") {
+    return [
+      { label: "Earliest first", value: "asc" },
+      { label: "Latest first", value: "desc" },
+    ];
+  }
+  if (criterion === "created") {
+    return [
+      { label: "Newest first", value: "desc" },
+      { label: "Oldest first", value: "asc" },
+    ];
+  }
+  return [
+    { label: "Most first", value: "desc" },
+    { label: "Least first", value: "asc" },
+  ];
+}
+
+export function debtSortLabel(preference: DebtSortPreference): string {
+  const criterion = DEBT_SORT_CRITERIA.find(
+    (option) => option.value === preference.criterion,
+  )?.label;
+  if (preference.direction === "fixed") return criterion ?? "Needs attention";
+  const direction = debtSortDirections(preference.criterion).find(
+    (option) => option.value === preference.direction,
+  )?.label;
+  return direction ? `${criterion} · ${direction}` : (criterion ?? "Needs attention");
+}
 
 function monthBounds(now: Date = new Date()): { start: string; end: string } {
   return {
@@ -214,6 +292,7 @@ export function filterSearchAndSortDebts(
   searchQuery: string,
   direction: DebtDirectionFilter = "all",
   dateRange?: DebtDateRangeFilter,
+  sortPreference: DebtSortPreference = DEFAULT_DEBT_SORT,
 ): DebtCardView[] {
   const normalizedQuery = searchQuery.trim().toLowerCase();
   const result: DebtCardView[] = [];
@@ -238,7 +317,77 @@ export function filterSearchAndSortDebts(
     result.push(debt);
   }
 
-  return filter === "all" ? sortDebtsByDueDate(result) : sortDebts(result);
+  return sortDebtsByPreference(result, sortPreference);
+}
+
+function compareDebtName(a: DebtCardView, b: DebtCardView): number {
+  return normalizePersonName(a.name).localeCompare(normalizePersonName(b.name));
+}
+
+function compareStable(a: DebtCardView, b: DebtCardView): number {
+  return compareDebtName(a, b) || a.id.localeCompare(b.id);
+}
+
+function compareSettledRecent(a: DebtCardView, b: DebtCardView): number {
+  const aSettled = a.lastPaymentAt ?? a.createdAt;
+  const bSettled = b.lastPaymentAt ?? b.createdAt;
+  return bSettled.localeCompare(aSettled) || compareStable(a, b);
+}
+
+function attentionBucket(debt: DebtCardView, today: string, dueSoonEnd: string): number {
+  if (debt.remaining <= 0 || debt.status === "paid") return 4;
+  if (!debt.dueDateISO) return 3;
+  if (debt.dueDateISO < today) return 0;
+  if (debt.dueDateISO <= dueSoonEnd) return 1;
+  return 2;
+}
+
+export function sortDebtsByPreference(
+  debts: DebtCardView[],
+  preference: DebtSortPreference = DEFAULT_DEBT_SORT,
+  now: Date = new Date(),
+): DebtCardView[] {
+  const [today, , dueSoonEnd] = statusDateParams(now);
+
+  return [...debts].sort((a, b) => {
+    if (preference.criterion === "attention") {
+      const aBucket = attentionBucket(a, today, dueSoonEnd);
+      const bBucket = attentionBucket(b, today, dueSoonEnd);
+      if (aBucket !== bBucket) return aBucket - bBucket;
+      if (aBucket === 4) return compareSettledRecent(a, b);
+      if (aBucket === 3) return b.createdAt.localeCompare(a.createdAt) || compareStable(a, b);
+      return a.dueDateISO.localeCompare(b.dueDateISO) || compareStable(a, b);
+    }
+
+    if (preference.criterion === "due-date") {
+      const aUndated = !a.dueDateISO;
+      const bUndated = !b.dueDateISO;
+      if (aUndated !== bUndated) return aUndated ? 1 : -1;
+      const date = a.dueDateISO.localeCompare(b.dueDateISO);
+      return (preference.direction === "desc" ? -date : date) || compareStable(a, b);
+    }
+
+    if (preference.criterion === "amount") {
+      const aIsZero = a.remaining <= 0;
+      const bIsZero = b.remaining <= 0;
+      if (aIsZero !== bIsZero) return aIsZero ? 1 : -1;
+      if (a.remaining !== b.remaining) {
+        return preference.direction === "asc"
+          ? a.remaining - b.remaining
+          : b.remaining - a.remaining;
+      }
+      if (aIsZero && bIsZero) return compareSettledRecent(a, b);
+      return compareStable(a, b);
+    }
+
+    if (preference.criterion === "created") {
+      const created = a.createdAt.localeCompare(b.createdAt);
+      return (preference.direction === "desc" ? -created : created) || compareStable(a, b);
+    }
+
+    const name = compareDebtName(a, b);
+    return (preference.direction === "desc" ? -name : name) || a.id.localeCompare(b.id);
+  });
 }
 
 export function sortDebts(debts: DebtCardView[]): DebtCardView[] {
@@ -261,7 +410,11 @@ export function sortDebtsByDueDate(debts: DebtCardView[]): DebtCardView[] {
  * Debts promised on a specific due date that are still unpaid — used by the
  * transient focused view opened from a collapsed reminder notification.
  */
-export function filterDebtsByDueDate(debts: DebtCardView[], dueDateISO: string): DebtCardView[] {
+export function filterDebtsByDueDate(
+  debts: DebtCardView[],
+  dueDateISO: string,
+  sortPreference: DebtSortPreference = DEFAULT_DEBT_SORT,
+): DebtCardView[] {
   const result: DebtCardView[] = [];
 
   for (const debt of debts) {
@@ -270,7 +423,7 @@ export function filterDebtsByDueDate(debts: DebtCardView[], dueDateISO: string):
     }
   }
 
-  return sortDebts(result);
+  return sortDebtsByPreference(result, sortPreference);
 }
 
 export function bucketHomeDebts(debts: DebtCardView[]): HomeDebtBuckets {

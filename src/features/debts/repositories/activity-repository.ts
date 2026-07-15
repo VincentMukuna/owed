@@ -1,5 +1,10 @@
 import { type SQLiteDatabase } from "expo-sqlite";
 
+import {
+  type ActivityChronologicalOrder,
+  type ActivityPageCursor,
+  buildActivityPaginationClause,
+} from "@/features/activity/lib/activity-pagination";
 import { getDb } from "@/lib/db/client";
 import { rowToDebtDirection } from "@/lib/db/mappers";
 import type { ActivityEventsRow } from "@/lib/db/row-types";
@@ -44,10 +49,7 @@ export type ActivityEventWithRelations = ActivityEvent & {
   paymentNote?: string;
 };
 
-export type ActivityPageCursor = {
-  occurredAt: string;
-  id: string;
-};
+export type { ActivityChronologicalOrder, ActivityPageCursor };
 
 function rowToActivityEventWithRelations(row: ActivityEventListRow): ActivityEventWithRelations {
   return {
@@ -117,22 +119,17 @@ export const activityRepository = {
   async listPage(
     limit: number,
     cursor?: ActivityPageCursor,
+    order: ActivityChronologicalOrder = "desc",
   ): Promise<ActivityEventWithRelations[]> {
     const db = await getDb();
-    const params: unknown[] = [];
-    let whereClause = "";
-
-    if (cursor) {
-      whereClause = "WHERE ae.occurred_at < ? OR (ae.occurred_at = ? AND ae.id < ?)";
-      params.push(cursor.occurredAt, cursor.occurredAt, cursor.id);
-    }
+    const pagination = buildActivityPaginationClause(order, cursor);
 
     const rows = await db.getAllAsync<ActivityEventListRow>(
       `${ACTIVITY_SELECT}
-       ${whereClause}
-       ORDER BY ae.occurred_at DESC, ae.id DESC
+       ${pagination.whereSql}
+       ORDER BY ae.occurred_at ${pagination.orderSql}, ae.id ${pagination.orderSql}
        LIMIT ?`,
-      [...params, limit],
+      [...pagination.params, limit],
     );
 
     return rows.map(rowToActivityEventWithRelations);
