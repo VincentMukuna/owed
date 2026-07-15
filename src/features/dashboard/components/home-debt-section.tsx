@@ -13,6 +13,7 @@ import type { DebtFilterKey } from "@/features/debts/lib/debt-list-utils";
 import type { DebtCardView } from "@/features/debts/view-models";
 
 export const HOME_SECTION_DEBT_LIMIT = 5;
+const LEDGER_HORIZONTAL_PADDING = 16;
 
 type HomeDebtSectionProps = {
   debts: DebtCardView[];
@@ -44,22 +45,23 @@ export function HomeDebtSection({
           {title}
         </Text>
       </PressableScale>
-      <View style={styles.cards}>
+      <View style={styles.ledger}>
         {preview.map((debt, index) => {
           const needsBreathingRoom = debt.status === "due-soon" || debt.status === "overdue";
 
           return (
             <ListRowContainer
               key={debt.id}
-              leadingInset={LIST_LEADING_INSET_AVATAR_MD}
+              leadingInset={LIST_LEADING_INSET_AVATAR_MD + LEDGER_HORIZONTAL_PADDING}
               showDivider={index > 0}
+              trailingInset={LEDGER_HORIZONTAL_PADDING}
             >
               <DebtCard
                 debt={debt}
                 onAction={onDebtAction}
                 onPress={() => onDebtPress(debt.id)}
                 showDirectionCue={showDirectionCue}
-                style={needsBreathingRoom ? styles.statusDebtCard : null}
+                style={[styles.ledgerRow, needsBreathingRoom ? styles.statusDebtCard : null]}
               />
             </ListRowContainer>
           );
@@ -81,8 +83,16 @@ const styles = StyleSheet.create((theme) => ({
     letterSpacing: 1.6,
     marginTop: 4,
   },
-  cards: {
-    gap: 0,
+  ledger: {
+    backgroundColor: theme.colors.card,
+    borderRadius: 16,
+    borderCurve: "continuous",
+    borderWidth: 1,
+    borderColor: theme.name === "light" ? theme.colors.borderStrong : theme.colors.border,
+    overflow: "hidden",
+  },
+  ledgerRow: {
+    paddingHorizontal: LEDGER_HORIZONTAL_PADDING,
   },
   statusDebtCard: {
     paddingVertical: 12,
