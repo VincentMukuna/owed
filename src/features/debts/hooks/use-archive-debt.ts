@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { debtRepository } from "@/features/debts/repositories/debt-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
+import { errorNotification, lightImpact } from "@/lib/haptics";
 import { afterDebtDomainChange } from "@/lib/mutations/after-debt-domain-change";
 
 type ArchiveDebtVariables = {
@@ -16,10 +17,12 @@ export function useArchiveDebt() {
     mutationFn: ({ debtId }: ArchiveDebtVariables) => debtRepository.archive(debtId),
     onSuccess: async (_result, variables) => {
       await afterDebtDomainChange(queryClient, { debtId: variables.debtId });
-      showToast("Debt archived.");
+      lightImpact();
+      showToast("Debt archived.", "success");
     },
     onError: () => {
-      showToast("Could not archive debt. Try again.");
+      errorNotification();
+      showToast("Could not archive debt. Try again.", "error");
     },
   });
 }

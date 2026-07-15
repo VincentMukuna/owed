@@ -2,6 +2,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { personRepository } from "@/features/debts/repositories/person-repository";
 import { useUiStore } from "@/features/debts/store/ui-store";
+import { errorNotification, mediumImpact } from "@/lib/haptics";
 import { afterPersonListChange } from "@/lib/mutations/after-person-list-change";
 import type { Person } from "@/types";
 
@@ -23,13 +24,15 @@ export function useAddPerson() {
       }),
     onSuccess: async () => {
       await afterPersonListChange(queryClient);
-      showToast("Person added.");
+      mediumImpact();
+      showToast("Person added.", "success");
     },
     onError: (error) => {
       if (__DEV__) {
         console.error("[useAddPerson] failed to add person", error);
       }
-      showToast("Could not add person. Try again.");
+      errorNotification();
+      showToast("Could not add person. Try again.", "error");
     },
   });
 }

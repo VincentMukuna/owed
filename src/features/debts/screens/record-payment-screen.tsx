@@ -1,12 +1,20 @@
 import { useCallback, useLayoutEffect, useState } from "react";
 
-import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, View } from "react-native";
 
 import { Stack, router, useLocalSearchParams, useNavigation } from "expo-router";
 
+import Animated, {
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { HeaderSaveButton } from "@/components/navigation/header-save-button";
+import { PressableScale } from "@/components/shared/pressable-scale";
 import {
   KEYBOARD_DONE_ACCESSORY_ID,
   KeyboardDoneAccessory,
@@ -26,8 +34,26 @@ export function RecordPaymentScreen() {
   const [payAmount, setPayAmount] = useState("");
   const [payNote, setPayNote] = useState("");
 
+  const reduceMotion = useReducedMotion();
+  const amountPulse = useSharedValue(1);
+  const amountPulseStyle = useAnimatedStyle(() => ({
+    transform: [{ scale: amountPulse.value }],
+  }));
+
   const parsedAmount = parseInt(payAmount, 10);
   const canSave = Boolean(debt) && parsedAmount > 0 && parsedAmount <= (debt?.remaining ?? 0);
+
+  const fillFullRemaining = useCallback(() => {
+    if (!debt) return;
+    setPayAmount(String(debt.remaining));
+    if (!reduceMotion) {
+      // eslint-disable-next-line react-hooks/immutability -- Reanimated shared value mutated by design
+      amountPulse.value = withSequence(
+        withTiming(1.06, { duration: 120 }),
+        withTiming(1, { duration: 160 }),
+      );
+    }
+  }, [amountPulse, debt, reduceMotion]);
 
   const handleSave = useCallback(() => {
     if (!debt || !canSave || !debtId) return;
@@ -91,7 +117,7 @@ export function RecordPaymentScreen() {
         <View style={styles.field}>
           <Text style={styles.label}>Amount paid</Text>
           <View style={styles.inputCard}>
-            <View>
+            <Animated.View style={amountPulseStyle}>
               <Text style={styles.prefix}>{formatCurrencyPrefix(debt.currency)}</Text>
               <TextInput
                 autoFocus
@@ -104,16 +130,13 @@ export function RecordPaymentScreen() {
                 style={[styles.input, styles.amountInput]}
                 value={payAmount}
               />
-            </View>
+            </Animated.View>
           </View>
-          <Pressable
-            onPress={() => setPayAmount(String(debt.remaining))}
-            style={styles.fullAmountButton}
-          >
+          <PressableScale onPress={fillFullRemaining} style={styles.fullAmountButton}>
             <Text style={styles.fullAmountLink}>
               Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
             </Text>
-          </Pressable>
+          </PressableScale>
           {parsedAmount > debt.remaining ? (
             <Text style={styles.errorText}>
               Amount cannot exceed {formatCurrency(debt.remaining, debt.currency)} remaining
