@@ -1,14 +1,16 @@
+import Link from "next/link";
+
 import { FiMoon, FiSun } from "react-icons/fi";
 import { SiApple } from "react-icons/si";
 
 export function Brand() {
   return (
-    <a className="brand" href="/" aria-label="Owwed home">
+    <Link className="brand" href="/" aria-label="Owwed home">
       <span className="brand-mark" aria-hidden="true">
         O
       </span>
       <span>Owwed</span>
-    </a>
+    </Link>
   );
 }
 
@@ -22,13 +24,13 @@ export function StoreButtons({ compact = false }: { compact?: boolean }) {
           <strong>App Store</strong>
         </span>
       </a>
-      <a className="store-button secondary" href="/android">
+      <Link className="store-button secondary" href="/android">
         <span className="google-play-icon" aria-hidden="true" />
         <span className="store-copy">
           <span className="store-kicker">Join the waitlist</span>
           <strong>Google Play</strong>
         </span>
-      </a>
+      </Link>
     </div>
   );
 }
@@ -57,12 +59,12 @@ export function Header() {
         <Brand />
         <div className="nav-actions">
           <nav className="desktop-nav" aria-label="Main navigation">
-            <a href="/#features">Features</a>
-            <a href="/#privacy">Privacy</a>
-            <a href="/help">Help</a>
-            <a className="nav-cta" href="/#download">
+            <Link href="/#features">Features</Link>
+            <Link href="/#privacy">Privacy</Link>
+            <Link href="/help">Help</Link>
+            <Link className="nav-cta" href="/#download">
               Download
-            </a>
+            </Link>
           </nav>
           <ThemeToggle />
           <details className="mobile-menu">
@@ -71,10 +73,10 @@ export function Header() {
               <span></span>
             </summary>
             <nav aria-label="Mobile navigation">
-              <a href="/#features">Features</a>
-              <a href="/#privacy">Privacy</a>
-              <a href="/help">Help</a>
-              <a href="/#download">Download</a>
+              <Link href="/#features">Features</Link>
+              <Link href="/#privacy">Privacy</Link>
+              <Link href="/help">Help</Link>
+              <Link href="/#download">Download</Link>
             </nav>
           </details>
         </div>
@@ -95,16 +97,16 @@ export function Footer() {
         <div className="footer-links">
           <div>
             <strong>Product</strong>
-            <a href="/#features">Features</a>
-            <a href="/#privacy">Privacy</a>
-            <a href="/#download">Download</a>
+            <Link href="/#features">Features</Link>
+            <Link href="/#privacy">Privacy</Link>
+            <Link href="/#download">Download</Link>
           </div>
           <div>
             <strong>Resources</strong>
-            <a href="/help">Help center</a>
-            <a href="/feedback">Send feedback</a>
-            <a href="/privacy">Privacy policy</a>
-            <a href="/terms">Terms of service</a>
+            <Link href="/help">Help center</Link>
+            <Link href="/feedback">Send feedback</Link>
+            <Link href="/privacy">Privacy policy</Link>
+            <Link href="/terms">Terms of service</Link>
             <a href="https://github.com/VincentMukuna/owed">GitHub</a>
           </div>
         </div>
