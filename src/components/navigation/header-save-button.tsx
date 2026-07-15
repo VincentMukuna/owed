@@ -18,6 +18,8 @@ export function HeaderSaveButton({
   return (
     <Pressable
       accessibilityRole="button"
+      accessibilityLabel={label}
+      accessibilityState={{ disabled }}
       disabled={disabled}
       hitSlop={8}
       onPress={() => {
