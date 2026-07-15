@@ -32,6 +32,7 @@ export type DebtDirectionCounts = {
 
 export type HomeUpcomingSummary = {
   count: number;
+  debts: DebtCardView[];
   fromDate: string;
   throughDate: string;
   owedToYou: number;
@@ -502,6 +503,7 @@ function compareHomePeople(a: HomePersonAccumulator, b: HomePersonAccumulator): 
  */
 export function buildHomeBriefing(debts: DebtCardView[], now: Date = new Date()): HomeBriefing {
   const attentionCandidates: DebtCardView[] = [];
+  const upcomingCandidates: DebtCardView[] = [];
   const peopleById = new Map<string, HomePersonAccumulator>();
   const [today, , dueSoonEnd] = statusDateParams(now);
   const upcomingEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
@@ -544,6 +546,7 @@ export function buildHomeBriefing(debts: DebtCardView[], now: Date = new Date())
     }
 
     if (debt.dueDateISO >= today && debt.dueDateISO <= throughDate) {
+      upcomingCandidates.push(debt);
       upcomingCount += 1;
       if (debt.direction === "they_owe_me") {
         upcomingOwedToYou += debt.remaining;
@@ -614,6 +617,7 @@ export function buildHomeBriefing(debts: DebtCardView[], now: Date = new Date())
       .slice(0, HOME_ATTENTION_DEBT_LIMIT),
     upcoming: {
       count: upcomingCount,
+      debts: sortDebtsByDueDate(upcomingCandidates),
       fromDate: today,
       throughDate,
       owedToYou: upcomingOwedToYou,

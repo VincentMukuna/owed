@@ -32,7 +32,10 @@ import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { invalidateHomeQueries } from "@/lib/query/invalidate-queries";
 import { formatCurrency } from "@/lib/utils/formatters";
 
-type HomeModuleKey = "attention" | "upcoming" | "people" | "activity";
+type HomeModuleKey = "attention" | "people" | "activity";
+
+// The stat queries and navigation stay warm while the upcoming-first layout is evaluated.
+const SHOW_HOME_STATS = false;
 
 export function HomeScreen() {
   const { theme } = useUnistyles();
@@ -49,7 +52,6 @@ export function HomeScreen() {
   const modules = useMemo(() => {
     const visible: HomeModuleKey[] = [];
     if (briefing.attentionDebts.length > 0) visible.push("attention");
-    if (briefing.upcoming.count > 0) visible.push("upcoming");
     if (briefing.peopleInsights.length > 0) visible.push("people");
     if (recentActivity.length > 0) visible.push("activity");
     return visible;
@@ -168,10 +170,6 @@ export function HomeScreen() {
         );
       }
 
-      if (item === "upcoming") {
-        return <HomeUpcomingSection onPress={openUpcoming} summary={briefing.upcoming} />;
-      }
-
       if (item === "people") {
         return (
           <HomePeopleSection
@@ -187,14 +185,12 @@ export function HomeScreen() {
     [
       briefing.attentionDebts,
       briefing.peopleInsights,
-      briefing.upcoming,
       handleDebtAction,
       openActivity,
       openAttention,
       openDebt,
       openPeople,
       openPerson,
-      openUpcoming,
       recentActivity,
     ],
   );
@@ -234,43 +230,63 @@ export function HomeScreen() {
           </Text>
         </View>
 
-        <View style={styles.statsGrid}>
-          <View style={styles.statCell}>
-            <SummaryStatCard
-              label="Active promises"
-              onPress={() => openDebtsFilter("active")}
-              value={String(briefing.activeCount)}
-              color={theme.colors.status.active.dot}
-            />
+        {briefing.upcoming.count > 0 ? (
+          <HomeUpcomingSection
+            onDebtAction={handleDebtAction}
+            onDebtPress={openDebt}
+            onSeeAll={openUpcoming}
+            summary={briefing.upcoming}
+          />
+        ) : null}
+
+        {SHOW_HOME_STATS ? (
+          <View style={styles.statsGrid}>
+            <View style={styles.statCell}>
+              <SummaryStatCard
+                label="Active promises"
+                onPress={() => openDebtsFilter("active")}
+                value={String(briefing.activeCount)}
+                color={theme.colors.status.active.dot}
+              />
+            </View>
+            <View style={styles.statCell}>
+              <SummaryStatCard
+                label="Overdue"
+                onPress={() => openDebtsFilter("overdue")}
+                value={String(briefing.overdueCount)}
+                color={theme.colors.danger}
+              />
+            </View>
+            <View style={styles.statCell}>
+              <SummaryStatCard
+                label="Due soon"
+                onPress={() => openDebtsFilter("due-soon")}
+                value={String(briefing.dueSoonCount)}
+                color={theme.colors.warning}
+              />
+            </View>
+            <View style={styles.statCell}>
+              <SummaryStatCard
+                label="Settled this month"
+                onPress={() => openDebtsFilter("paid-this-month")}
+                value={formatCurrency(paidThisMonth)}
+                color={theme.colors.success}
+              />
+            </View>
           </View>
-          <View style={styles.statCell}>
-            <SummaryStatCard
-              label="Overdue"
-              onPress={() => openDebtsFilter("overdue")}
-              value={String(briefing.overdueCount)}
-              color={theme.colors.danger}
-            />
-          </View>
-          <View style={styles.statCell}>
-            <SummaryStatCard
-              label="Due soon"
-              onPress={() => openDebtsFilter("due-soon")}
-              value={String(briefing.dueSoonCount)}
-              color={theme.colors.warning}
-            />
-          </View>
-          <View style={styles.statCell}>
-            <SummaryStatCard
-              label="Settled this month"
-              onPress={() => openDebtsFilter("paid-this-month")}
-              value={formatCurrency(paidThisMonth)}
-              color={theme.colors.success}
-            />
-          </View>
-        </View>
+        ) : null}
       </View>
     ),
-    [briefing, openDebtsDirection, openDebtsFilter, paidThisMonth, theme],
+    [
+      briefing,
+      handleDebtAction,
+      openDebt,
+      openDebtsDirection,
+      openDebtsFilter,
+      openUpcoming,
+      paidThisMonth,
+      theme,
+    ],
   );
 
   if (isPending) {

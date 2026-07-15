@@ -108,6 +108,7 @@ describe("Home briefing", () => {
       owedToYou: 80,
       youOwe: 60,
     });
+    expect(result.upcoming.debts.map(({ id }) => id)).toEqual(["due-tomorrow", "due-next-week"]);
     expect(result.activeCount).toBe(4);
   });
 
