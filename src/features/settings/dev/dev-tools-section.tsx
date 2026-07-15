@@ -13,7 +13,15 @@ import { useResetDatabase } from "../hooks/use-reset-database";
 import { useResetOnboardingState } from "../hooks/use-reset-onboarding-state";
 import { useSeedDebts } from "../hooks/use-seed-debts";
 import { useSeedReminderTest } from "../hooks/use-seed-reminder-test";
-import { SEED_DEBT_COUNT, SEED_PAYMENT_ACTIVITY_COUNT, SEED_PEOPLE_COUNT } from "./seed-debts";
+import { useSettingsStore } from "../hooks/use-settings-store";
+import {
+  REALISTIC_SEED_DEBT_COUNT,
+  REALISTIC_SEED_PAYMENT_COUNT,
+  REALISTIC_SEED_PEOPLE_COUNT,
+  SEED_DEBT_COUNT,
+  SEED_PAYMENT_ACTIVITY_COUNT,
+  SEED_PEOPLE_COUNT,
+} from "./seed-debts";
 import { SEED_REMINDER_TEST_COUNT } from "./seed-reminder-test";
 
 type DevToolRowProps = {
@@ -60,7 +68,9 @@ function DevToolRow({
 
 export function DevToolsSection() {
   const router = useRouter();
+  const currency = useSettingsStore((state) => state.defaultCurrency);
   const seedDebts = useSeedDebts();
+  const seedRealisticUsage = useSeedDebts("realistic");
   const seedReminderTest = useSeedReminderTest();
   const resetDatabase = useResetDatabase();
   const resetOnboarding = useResetOnboardingState();
@@ -109,41 +119,50 @@ export function DevToolsSection() {
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Developer</Text>
       <View style={styles.card}>
-          <DevToolRow
-            description={`${SEED_PEOPLE_COUNT} people, ${SEED_DEBT_COUNT} debts, ${SEED_PAYMENT_ACTIVITY_COUNT} payments over ~18 months.`}
-            disabled={seedDebts.isPending}
-            icon="🧾"
-            onPress={() => seedDebts.mutate()}
-            title="Seed sample data"
-            value={seedDebts.isPending ? "Seeding" : "Run"}
-          />
-          <DevToolRow
-            bordered
-            description={`${SEED_REMINDER_TEST_COUNT} due today and ${SEED_REMINDER_TEST_COUNT} overdue debts for grouped notification QA.`}
-            disabled={seedReminderTest.isPending}
-            icon="🔔"
-            onPress={() => seedReminderTest.mutate()}
-            title="Seed reminder test"
-            value={seedReminderTest.isPending ? "Seeding" : "Run"}
-          />
-          <DevToolRow
-            bordered
-            description="Mark onboarding incomplete and reopen the onboarding flow."
-            disabled={resetOnboarding.isPending}
-            icon="👋"
-            onPress={confirmOnboardingReset}
-            title="Reset onboarding"
-            value={resetOnboarding.isPending ? "Resetting" : "Reset"}
-          />
-          <DevToolRow
-            bordered
-            description="Delete debts, people, payments, activity, and pending notifications."
-            disabled={resetDatabase.isPending}
-            icon="🧹"
-            onPress={confirmReset}
-            title="Clear all records"
-            value={resetDatabase.isPending ? "Clearing" : "Clear"}
-          />
+        <DevToolRow
+          description={`${SEED_PEOPLE_COUNT} people, ${SEED_DEBT_COUNT} debts, ${SEED_PAYMENT_ACTIVITY_COUNT} payments over ~18 months.`}
+          disabled={seedDebts.isPending || seedRealisticUsage.isPending}
+          icon="🧾"
+          onPress={() => seedDebts.mutate()}
+          title="Seed stress data"
+          value={seedDebts.isPending ? "Seeding" : "Run"}
+        />
+        <DevToolRow
+          bordered
+          description={`${REALISTIC_SEED_PEOPLE_COUNT} people, ${REALISTIC_SEED_DEBT_COUNT} common IOUs, and ${REALISTIC_SEED_PAYMENT_COUNT} repayments in ${currency} over ~12 months.`}
+          disabled={seedRealisticUsage.isPending || seedDebts.isPending}
+          icon="🤝"
+          onPress={() => seedRealisticUsage.mutate()}
+          title="Simulate realistic usage"
+          value={seedRealisticUsage.isPending ? "Seeding" : "Run"}
+        />
+        <DevToolRow
+          bordered
+          description={`${SEED_REMINDER_TEST_COUNT} due today and ${SEED_REMINDER_TEST_COUNT} overdue debts for grouped notification QA.`}
+          disabled={seedReminderTest.isPending}
+          icon="🔔"
+          onPress={() => seedReminderTest.mutate()}
+          title="Seed reminder test"
+          value={seedReminderTest.isPending ? "Seeding" : "Run"}
+        />
+        <DevToolRow
+          bordered
+          description="Mark onboarding incomplete and reopen the onboarding flow."
+          disabled={resetOnboarding.isPending}
+          icon="👋"
+          onPress={confirmOnboardingReset}
+          title="Reset onboarding"
+          value={resetOnboarding.isPending ? "Resetting" : "Reset"}
+        />
+        <DevToolRow
+          bordered
+          description="Delete debts, people, payments, activity, and pending notifications."
+          disabled={resetDatabase.isPending}
+          icon="🧹"
+          onPress={confirmReset}
+          title="Clear all records"
+          value={resetDatabase.isPending ? "Clearing" : "Clear"}
+        />
       </View>
     </View>
   );

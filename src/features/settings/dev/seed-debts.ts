@@ -9,8 +9,12 @@ import type { DebtDirection } from "@/types";
 export const SEED_PEOPLE_COUNT = 100;
 export const SEED_DEBT_COUNT = 500;
 export const SEED_PAYMENT_ACTIVITY_COUNT = 300;
+export const REALISTIC_SEED_PEOPLE_COUNT = 8;
+export const REALISTIC_SEED_DEBT_COUNT = 24;
+export const REALISTIC_SEED_PAYMENT_COUNT = 16;
 
 const USAGE_WINDOW_MONTHS = 18;
+const REALISTIC_USAGE_WINDOW_MONTHS = 12;
 
 /** Round amounts typical of informal IOUs — biased toward smaller values. */
 const SEED_DEBT_AMOUNTS = [
@@ -18,28 +22,74 @@ const SEED_DEBT_AMOUNTS = [
   140, 150, 160, 175, 180, 200, 220, 240, 250, 275, 300, 325, 350, 400, 450, 500,
 ] as const;
 
-function randomSeedDebtAmount(): number {
+/** USD-scale values; records use the app's currently selected currency code. */
+const REALISTIC_DEBT_AMOUNTS = [5, 10, 15, 20, 25, 30, 35, 40, 50, 60, 75, 100, 120, 150] as const;
+
+type SeedProfile = {
+  peopleCount: number;
+  debtCount: number;
+  paymentCount: number;
+  usageWindowMonths: number;
+  debtAmounts: readonly number[];
+  currency: string;
+};
+
+const STRESS_SEED_PROFILE: SeedProfile = {
+  peopleCount: SEED_PEOPLE_COUNT,
+  debtCount: SEED_DEBT_COUNT,
+  paymentCount: SEED_PAYMENT_ACTIVITY_COUNT,
+  usageWindowMonths: USAGE_WINDOW_MONTHS,
+  debtAmounts: SEED_DEBT_AMOUNTS,
+  currency: APP_CONFIG.defaultCurrency,
+};
+
+function realisticSeedProfile(currency: string): SeedProfile {
+  return {
+    peopleCount: REALISTIC_SEED_PEOPLE_COUNT,
+    debtCount: REALISTIC_SEED_DEBT_COUNT,
+    paymentCount: REALISTIC_SEED_PAYMENT_COUNT,
+    usageWindowMonths: REALISTIC_USAGE_WINDOW_MONTHS,
+    debtAmounts: REALISTIC_DEBT_AMOUNTS,
+    currency: currency.toUpperCase(),
+  };
+}
+
+function randomSeedDebtAmount(amounts: readonly number[]): number {
+  const smallEnd = Math.ceil(amounts.length * 0.5);
+  const mediumEnd = Math.ceil(amounts.length * 0.75);
+  const largeEnd = Math.ceil(amounts.length * 0.9);
+
   return faker.helpers.weightedArrayElement([
-    { weight: 40, value: faker.helpers.arrayElement(SEED_DEBT_AMOUNTS.slice(0, 18)) },
-    { weight: 35, value: faker.helpers.arrayElement(SEED_DEBT_AMOUNTS.slice(18, 28)) },
-    { weight: 20, value: faker.helpers.arrayElement(SEED_DEBT_AMOUNTS.slice(28, 35)) },
-    { weight: 5, value: faker.helpers.arrayElement(SEED_DEBT_AMOUNTS.slice(35)) },
+    { weight: 40, value: faker.helpers.arrayElement(amounts.slice(0, smallEnd)) },
+    { weight: 35, value: faker.helpers.arrayElement(amounts.slice(smallEnd, mediumEnd)) },
+    { weight: 20, value: faker.helpers.arrayElement(amounts.slice(mediumEnd, largeEnd)) },
+    { weight: 5, value: faker.helpers.arrayElement(amounts.slice(largeEnd)) },
   ]);
 }
 
-function randomSeedPaymentAmount(remaining: number, isFullPayment: boolean): number {
-  if (isFullPayment || remaining <= 5) {
+function randomSeedPaymentAmount(
+  remaining: number,
+  isFullPayment: boolean,
+  amounts: readonly number[],
+): number {
+  const minimumPayment = amounts[0];
+
+  if (isFullPayment || remaining <= minimumPayment) {
     return remaining;
   }
 
-  const maxPartial = Math.max(5, Math.floor(remaining * 0.85));
-  const candidates = SEED_DEBT_AMOUNTS.filter((amount) => amount >= 5 && amount <= maxPartial);
+  const maxPartial = Math.max(minimumPayment, Math.floor(remaining * 0.85));
+  const candidates = amounts.filter((amount) => amount >= minimumPayment && amount <= maxPartial);
 
   if (candidates.length > 0) {
     return faker.helpers.arrayElement(candidates);
   }
 
-  return Math.max(5, Math.round(faker.number.int({ min: 5, max: maxPartial }) / 5) * 5);
+  return Math.max(
+    minimumPayment,
+    Math.round(faker.number.int({ min: minimumPayment, max: maxPartial }) / minimumPayment) *
+      minimumPayment,
+  );
 }
 
 const SEED_DEBT_REASONS = [
@@ -96,9 +146,9 @@ type SeedDebt = {
   remaining: number;
 };
 
-function usageStart(now: Date): Date {
+function usageStart(now: Date, months: number): Date {
   const start = new Date(now);
-  start.setMonth(start.getMonth() - USAGE_WINDOW_MONTHS);
+  start.setMonth(start.getMonth() - months);
   return start;
 }
 
@@ -110,8 +160,8 @@ function toISODateTime(date: Date): string {
   return date.toISOString();
 }
 
-function buildPeople(now: Date, start: Date): SeedPerson[] {
-  return Array.from({ length: SEED_PEOPLE_COUNT }, () => {
+function buildPeople(now: Date, start: Date, count: number): SeedPerson[] {
+  return Array.from({ length: count }, () => {
     const createdAt = toISODateTime(randomBetween(start, now));
 
     return {
@@ -143,8 +193,13 @@ function seedDebtDirection(index: number): DebtDirection {
   return index % 4 === 3 ? "i_owe_them" : "they_owe_me";
 }
 
-function buildDebts(people: SeedPerson[], now: Date): SeedDebt[] {
-  return Array.from({ length: SEED_DEBT_COUNT }, (_, index) => {
+function buildDebts(
+  people: SeedPerson[],
+  now: Date,
+  count: number,
+  debtAmounts: readonly number[],
+): SeedDebt[] {
+  return Array.from({ length: count }, (_, index) => {
     const person = pickPerson(people);
     const personCreatedAt = new Date(person.createdAt);
     const createdAt = randomBetween(personCreatedAt, now);
@@ -157,7 +212,7 @@ function buildDebts(people: SeedPerson[], now: Date): SeedDebt[] {
       id: createId(),
       personId: person.id,
       direction: seedDebtDirection(index),
-      originalAmount: randomSeedDebtAmount(),
+      originalAmount: randomSeedDebtAmount(debtAmounts),
       reason: randomSeedDebtReason(),
       dueDate: toISODate(dueDate),
       lentDate:
@@ -180,6 +235,8 @@ function buildDebts(people: SeedPerson[], now: Date): SeedDebt[] {
 function buildPayments(
   debts: SeedDebt[],
   now: Date,
+  count: number,
+  debtAmounts: readonly number[],
 ): {
   id: string;
   debtId: string;
@@ -202,7 +259,7 @@ function buildPayments(
     eventType: "payment_recorded" | "debt_paid";
   }[] = [];
 
-  for (let i = 0; i < SEED_PAYMENT_ACTIVITY_COUNT; i++) {
+  for (let i = 0; i < count; i++) {
     const openDebts = eligibleDebts.filter((debt) => debt.remaining > 0);
     if (openDebts.length === 0) {
       break;
@@ -214,7 +271,7 @@ function buildPayments(
 
     const remainingBefore = debt.remaining;
     const isFullPayment = faker.datatype.boolean({ probability: 0.22 });
-    const amount = randomSeedPaymentAmount(remainingBefore, isFullPayment);
+    const amount = randomSeedPaymentAmount(remainingBefore, isFullPayment, debtAmounts);
 
     debt.remaining = Math.max(0, remainingBefore - amount);
     const eventType = debt.remaining <= 0 ? "debt_paid" : "payment_recorded";
@@ -234,13 +291,13 @@ function buildPayments(
   return payments;
 }
 
-export async function seedDebts(): Promise<SeedResult> {
+async function seedUsage(profile: SeedProfile): Promise<SeedResult> {
   const db = await getDb();
   const now = new Date();
-  const start = usageStart(now);
-  const people = buildPeople(now, start);
-  const debts = buildDebts(people, now);
-  const payments = buildPayments(debts, now);
+  const start = usageStart(now, profile.usageWindowMonths);
+  const people = buildPeople(now, start, profile.peopleCount);
+  const debts = buildDebts(people, now, profile.debtCount, profile.debtAmounts);
+  const payments = buildPayments(debts, now, profile.paymentCount, profile.debtAmounts);
 
   let activityCount = 0;
 
@@ -279,7 +336,7 @@ export async function seedDebts(): Promise<SeedResult> {
         debt.personId,
         debt.direction,
         debt.originalAmount,
-        APP_CONFIG.defaultCurrency,
+        profile.currency,
         debt.reason,
         debt.dueDate,
         debt.lentDate,
@@ -339,4 +396,12 @@ export async function seedDebts(): Promise<SeedResult> {
     payments: payments.length,
     activities: activityCount,
   };
+}
+
+export function seedDebts(currency: string = APP_CONFIG.defaultCurrency): Promise<SeedResult> {
+  return seedUsage({ ...STRESS_SEED_PROFILE, currency: currency.toUpperCase() });
+}
+
+export function simulateRealisticUsage(currency: string): Promise<SeedResult> {
+  return seedUsage(realisticSeedProfile(currency));
 }

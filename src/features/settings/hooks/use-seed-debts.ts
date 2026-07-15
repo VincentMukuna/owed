@@ -1,16 +1,21 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 import { useUiStore } from "@/features/debts/store/ui-store";
+import { useSettingsStore } from "@/features/settings/hooks/use-settings-store";
 import { afterDebtDomainChange } from "@/lib/mutations/after-debt-domain-change";
 
-import { seedDebts } from "../dev/seed-debts";
+import { seedDebts, simulateRealisticUsage } from "../dev/seed-debts";
 
-export function useSeedDebts() {
+type SeedScenario = "stress" | "realistic";
+
+export function useSeedDebts(scenario: SeedScenario = "stress") {
   const queryClient = useQueryClient();
   const showToast = useUiStore((state) => state.showToast);
+  const currency = useSettingsStore((state) => state.defaultCurrency);
 
   return useMutation({
-    mutationFn: () => seedDebts(),
+    mutationFn: () =>
+      scenario === "realistic" ? simulateRealisticUsage(currency) : seedDebts(currency),
     onSuccess: async (result) => {
       await afterDebtDomainChange(queryClient, { syncReminders: false });
       showToast(
@@ -19,7 +24,7 @@ export function useSeedDebts() {
     },
     onError: (error) => {
       if (__DEV__) {
-        console.error("[useSeedDebts] failed to seed debts", error);
+        console.error(`[useSeedDebts] failed to seed ${scenario} usage`, error);
       }
       showToast("Could not seed debts. Try again.");
     },
