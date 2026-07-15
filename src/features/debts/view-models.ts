@@ -14,6 +14,7 @@ export type PaymentView = {
 
 export type DebtCardView = {
   id: string;
+  personId: string;
   name: string;
   initials: string;
   direction: DebtDirection;

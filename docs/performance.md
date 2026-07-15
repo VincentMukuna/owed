@@ -137,7 +137,7 @@ LEFT JOIN (
 | `src/features/debts/repositories/debt-repository.ts` | `listSummaries()`, `getById()` |
 | `src/features/debts/hooks/use-debts.ts` | `loadDebts` — shared queryFn + view mapping |
 | `src/lib/db/mappers.ts` | `DebtSummary` vs `DebtWithRelations` |
-| `src/features/debts/lib/debt-list-utils.ts` | `bucketHomeDebts`, `filterDebts`, `computeDebtTabCounts` |
+| `src/features/debts/lib/debt-list-utils.ts` | `buildHomeBriefing`, `filterDebts`, `computeDebtTabCounts` |
 | `src/features/debts/lib/mappers.ts` | `toDebtCardView`, `toDebtDetailView` |
 | `src/components/debts/debt-list.tsx` | Virtualized debt list |
 | `src/components/activity/activity-list.tsx` | Virtualized activity list |

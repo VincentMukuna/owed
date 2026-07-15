@@ -43,14 +43,14 @@ const STRESS_SEED_PROFILE: SeedProfile = {
   currency: APP_CONFIG.defaultCurrency,
 };
 
-function realisticSeedProfile(currency: string): SeedProfile {
+function realisticSeedProfile(): SeedProfile {
   return {
     peopleCount: REALISTIC_SEED_PEOPLE_COUNT,
     debtCount: REALISTIC_SEED_DEBT_COUNT,
     paymentCount: REALISTIC_SEED_PAYMENT_COUNT,
     usageWindowMonths: REALISTIC_USAGE_WINDOW_MONTHS,
     debtAmounts: REALISTIC_DEBT_AMOUNTS,
-    currency: currency.toUpperCase(),
+    currency: "USD",
   };
 }
 
@@ -132,6 +132,7 @@ type SeedPerson = {
 
 type SeedDebt = {
   id: string;
+  seedKey?: string;
   personId: string;
   direction: DebtDirection;
   originalAmount: number;
@@ -144,6 +145,35 @@ type SeedDebt = {
   createdAt: string;
   updatedAt: string;
   remaining: number;
+};
+
+type SeedPayment = {
+  id: string;
+  debtId: string;
+  personId: string;
+  amount: number;
+  paidAt: string;
+  note: string | null;
+  createdAt: string;
+  eventType: "payment_recorded" | "debt_paid";
+};
+
+type RealisticDebtSpec = {
+  key: string;
+  personIndex: number;
+  direction: DebtDirection;
+  amount: number;
+  reason: string;
+  dueInDays: number;
+  createdDaysAgo: number;
+  reminder?: boolean;
+};
+
+type RealisticPaymentSpec = {
+  debtKey: string;
+  amount: number;
+  hoursAgo: number;
+  note?: string;
 };
 
 function usageStart(now: Date, months: number): Date {
@@ -174,6 +204,331 @@ function buildPeople(now: Date, start: Date, count: number): SeedPerson[] {
       notes: faker.helpers.maybe(() => faker.lorem.sentence(), { probability: 0.15 }) ?? null,
       createdAt,
       updatedAt: createdAt,
+    };
+  });
+}
+
+const REALISTIC_PEOPLE = [
+  { name: "Olivia Bennett", phoneNumber: "+1 202 555 0101" },
+  { name: "James Carter", phoneNumber: "+1 202 555 0102" },
+  { name: "Sophia Reed", phoneNumber: "+1 202 555 0103" },
+  { name: "Daniel Brooks", phoneNumber: "+1 202 555 0104" },
+  { name: "Emma Collins", phoneNumber: "+1 202 555 0105" },
+  { name: "Sarah Mitchell", phoneNumber: "+1 202 555 0106" },
+  { name: "Michael Turner", phoneNumber: "+1 202 555 0107" },
+  { name: "Kevin Parker", phoneNumber: "+1 202 555 0108" },
+] as const;
+
+const REALISTIC_DEBT_SPECS: readonly RealisticDebtSpec[] = [
+  {
+    key: "amina-groceries",
+    personIndex: 0,
+    direction: "they_owe_me",
+    amount: 85,
+    reason: "Groceries",
+    dueInDays: -9,
+    createdDaysAgo: 70,
+    reminder: true,
+  },
+  {
+    key: "amina-trip",
+    personIndex: 0,
+    direction: "they_owe_me",
+    amount: 120,
+    reason: "Weekend trip",
+    dueInDays: 2,
+    createdDaysAgo: 45,
+    reminder: true,
+  },
+  {
+    key: "amina-tickets",
+    personIndex: 0,
+    direction: "they_owe_me",
+    amount: 60,
+    reason: "Concert tickets",
+    dueInDays: 28,
+    createdDaysAgo: 35,
+  },
+  {
+    key: "amina-settled",
+    personIndex: 0,
+    direction: "they_owe_me",
+    amount: 25,
+    reason: "Lunch",
+    dueInDays: -25,
+    createdDaysAgo: 90,
+  },
+  {
+    key: "james-rent",
+    personIndex: 1,
+    direction: "they_owe_me",
+    amount: 150,
+    reason: "Rent share",
+    dueInDays: -4,
+    createdDaysAgo: 110,
+    reminder: true,
+  },
+  {
+    key: "james-lunch",
+    personIndex: 1,
+    direction: "they_owe_me",
+    amount: 18,
+    reason: "Lunch",
+    dueInDays: 1,
+    createdDaysAgo: 12,
+    reminder: true,
+  },
+  {
+    key: "james-gift",
+    personIndex: 1,
+    direction: "they_owe_me",
+    amount: 40,
+    reason: "Birthday gift",
+    dueInDays: 35,
+    createdDaysAgo: 25,
+  },
+  {
+    key: "james-settled",
+    personIndex: 1,
+    direction: "they_owe_me",
+    amount: 60,
+    reason: "Group gift",
+    dueInDays: -15,
+    createdDaysAgo: 80,
+  },
+  {
+    key: "wanjiku-utilities",
+    personIndex: 2,
+    direction: "they_owe_me",
+    amount: 40,
+    reason: "Phone bill",
+    dueInDays: 0,
+    createdDaysAgo: 20,
+    reminder: true,
+  },
+  {
+    key: "wanjiku-school",
+    personIndex: 2,
+    direction: "they_owe_me",
+    amount: 100,
+    reason: "Sports tickets",
+    dueInDays: 20,
+    createdDaysAgo: 32,
+  },
+  {
+    key: "wanjiku-settled",
+    personIndex: 2,
+    direction: "they_owe_me",
+    amount: 50,
+    reason: "Dinner split",
+    dueInDays: -8,
+    createdDaysAgo: 60,
+  },
+  {
+    key: "brian-hotel",
+    personIndex: 3,
+    direction: "they_owe_me",
+    amount: 100,
+    reason: "Hotel share",
+    dueInDays: 4,
+    createdDaysAgo: 25,
+  },
+  {
+    key: "brian-dinner",
+    personIndex: 3,
+    direction: "they_owe_me",
+    amount: 35,
+    reason: "Dinner split",
+    dueInDays: 6,
+    createdDaysAgo: 16,
+  },
+  {
+    key: "brian-coffee",
+    personIndex: 3,
+    direction: "they_owe_me",
+    amount: 10,
+    reason: "Coffee run",
+    dueInDays: -12,
+    createdDaysAgo: 40,
+  },
+  {
+    key: "brian-settled",
+    personIndex: 3,
+    direction: "they_owe_me",
+    amount: 75,
+    reason: "Movie night",
+    dueInDays: -30,
+    createdDaysAgo: 90,
+  },
+  {
+    key: "grace-groceries",
+    personIndex: 4,
+    direction: "i_owe_them",
+    amount: 25,
+    reason: "Groceries",
+    dueInDays: 3,
+    createdDaysAgo: 18,
+    reminder: true,
+  },
+  {
+    key: "grace-concert",
+    personIndex: 4,
+    direction: "i_owe_them",
+    amount: 75,
+    reason: "Concert tickets",
+    dueInDays: 18,
+    createdDaysAgo: 35,
+  },
+  {
+    key: "grace-settled",
+    personIndex: 4,
+    direction: "i_owe_them",
+    amount: 35,
+    reason: "Gas money",
+    dueInDays: -50,
+    createdDaysAgo: 100,
+  },
+  {
+    key: "sarah-weekend",
+    personIndex: 5,
+    direction: "i_owe_them",
+    amount: 60,
+    reason: "Weekend trip",
+    dueInDays: 7,
+    createdDaysAgo: 30,
+    reminder: true,
+  },
+  {
+    key: "sarah-birthday",
+    personIndex: 5,
+    direction: "they_owe_me",
+    amount: 30,
+    reason: "Birthday gift",
+    dueInDays: 45,
+    createdDaysAgo: 20,
+  },
+  {
+    key: "daniel-rent",
+    personIndex: 6,
+    direction: "i_owe_them",
+    amount: 100,
+    reason: "Rent share",
+    dueInDays: 14,
+    createdDaysAgo: 40,
+  },
+  {
+    key: "daniel-taxi",
+    personIndex: 6,
+    direction: "they_owe_me",
+    amount: 15,
+    reason: "Uber ride",
+    dueInDays: 21,
+    createdDaysAgo: 15,
+  },
+  {
+    key: "kevin-coffee",
+    personIndex: 7,
+    direction: "they_owe_me",
+    amount: 10,
+    reason: "Coffee run",
+    dueInDays: -2,
+    createdDaysAgo: 15,
+  },
+  {
+    key: "kevin-movie",
+    personIndex: 7,
+    direction: "they_owe_me",
+    amount: 20,
+    reason: "Movie night",
+    dueInDays: -40,
+    createdDaysAgo: 70,
+  },
+] as const;
+
+const REALISTIC_PAYMENT_SPECS: readonly RealisticPaymentSpec[] = [
+  { debtKey: "grace-settled", amount: 35, hoursAgo: 1_440, note: "Paid back in full" },
+  { debtKey: "brian-settled", amount: 25, hoursAgo: 960 },
+  { debtKey: "kevin-movie", amount: 20, hoursAgo: 840 },
+  { debtKey: "amina-settled", amount: 25, hoursAgo: 480 },
+  { debtKey: "brian-coffee", amount: 10, hoursAgo: 240 },
+  { debtKey: "grace-concert", amount: 25, hoursAgo: 192, note: "First instalment" },
+  { debtKey: "wanjiku-settled", amount: 50, hoursAgo: 168 },
+  { debtKey: "daniel-rent", amount: 20, hoursAgo: 144 },
+  { debtKey: "amina-tickets", amount: 10, hoursAgo: 120 },
+  { debtKey: "james-rent", amount: 50, hoursAgo: 96, note: "Part of the rent share" },
+  { debtKey: "amina-trip", amount: 20, hoursAgo: 72, note: "Sent the first part" },
+  { debtKey: "james-settled", amount: 60, hoursAgo: 68 },
+  { debtKey: "sarah-weekend", amount: 15, hoursAgo: 48, note: "Trip deposit" },
+  { debtKey: "brian-settled", amount: 50, hoursAgo: 38, note: "Balance cleared" },
+  { debtKey: "wanjiku-utilities", amount: 10, hoursAgo: 6, note: "Part payment" },
+  { debtKey: "kevin-coffee", amount: 10, hoursAgo: 2, note: "All sorted" },
+] as const;
+
+function dateDaysFromNow(now: Date, days: number): Date {
+  return new Date(now.getFullYear(), now.getMonth(), now.getDate() + days, 12);
+}
+
+function buildRealisticPeople(now: Date): SeedPerson[] {
+  return REALISTIC_PEOPLE.map((person, index) => {
+    const createdAt = toISODateTime(
+      new Date(now.getTime() - (420 - index * 18) * 24 * 60 * 60 * 1000),
+    );
+    return {
+      id: createId(),
+      name: person.name,
+      phoneNumber: person.phoneNumber,
+      notes: null,
+      createdAt,
+      updatedAt: createdAt,
+    };
+  });
+}
+
+function buildRealisticDebts(people: SeedPerson[], now: Date): SeedDebt[] {
+  return REALISTIC_DEBT_SPECS.map((spec) => {
+    const createdAt = toISODateTime(
+      new Date(now.getTime() - spec.createdDaysAgo * 24 * 60 * 60 * 1000),
+    );
+    return {
+      id: createId(),
+      seedKey: spec.key,
+      personId: people[spec.personIndex].id,
+      direction: spec.direction,
+      originalAmount: spec.amount,
+      reason: spec.reason,
+      dueDate: toISODate(dateDaysFromNow(now, spec.dueInDays)),
+      lentDate: toISODate(new Date(createdAt)),
+      reminderEnabled: spec.reminder ? 1 : 0,
+      reminderTime: spec.reminder ? APP_CONFIG.defaultReminderTime : null,
+      archivedAt: null,
+      createdAt,
+      updatedAt: createdAt,
+      remaining: spec.amount,
+    };
+  });
+}
+
+function buildRealisticPayments(debts: SeedDebt[], now: Date): SeedPayment[] {
+  const debtsByKey = new Map(debts.map((debt) => [debt.seedKey, debt]));
+
+  return REALISTIC_PAYMENT_SPECS.map((spec) => {
+    const debt = debtsByKey.get(spec.debtKey);
+    if (!debt) {
+      throw new Error(`Missing realistic seed debt: ${spec.debtKey}`);
+    }
+
+    const amount = spec.amount;
+    debt.remaining = Math.max(0, debt.remaining - amount);
+    const paidAt = toISODateTime(new Date(now.getTime() - spec.hoursAgo * 60 * 60 * 1000));
+    return {
+      id: createId(),
+      debtId: debt.id,
+      personId: debt.personId,
+      amount,
+      paidAt,
+      note: spec.note ?? null,
+      createdAt: paidAt,
+      eventType: debt.remaining <= 0 ? "debt_paid" : "payment_recorded",
     };
   });
 }
@@ -237,27 +592,9 @@ function buildPayments(
   now: Date,
   count: number,
   debtAmounts: readonly number[],
-): {
-  id: string;
-  debtId: string;
-  personId: string;
-  amount: number;
-  paidAt: string;
-  note: string | null;
-  createdAt: string;
-  eventType: "payment_recorded" | "debt_paid";
-}[] {
+): SeedPayment[] {
   const eligibleDebts = debts.filter((debt) => !debt.archivedAt && debt.remaining > 0);
-  const payments: {
-    id: string;
-    debtId: string;
-    personId: string;
-    amount: number;
-    paidAt: string;
-    note: string | null;
-    createdAt: string;
-    eventType: "payment_recorded" | "debt_paid";
-  }[] = [];
+  const payments: SeedPayment[] = [];
 
   for (let i = 0; i < count; i++) {
     const openDebts = eligibleDebts.filter((debt) => debt.remaining > 0);
@@ -291,13 +628,19 @@ function buildPayments(
   return payments;
 }
 
-async function seedUsage(profile: SeedProfile): Promise<SeedResult> {
+async function seedUsage(profile: SeedProfile, realistic = false): Promise<SeedResult> {
   const db = await getDb();
   const now = new Date();
   const start = usageStart(now, profile.usageWindowMonths);
-  const people = buildPeople(now, start, profile.peopleCount);
-  const debts = buildDebts(people, now, profile.debtCount, profile.debtAmounts);
-  const payments = buildPayments(debts, now, profile.paymentCount, profile.debtAmounts);
+  const people = realistic
+    ? buildRealisticPeople(now)
+    : buildPeople(now, start, profile.peopleCount);
+  const debts = realistic
+    ? buildRealisticDebts(people, now)
+    : buildDebts(people, now, profile.debtCount, profile.debtAmounts);
+  const payments = realistic
+    ? buildRealisticPayments(debts, now)
+    : buildPayments(debts, now, profile.paymentCount, profile.debtAmounts);
 
   let activityCount = 0;
 
@@ -402,6 +745,6 @@ export function seedDebts(currency: string = APP_CONFIG.defaultCurrency): Promis
   return seedUsage({ ...STRESS_SEED_PROFILE, currency: currency.toUpperCase() });
 }
 
-export function simulateRealisticUsage(currency: string): Promise<SeedResult> {
-  return seedUsage(realisticSeedProfile(currency));
+export function simulateRealisticUsage(): Promise<SeedResult> {
+  return seedUsage(realisticSeedProfile(), true);
 }

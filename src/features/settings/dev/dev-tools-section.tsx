@@ -13,7 +13,6 @@ import { useResetDatabase } from "../hooks/use-reset-database";
 import { useResetOnboardingState } from "../hooks/use-reset-onboarding-state";
 import { useSeedDebts } from "../hooks/use-seed-debts";
 import { useSeedReminderTest } from "../hooks/use-seed-reminder-test";
-import { useSettingsStore } from "../hooks/use-settings-store";
 import {
   REALISTIC_SEED_DEBT_COUNT,
   REALISTIC_SEED_PAYMENT_COUNT,
@@ -68,7 +67,6 @@ function DevToolRow({
 
 export function DevToolsSection() {
   const router = useRouter();
-  const currency = useSettingsStore((state) => state.defaultCurrency);
   const seedDebts = useSeedDebts();
   const seedRealisticUsage = useSeedDebts("realistic");
   const seedReminderTest = useSeedReminderTest();
@@ -115,6 +113,22 @@ export function DevToolsSection() {
     );
   };
 
+  const confirmRealisticSeed = () => {
+    selectionChange();
+    Alert.alert(
+      "Load screenshot dataset?",
+      "Replaces all current debts, people, payments, activity, and notifications with a realistic USD dataset designed to show every Home section. Your default currency will switch to USD.",
+      [
+        { text: "Cancel", style: "cancel" },
+        {
+          text: "Replace & Load",
+          style: "destructive",
+          onPress: () => seedRealisticUsage.mutate(),
+        },
+      ],
+    );
+  };
+
   return (
     <View style={styles.section}>
       <Text style={styles.sectionTitle}>Developer</Text>
@@ -129,11 +143,11 @@ export function DevToolsSection() {
         />
         <DevToolRow
           bordered
-          description={`${REALISTIC_SEED_PEOPLE_COUNT} people, ${REALISTIC_SEED_DEBT_COUNT} common IOUs, and ${REALISTIC_SEED_PAYMENT_COUNT} repayments in ${currency} over ~12 months.`}
+          description={`Replaces current records with ${REALISTIC_SEED_PEOPLE_COUNT} people, ${REALISTIC_SEED_DEBT_COUNT} realistic promises, and ${REALISTIC_SEED_PAYMENT_COUNT} repayments in USD. Shows every Home section.`}
           disabled={seedRealisticUsage.isPending || seedDebts.isPending}
-          icon="🤝"
-          onPress={() => seedRealisticUsage.mutate()}
-          title="Simulate realistic usage"
+          icon="📸"
+          onPress={confirmRealisticSeed}
+          title="Load screenshot dataset"
           value={seedRealisticUsage.isPending ? "Seeding" : "Run"}
         />
         <DevToolRow

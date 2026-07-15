@@ -38,6 +38,7 @@ export function toDebtCardView(debt: DebtSummary | DebtWithRelations, now?: Date
 
   return {
     id: debt.id,
+    personId: debt.person.id,
     name: debt.person.name,
     initials: getInitials(debt.person.name),
     direction: debt.direction,

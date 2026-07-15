@@ -59,6 +59,7 @@ import {
   debtSortDirections,
   defaultDebtSortDirection,
   filterDebtsByDueDate,
+  filterDebtsNeedingAttention,
   filterSearchAndSortDebts,
   isDebtSortPreference,
 } from "@/features/debts/lib/debt-list-utils";
@@ -74,6 +75,8 @@ import type { ReminderType } from "@/types";
 
 type DebtFocus =
   | { kind: "date"; date: string; type: ReminderType }
+  | { kind: "attention" }
+  | { kind: "range"; from: string; to: string }
   | { kind: "paid-this-month" }
   | { kind: "filter"; filter: DebtFilterKey }
   | { kind: "direction"; direction: Exclude<DebtDirectionFilter, "all"> };
@@ -111,8 +114,12 @@ const SHEET_CONTAINER = (Platform.OS === "ios" ? FullWindowOverlay : undefined) 
 
 function scheduleDashboardFocusClear() {
   InteractionManager.runAfterInteractions(() => {
-    router.setParams({ focusDate: "", focusType: "" });
+    router.setParams({ focusDate: "", focusFrom: "", focusTo: "", focusType: "" });
   });
+}
+
+function isISODateParam(value: string | string[] | undefined): value is string {
+  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
 function parseFilterParam(value: string | string[] | undefined): DebtFilterKey | null {
@@ -353,6 +360,8 @@ export function DebtsScreen() {
   const { data: debts = [], isPending } = useDebts();
   const params = useLocalSearchParams<{
     focusDate?: string;
+    focusFrom?: string;
+    focusTo?: string;
     focusType?: string;
     filter?: string;
     direction?: string;
@@ -388,6 +397,19 @@ export function DebtsScreen() {
   const focus = useMemo<DebtFocus | null>(() => {
     const focusType = params.focusType;
 
+    if (focusType === "attention") {
+      return { kind: "attention" };
+    }
+
+    if (
+      focusType === "upcoming" &&
+      isISODateParam(params.focusFrom) &&
+      isISODateParam(params.focusTo) &&
+      params.focusFrom <= params.focusTo
+    ) {
+      return { kind: "range", from: params.focusFrom, to: params.focusTo };
+    }
+
     if (focusType === "paid-this-month") {
       return { kind: "paid-this-month" };
     }
@@ -413,23 +435,30 @@ export function DebtsScreen() {
       date: focusDate,
       type: focusType === "overdue" ? "overdue" : "due",
     };
-  }, [params.focusDate, params.focusType]);
+  }, [params.focusDate, params.focusFrom, params.focusTo, params.focusType]);
 
   const canUseLiquidGlass =
     Platform.OS === "ios" && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
   const clearDashboardFocusParams = useCallback(() => {
-    if (!params.focusType && !params.focusDate) {
+    if (!params.focusType && !params.focusDate && !params.focusFrom && !params.focusTo) {
       return;
     }
 
     scheduleDashboardFocusClear();
-  }, [params.focusDate, params.focusType]);
+  }, [params.focusDate, params.focusFrom, params.focusTo, params.focusType]);
 
   const dismissFocusBanner = useCallback(() => {
     setFilter("all");
     setDirection("all");
-    router.setParams({ focusDate: "", focusType: "", filter: "", direction: "" });
+    router.setParams({
+      focusDate: "",
+      focusFrom: "",
+      focusTo: "",
+      focusType: "",
+      filter: "",
+      direction: "",
+    });
   }, []);
 
   const directionCounts = useMemo(
@@ -464,41 +493,52 @@ export function DebtsScreen() {
     () =>
       focus?.kind === "date"
         ? filterDebtsByDueDate(debts, focus.date, sort)
-        : focus?.kind === "paid-this-month"
-          ? filterSearchAndSortDebts(
-              debts,
-              "paid-this-month",
-              deferredSearchQuery,
-              "all",
-              undefined,
-              sort,
-            )
-          : focus?.kind === "filter"
+        : focus?.kind === "attention"
+          ? filterDebtsNeedingAttention(debts, sort)
+          : focus?.kind === "range"
             ? filterSearchAndSortDebts(
                 debts,
-                focus.filter,
+                "all",
                 deferredSearchQuery,
                 "all",
-                undefined,
+                { from: focus.from, to: focus.to },
                 sort,
               )
-            : focus?.kind === "direction"
+            : focus?.kind === "paid-this-month"
               ? filterSearchAndSortDebts(
                   debts,
-                  "all",
+                  "paid-this-month",
                   deferredSearchQuery,
-                  focus.direction,
+                  "all",
                   undefined,
                   sort,
                 )
-              : filterSearchAndSortDebts(
-                  debts,
-                  deferredFilter,
-                  deferredSearchQuery,
-                  deferredDirection,
-                  dateRange,
-                  sort,
-                ),
+              : focus?.kind === "filter"
+                ? filterSearchAndSortDebts(
+                    debts,
+                    focus.filter,
+                    deferredSearchQuery,
+                    "all",
+                    undefined,
+                    sort,
+                  )
+                : focus?.kind === "direction"
+                  ? filterSearchAndSortDebts(
+                      debts,
+                      "all",
+                      deferredSearchQuery,
+                      focus.direction,
+                      undefined,
+                      sort,
+                    )
+                  : filterSearchAndSortDebts(
+                      debts,
+                      deferredFilter,
+                      deferredSearchQuery,
+                      deferredDirection,
+                      dateRange,
+                      sort,
+                    ),
     [debts, deferredFilter, deferredSearchQuery, deferredDirection, dateRange, focus, sort],
   );
 
@@ -574,22 +614,22 @@ export function DebtsScreen() {
     (key: DebtFilterKey) => {
       selectionChange();
       setFilter(key);
-      if (params.focusType || params.focusDate) {
+      if (params.focusType || params.focusDate || params.focusFrom || params.focusTo) {
         scheduleDashboardFocusClear();
       }
     },
-    [params.focusDate, params.focusType],
+    [params.focusDate, params.focusFrom, params.focusTo, params.focusType],
   );
 
   const selectDirection = useCallback(
     (key: DebtDirectionFilter) => {
       selectionChange();
       setDirection(key);
-      if (params.focusType || params.focusDate) {
+      if (params.focusType || params.focusDate || params.focusFrom || params.focusTo) {
         scheduleDashboardFocusClear();
       }
     },
-    [params.focusDate, params.focusType],
+    [params.focusDate, params.focusFrom, params.focusTo, params.focusType],
   );
 
   const openDatePicker = useCallback(
@@ -651,7 +691,14 @@ export function DebtsScreen() {
     setFilter("all");
     setDateRange({});
     resetSort();
-    router.setParams({ focusDate: "", focusType: "", direction: "", filter: "" });
+    router.setParams({
+      focusDate: "",
+      focusFrom: "",
+      focusTo: "",
+      focusType: "",
+      direction: "",
+      filter: "",
+    });
   }, [resetSort]);
 
   const closeSearch = useCallback(() => {
@@ -690,6 +737,14 @@ export function DebtsScreen() {
 
     if (focus.kind === "paid-this-month") {
       return `${count} settled this month`;
+    }
+
+    if (focus.kind === "attention") {
+      return `${count} ${count === 1 ? "promise needs" : "promises need"} attention`;
+    }
+
+    if (focus.kind === "range") {
+      return `${count} upcoming through ${formatDueDate(focus.to)}`;
     }
 
     if (focus.kind === "filter") {

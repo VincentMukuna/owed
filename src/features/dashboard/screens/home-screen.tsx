@@ -9,57 +9,30 @@ import { useQueryClient } from "@tanstack/react-query";
 import { Wallet } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
-import { ActivityRow } from "@/components/activity/activity-list";
 import { SummaryStatCard } from "@/components/debts/summary-stat-card";
 import { TabScreen } from "@/components/navigation/tab-screen";
 import { FAB_SCROLL_PADDING, FabButton } from "@/components/shared/fab-button";
-import {
-  LIST_LEADING_INSET_ICON_MD,
-  ListRowContainer,
-} from "@/components/shared/list-inset-divider";
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
 import { useRecentActivities } from "@/features/activity/hooks/use-recent-activities";
+import { HomeActivitySection } from "@/features/dashboard/components/home-activity-section";
 import { HomeDebtSection } from "@/features/dashboard/components/home-debt-section";
+import { HomePeopleSection } from "@/features/dashboard/components/home-people-section";
+import { HomeUpcomingSection } from "@/features/dashboard/components/home-upcoming-section";
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebts } from "@/features/debts/hooks/use-debts";
 import { usePaidThisMonth } from "@/features/debts/hooks/use-paid-this-month";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
-import { type DebtFilterKey, bucketHomeDebts } from "@/features/debts/lib/debt-list-utils";
+import { type DebtFilterKey, buildHomeBriefing } from "@/features/debts/lib/debt-list-utils";
 import type { DebtCardView } from "@/features/debts/view-models";
 import { BellBadgeButton } from "@/features/reminders/components/bell-badge-button";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { invalidateHomeQueries } from "@/lib/query/invalidate-queries";
 import { formatCurrency } from "@/lib/utils/formatters";
 
-type HomeSectionRow = {
-  key: string;
-  title: string;
-  titleColor?: string;
-  debts: DebtCardView[];
-  filter: DebtFilterKey;
-};
-
-function buildHomeSections(
-  buckets: ReturnType<typeof bucketHomeDebts>,
-  dangerColor: string,
-): HomeSectionRow[] {
-  const sections: HomeSectionRow[] = [
-    { key: "due-soon", title: "Due soon", debts: buckets.dueSoon, filter: "due-soon" },
-    {
-      key: "overdue",
-      title: "Overdue",
-      debts: buckets.overdue,
-      titleColor: dangerColor,
-      filter: "overdue",
-    },
-    { key: "active", title: "Active", debts: buckets.activePartial, filter: "active" },
-  ];
-
-  return sections.filter((section) => section.debts.length > 0);
-}
+type HomeModuleKey = "attention" | "upcoming" | "people" | "activity";
 
 export function HomeScreen() {
   const { theme } = useUnistyles();
@@ -72,8 +45,15 @@ export function HomeScreen() {
   const handleRefresh = useCallback(() => invalidateHomeQueries(queryClient), [queryClient]);
   const { refreshControlProps } = useRefreshControl({ onRefresh: handleRefresh });
 
-  const buckets = useMemo(() => bucketHomeDebts(debts), [debts]);
-  const sections = useMemo(() => buildHomeSections(buckets, theme.colors.danger), [buckets, theme]);
+  const briefing = useMemo(() => buildHomeBriefing(debts), [debts]);
+  const modules = useMemo(() => {
+    const visible: HomeModuleKey[] = [];
+    if (briefing.attentionDebts.length > 0) visible.push("attention");
+    if (briefing.upcoming.count > 0) visible.push("upcoming");
+    if (briefing.peopleInsights.length > 0) visible.push("people");
+    if (recentActivity.length > 0) visible.push("activity");
+    return visible;
+  }, [briefing, recentActivity.length]);
 
   const openDebt = useCallback((debtId: string) => {
     router.push(`/debt/${debtId}`);
@@ -106,6 +86,14 @@ export function HomeScreen() {
     router.push("/activity" as Href);
   }, []);
 
+  const openPeople = useCallback(() => {
+    router.push("/people" as Href);
+  }, []);
+
+  const openPerson = useCallback((personId: string) => {
+    router.push(`/person/${personId}` as Href);
+  }, []);
+
   const openNotifications = useCallback(() => {
     router.push("/notifications" as Href);
   }, []);
@@ -117,6 +105,8 @@ export function HomeScreen() {
         filter: "all",
         direction: "all",
         focusDate: "",
+        focusFrom: "",
+        focusTo: "",
         focusType: filter === "paid-this-month" ? "paid-this-month" : `filter-${filter}`,
       },
     });
@@ -129,28 +119,87 @@ export function HomeScreen() {
         filter: "all",
         direction: "all",
         focusDate: "",
+        focusFrom: "",
+        focusTo: "",
         focusType: `direction-${direction}`,
       },
     });
   }, []);
 
+  const openAttention = useCallback(() => {
+    router.push({
+      pathname: "/debts",
+      params: {
+        filter: "all",
+        direction: "all",
+        focusDate: "",
+        focusFrom: "",
+        focusTo: "",
+        focusType: "attention",
+      },
+    });
+  }, []);
+
+  const openUpcoming = useCallback(() => {
+    router.push({
+      pathname: "/debts",
+      params: {
+        filter: "all",
+        direction: "all",
+        focusDate: "",
+        focusFrom: briefing.upcoming.fromDate,
+        focusTo: briefing.upcoming.throughDate,
+        focusType: "upcoming",
+      },
+    });
+  }, [briefing.upcoming.fromDate, briefing.upcoming.throughDate]);
+
   const renderItem = useCallback(
-    ({ item }: { item: HomeSectionRow }) => (
-      <HomeDebtSection
-        debts={item.debts}
-        filter={item.filter}
-        onDebtAction={handleDebtAction}
-        onDebtPress={openDebt}
-        onTitlePress={openDebtsFilter}
-        showDirectionCue
-        title={item.title}
-        titleColor={item.titleColor}
-      />
-    ),
-    [handleDebtAction, openDebt, openDebtsFilter],
+    ({ item }: { item: HomeModuleKey }) => {
+      if (item === "attention") {
+        return (
+          <HomeDebtSection
+            debts={briefing.attentionDebts}
+            onDebtAction={handleDebtAction}
+            onDebtPress={openDebt}
+            onSeeAll={openAttention}
+            showDirectionCue
+          />
+        );
+      }
+
+      if (item === "upcoming") {
+        return <HomeUpcomingSection onPress={openUpcoming} summary={briefing.upcoming} />;
+      }
+
+      if (item === "people") {
+        return (
+          <HomePeopleSection
+            onPersonPress={openPerson}
+            onSeeAll={openPeople}
+            people={briefing.peopleInsights}
+          />
+        );
+      }
+
+      return <HomeActivitySection activities={recentActivity} onSeeAll={openActivity} />;
+    },
+    [
+      briefing.attentionDebts,
+      briefing.peopleInsights,
+      briefing.upcoming,
+      handleDebtAction,
+      openActivity,
+      openAttention,
+      openDebt,
+      openPeople,
+      openPerson,
+      openUpcoming,
+      recentActivity,
+    ],
   );
 
-  const keyExtractor = useCallback((item: HomeSectionRow) => item.key, []);
+  const keyExtractor = useCallback((item: HomeModuleKey) => item, []);
 
   const listHeader = useMemo(
     () => (
@@ -165,7 +214,7 @@ export function HomeScreen() {
             >
               <Text style={styles.directionLabel}>Owed to you</Text>
               <Text adjustsFontSizeToFit numberOfLines={1} style={styles.directionAmount}>
-                {formatCurrency(buckets.owedToYou)}
+                {formatCurrency(briefing.owedToYou)}
               </Text>
             </PressableScale>
             <View style={styles.directionDivider} />
@@ -175,12 +224,13 @@ export function HomeScreen() {
             >
               <Text style={styles.directionLabel}>You owe</Text>
               <Text adjustsFontSizeToFit numberOfLines={1} style={styles.directionAmount}>
-                {formatCurrency(buckets.youOwe)}
+                {formatCurrency(briefing.youOwe)}
               </Text>
             </PressableScale>
           </View>
           <Text style={styles.heroMeta}>
-            Across {buckets.activeCount} active {buckets.activeCount === 1 ? "promise" : "promises"}
+            Across {briefing.activeCount} active{" "}
+            {briefing.activeCount === 1 ? "promise" : "promises"}
           </Text>
         </View>
 
@@ -189,7 +239,7 @@ export function HomeScreen() {
             <SummaryStatCard
               label="Active promises"
               onPress={() => openDebtsFilter("active")}
-              value={String(buckets.activeCount)}
+              value={String(briefing.activeCount)}
               color={theme.colors.status.active.dot}
             />
           </View>
@@ -197,7 +247,7 @@ export function HomeScreen() {
             <SummaryStatCard
               label="Overdue"
               onPress={() => openDebtsFilter("overdue")}
-              value={String(buckets.overdue.length)}
+              value={String(briefing.overdueCount)}
               color={theme.colors.danger}
             />
           </View>
@@ -205,7 +255,7 @@ export function HomeScreen() {
             <SummaryStatCard
               label="Due soon"
               onPress={() => openDebtsFilter("due-soon")}
-              value={String(buckets.dueSoon.length)}
+              value={String(briefing.dueSoonCount)}
               color={theme.colors.warning}
             />
           </View>
@@ -220,33 +270,8 @@ export function HomeScreen() {
         </View>
       </View>
     ),
-    [buckets, openDebtsDirection, openDebtsFilter, paidThisMonth, theme],
+    [briefing, openDebtsDirection, openDebtsFilter, paidThisMonth, theme],
   );
-
-  const listFooter = useMemo(() => {
-    if (recentActivity.length === 0) {
-      return null;
-    }
-    return (
-      <View style={styles.activitySection}>
-        <PressableScale hitSlop={8} onPress={openActivity} style={styles.activityHeader}>
-          <Text style={styles.sectionTitle}>Recent activity</Text>
-          <Text style={styles.seeAll}>See all</Text>
-        </PressableScale>
-        <View>
-          {recentActivity.map((activity, index) => (
-            <ListRowContainer
-              key={activity.id}
-              leadingInset={LIST_LEADING_INSET_ICON_MD}
-              showDivider={index > 0}
-            >
-              <ActivityRow activity={activity} />
-            </ListRowContainer>
-          ))}
-        </View>
-      </View>
-    );
-  }, [recentActivity, openActivity]);
 
   if (isPending) {
     return (
@@ -302,10 +327,9 @@ export function HomeScreen() {
 
       <FlashList
         contentContainerStyle={styles.scroll}
-        data={sections}
+        data={modules}
         ItemSeparatorComponent={HomeSectionSeparator}
         keyExtractor={keyExtractor}
-        ListFooterComponent={listFooter}
         ListHeaderComponent={listHeader}
         refreshControl={<RefreshControl {...refreshControlProps} />}
         renderItem={renderItem}
@@ -425,28 +449,6 @@ const styles = StyleSheet.create((theme) => ({
   },
   sectionSeparator: {
     height: 20,
-  },
-  activitySection: {
-    marginTop: 24,
-    gap: 4,
-  },
-  activityHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginBottom: 4,
-  },
-  sectionTitle: {
-    fontSize: 11,
-    fontWeight: "600",
-    color: theme.colors.muted,
-    textTransform: "uppercase",
-    letterSpacing: 1.6,
-  },
-  seeAll: {
-    fontSize: 12,
-    fontWeight: "600",
-    color: theme.colors.primary,
   },
   emptyBody: {
     flexGrow: 1,

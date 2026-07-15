@@ -14,10 +14,6 @@ import {
 } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
-import {
-  LIST_LEADING_INSET_ICON_MD,
-  ListRowContainer,
-} from "@/components/shared/list-inset-divider";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import type { ActivityView, ActivityViewType } from "@/features/debts/view-models";
 import type { AppTheme } from "@/styles/themes";
@@ -74,6 +70,33 @@ export const ActivityRow = memo(({ activity }: { activity: ActivityView }) => {
 
 ActivityRow.displayName = "ActivityRow";
 
+type ActivityTimelineRowProps = {
+  activity: ActivityView;
+  showLeadingConnector: boolean;
+  showTrailingConnector: boolean;
+};
+
+export const ActivityTimelineRow = memo(
+  ({ activity, showLeadingConnector, showTrailingConnector }: ActivityTimelineRowProps) => {
+    const connectorStyle = showLeadingConnector
+      ? showTrailingConnector
+        ? styles.timelineLineFull
+        : styles.timelineLineLeading
+      : styles.timelineLineTrailing;
+
+    return (
+      <View style={styles.timelineItem}>
+        {showLeadingConnector || showTrailingConnector ? (
+          <View pointerEvents="none" style={[styles.timelineLine, connectorStyle]} />
+        ) : null}
+        <ActivityRow activity={activity} />
+      </View>
+    );
+  },
+);
+
+ActivityTimelineRow.displayName = "ActivityTimelineRow";
+
 const ActivityListInner = forwardRef<FlashListRef<ActivityView>, ActivityListProps>(
   (
     {
@@ -87,11 +110,13 @@ const ActivityListInner = forwardRef<FlashListRef<ActivityView>, ActivityListPro
   ) => {
     const renderItem = useCallback(
       ({ item, index }: { item: ActivityView; index: number }) => (
-        <ListRowContainer leadingInset={LIST_LEADING_INSET_ICON_MD} showDivider={index > 0}>
-          <ActivityRow activity={item} />
-        </ListRowContainer>
+        <ActivityTimelineRow
+          activity={item}
+          showLeadingConnector={index > 0}
+          showTrailingConnector={index < activities.length - 1}
+        />
       ),
-      [],
+      [activities.length],
     );
 
     const keyExtractor = useCallback((item: ActivityView) => item.id, []);
@@ -170,6 +195,27 @@ const styles = StyleSheet.create((theme) => ({
     lineHeight: 17,
     marginTop: 2,
     flexShrink: 0,
+  },
+  timelineItem: {
+    position: "relative",
+  },
+  timelineLine: {
+    position: "absolute",
+    left: 15.5,
+    width: 1,
+    backgroundColor: theme.colors.borderStrong,
+  },
+  timelineLineFull: {
+    top: 0,
+    bottom: 0,
+  },
+  timelineLineLeading: {
+    top: 0,
+    height: 30,
+  },
+  timelineLineTrailing: {
+    top: 30,
+    bottom: 0,
   },
   footer: {
     paddingVertical: 16,

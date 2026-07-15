@@ -1,11 +1,12 @@
 import { describe, expect, it } from "vitest";
 
 import type { DebtCardView } from "../view-models";
-import { sortDebtsByPreference } from "./debt-list-utils";
+import { buildHomeBriefing, sortDebtsByPreference } from "./debt-list-utils";
 
 function debt(id: string, overrides: Partial<DebtCardView> = {}): DebtCardView {
   return {
     id,
+    personId: `person-${id}`,
     name: id,
     initials: id.slice(0, 2).toUpperCase(),
     direction: "they_owe_me",
@@ -71,5 +72,82 @@ describe("Debt ordering", () => {
     );
 
     expect(result.map(({ id }) => id)).toEqual(["small", "large", "settled"]);
+  });
+});
+
+describe("Home briefing", () => {
+  it("keeps one urgent debt list while summarizing the next seven days", () => {
+    const result = buildHomeBriefing(
+      [
+        debt("partial-overdue", {
+          dueDateISO: "2026-07-01",
+          remaining: 40,
+          status: "partial",
+        }),
+        debt("due-tomorrow", {
+          direction: "i_owe_them",
+          dueDateISO: "2026-07-16",
+          remaining: 60,
+          status: "due-soon",
+        }),
+        debt("due-next-week", {
+          dueDateISO: "2026-07-22",
+          remaining: 80,
+        }),
+        debt("later", { dueDateISO: "2026-07-23", remaining: 100 }),
+        debt("paid", { dueDateISO: "2026-07-15", remaining: 0, status: "paid" }),
+      ],
+      NOW,
+    );
+
+    expect(result.attentionDebts.map(({ id }) => id)).toEqual(["partial-overdue", "due-tomorrow"]);
+    expect(result.upcoming).toMatchObject({
+      count: 2,
+      fromDate: "2026-07-15",
+      throughDate: "2026-07-22",
+      owedToYou: 80,
+      youOwe: 60,
+    });
+    expect(result.activeCount).toBe(4);
+  });
+
+  it("surfaces only meaningful multi-debt people follow-ups", () => {
+    const result = buildHomeBriefing(
+      [
+        debt("james-overdue", {
+          personId: "james",
+          name: "James",
+          initials: "JA",
+          dueDateISO: "2026-07-01",
+          createdAt: "2026-05-01T00:00:00.000Z",
+          remaining: 400,
+          status: "overdue",
+        }),
+        debt("james-active", {
+          personId: "james",
+          name: "James",
+          initials: "JA",
+          dueDateISO: "2026-08-01",
+          createdAt: "2026-05-02T00:00:00.000Z",
+          remaining: 600,
+        }),
+        debt("single-overdue", {
+          personId: "amina",
+          name: "Amina",
+          dueDateISO: "2026-07-01",
+          status: "overdue",
+        }),
+      ],
+      NOW,
+    );
+
+    expect(result.peopleInsights).toEqual([
+      expect.objectContaining({
+        id: "james",
+        amount: 1_000,
+        openDebtCount: 2,
+        overdueCount: 1,
+      }),
+    ]);
   });
 });
