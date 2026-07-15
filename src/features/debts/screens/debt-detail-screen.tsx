@@ -136,7 +136,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
           ),
         }}
       />
-      <View collapsable={false} style={styles.screen}>
+      <View collapsable={false} style={styles.screen} testID="debt-detail-ready">
         <ScrollView
           contentContainerStyle={[
             styles.content,

@@ -7,9 +7,11 @@ export const SCREENSHOT_TARGETS = {
   debts: "/debts",
   people: "/people",
   reminders: "/notifications",
+  activity: "/activity",
+  settings: "/settings?screenshotMode=store",
 } as const satisfies Record<string, Href>;
 
-export type ScreenshotTarget = keyof typeof SCREENSHOT_TARGETS;
+export type ScreenshotTarget = keyof typeof SCREENSHOT_TARGETS | "debt-detail" | "person-detail";
 export type ScreenshotTheme = Extract<ThemePreference, "light" | "dark">;
 
 export type ScreenshotAutomationConfig = {
@@ -30,7 +32,10 @@ export function parseScreenshotAutomationConfig(params: {
   const target = singleParam(params.target);
   const theme = singleParam(params.theme);
 
-  if (!target || !(target in SCREENSHOT_TARGETS)) {
+  if (
+    !target ||
+    (!(target in SCREENSHOT_TARGETS) && target !== "debt-detail" && target !== "person-detail")
+  ) {
     return null;
   }
   if (theme !== "light" && theme !== "dark") {
@@ -41,5 +46,8 @@ export function parseScreenshotAutomationConfig(params: {
 }
 
 export function screenshotTargetHref(target: ScreenshotTarget): Href {
+  if (target === "debt-detail" || target === "person-detail") {
+    throw new Error(`${target} must be resolved from the seeded screenshot fixture.`);
+  }
   return SCREENSHOT_TARGETS[target];
 }

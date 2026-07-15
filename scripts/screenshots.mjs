@@ -6,6 +6,7 @@ import {
   access,
   copyFile,
   mkdir,
+  open,
   readFile,
   readdir,
   rename,
@@ -24,13 +25,19 @@ const sharp = requireFromWebsite("sharp");
 
 const APP_ID = "com.vincentmukuna.owed";
 const SIMULATOR_NAME = "Owed Website Screenshots";
-const PREFERRED_DEVICE_NAMES = ["iPhone 16 Pro", "iPhone 15 Pro", "iPhone 14 Pro"];
+const PREFERRED_DEVICE_NAMES = [
+  "iPhone 13 Pro Max",
+  "iPhone 16 Pro",
+  "iPhone 15 Pro",
+  "iPhone 14 Pro",
+];
 const METRO_PORT = 8081;
 const ASSET_DIR = path.join(ROOT, "website", "public", "screens");
 const FLOW_PATH = path.join(ROOT, ".maestro", "website-screenshots.yaml");
 const ARTIFACT_ROOT = path.join(ROOT, ".artifacts", "screenshots");
 const LOCAL_MAESTRO = path.join(ROOT, ".artifacts", "tools", "maestro", "bin", "maestro");
 const LOCAL_TOOL_HOME = path.join(ROOT, ".artifacts", "tools", "home");
+const SUCCESS_MARKER = ".success";
 const FULL_WIDTH = 1125;
 const FULL_HEIGHT = 2436;
 const HERO_WIDTH = 1920;
@@ -38,6 +45,8 @@ const HERO_HEIGHT = 1440;
 const MAX_FAILED_RUNS = 3;
 
 const SCREENS = ["home", "debts", "people", "reminders"];
+const STORE_ONLY_SCREENS = ["debt-details", "person-detail", "activity", "settings"];
+const STORE_SCREENS = [...SCREENS, ...STORE_ONLY_SCREENS];
 const THEMES = ["light", "dark"];
 const FULL_ASSETS = THEMES.flatMap((theme) =>
   SCREENS.map((screen) => ({
@@ -47,6 +56,13 @@ const FULL_ASSETS = THEMES.flatMap((theme) =>
   })),
 );
 const ALL_ASSETS = [...FULL_ASSETS.map(({ filename }) => filename), "hero.png", "hero-dark.png"];
+const STORE_ASSETS = THEMES.flatMap((theme) =>
+  STORE_SCREENS.map((screen) => ({
+    screen,
+    theme,
+    filename: `${screen}${theme === "dark" ? "-dark" : ""}.jpeg`,
+  })),
+);
 let maestroCommand = "maestro";
 let reuseExistingMetro = false;
 
@@ -56,10 +72,6 @@ function log(message) {
 
 function fail(message) {
   throw new Error(message);
-}
-
-function warn(message) {
-  process.stderr.write(`[screenshots] warning: ${message}\n`);
 }
 
 function commandExists(command) {
@@ -80,6 +92,78 @@ function run(command, args, options = {}) {
     fail(`${command} exited with status ${result.status}.${detail}`);
   }
   return options.capture ? String(result.stdout).trim() : "";
+}
+
+function logTail(output, lineCount = 60) {
+  return output
+    .replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, "")
+    .replaceAll("\r", "\n")
+    .trim()
+    .split("\n")
+    .slice(-lineCount)
+    .join("\n");
+}
+
+async function runLogged(command, args, options) {
+  log(options.label);
+  await mkdir(path.dirname(options.logPath), { recursive: true });
+  const logFile = await open(options.logPath, "w");
+  let pendingOutput = "";
+  let heartbeat;
+
+  try {
+    const status = await new Promise((resolve, reject) => {
+      const child = spawn(command, args, {
+        cwd: ROOT,
+        env: { ...process.env, ...options.env },
+        stdio: ["ignore", "pipe", "pipe"],
+      });
+      const handleOutput = (chunk) => {
+        logFile.write(chunk);
+        if (!options.onOutputLine) return;
+        pendingOutput += chunk.toString();
+        const lines = pendingOutput.split(/\r?\n|\r/);
+        pendingOutput = lines.pop() ?? "";
+        for (const line of lines) options.onOutputLine(line);
+      };
+      child.stdout.on("data", handleOutput);
+      child.stderr.on("data", handleOutput);
+      child.once("error", reject);
+      child.once("close", resolve);
+      heartbeat = setInterval(() => log(`${options.label} — still working`), 20_000);
+    });
+    if (pendingOutput && options.onOutputLine) options.onOutputLine(pendingOutput);
+
+    if (status !== 0) {
+      const detail = logTail(await readFile(options.logPath, "utf8"));
+      fail(
+        `${options.label} failed with status ${status}.${detail ? `\n\n${detail}` : ""}`,
+      );
+    }
+  } finally {
+    clearInterval(heartbeat);
+    await logFile.close();
+  }
+}
+
+function createMaestroProgressReporter() {
+  let capturedCount = 0;
+  const announced = new Set();
+  const completed = new Set();
+  return (rawLine) => {
+    const line = rawLine.replace(/\u001b\[[0-?]*[ -/]*[@-~]/g, "");
+    const match = line.match(/Take screenshot .*\/(light|dark)\/([^\s.]+)/);
+    if (!match) return;
+    const capture = `${match[1]}/${match[2]}`;
+    if (!announced.has(capture)) {
+      announced.add(capture);
+      log(`capturing ${match[1]} · ${match[2]}`);
+    }
+    if (!line.includes("COMPLETED") || completed.has(capture)) return;
+    completed.add(capture);
+    capturedCount += 1;
+    log(`captured ${match[1]} · ${match[2]} (${capturedCount}/${STORE_ASSETS.length})`);
+  };
 }
 
 function parseJsonCommand(command, args) {
@@ -264,10 +348,20 @@ async function stopMetro(metro) {
   await writeFile(metro.logPath, Buffer.concat(metro.output).toString());
 }
 
-async function normalizeCaptures(rawDir, processedDir) {
+async function normalizeCaptures(rawDir, processedDir, storeDir) {
   for (const asset of FULL_ASSETS) {
     const input = path.join(rawDir, asset.theme, `${asset.screen}.png`);
     const output = path.join(processedDir, asset.filename);
+    await access(input, fsConstants.R_OK).catch(() => fail(`Missing Maestro capture: ${input}`));
+    await sharp(input)
+      .resize(FULL_WIDTH, FULL_HEIGHT, { fit: "cover", position: "centre" })
+      .jpeg({ quality: 90, chromaSubsampling: "4:4:4", mozjpeg: true })
+      .toFile(output);
+  }
+
+  for (const asset of STORE_ASSETS) {
+    const input = path.join(rawDir, asset.theme, `${asset.screen}.png`);
+    const output = path.join(storeDir, asset.filename);
     await access(input, fsConstants.R_OK).catch(() => fail(`Missing Maestro capture: ${input}`));
     await sharp(input)
       .resize(FULL_WIDTH, FULL_HEIGHT, { fit: "cover", position: "centre" })
@@ -409,6 +503,26 @@ async function validateAssetSet(directory) {
   }
 }
 
+async function validateStoreAssetSet(directory) {
+  await Promise.all(
+    STORE_ASSETS.map(({ filename }) =>
+      validateImage(path.join(directory, filename), {
+        format: "jpeg",
+        width: FULL_WIDTH,
+        height: FULL_HEIGHT,
+      }),
+    ),
+  );
+
+  for (const screen of STORE_SCREENS) {
+    const [light, dark] = await Promise.all([
+      readFile(path.join(directory, `${screen}.jpeg`)),
+      readFile(path.join(directory, `${screen}-dark.jpeg`)),
+    ]);
+    if (light.equals(dark)) fail(`${screen} store light and dark captures are byte-identical.`);
+  }
+}
+
 async function replaceAssets(processedDir) {
   await mkdir(ASSET_DIR, { recursive: true });
   for (const filename of ALL_ASSETS) {
@@ -442,9 +556,17 @@ async function listArtifactRunDirectories() {
     .sort((a, b) => b.localeCompare(a));
 }
 
+async function isSuccessfulRun(directory) {
+  return access(path.join(ARTIFACT_ROOT, directory, SUCCESS_MARKER), fsConstants.R_OK)
+    .then(() => true)
+    .catch(() => false);
+}
+
 async function pruneFailedRunArtifacts(keepCount = MAX_FAILED_RUNS) {
   const runDirectories = await listArtifactRunDirectories();
-  const stale = runDirectories.slice(Math.max(0, keepCount));
+  const successFlags = await Promise.all(runDirectories.map(isSuccessfulRun));
+  const failedRuns = runDirectories.filter((_, index) => !successFlags[index]);
+  const stale = failedRuns.slice(Math.max(0, keepCount));
   await Promise.all(
     stale.map((directory) =>
       rm(path.join(ARTIFACT_ROOT, directory), { recursive: true, force: true }),
@@ -455,6 +577,23 @@ async function pruneFailedRunArtifacts(keepCount = MAX_FAILED_RUNS) {
   }
 }
 
+async function removePreviousSuccessfulRuns(currentRunDirectory) {
+  const runDirectories = await listArtifactRunDirectories();
+  const candidates = runDirectories.filter((directory) => directory !== currentRunDirectory);
+  const successFlags = await Promise.all(candidates.map(isSuccessfulRun));
+  const previousSuccessfulRuns = candidates.filter((_, index) => successFlags[index]);
+  await Promise.all(
+    previousSuccessfulRuns.map((directory) =>
+      rm(path.join(ARTIFACT_ROOT, directory), { recursive: true, force: true }),
+    ),
+  );
+  if (previousSuccessfulRuns.length > 0) {
+    log(
+      `removed ${previousSuccessfulRuns.length} previous successful screenshot ${previousSuccessfulRuns.length === 1 ? "run" : "runs"}`,
+    );
+  }
+}
+
 async function cleanAllRunArtifacts() {
   await rm(ARTIFACT_ROOT, { recursive: true, force: true });
   log("removed all screenshot run artifacts; cached Maestro tools were kept");
@@ -462,16 +601,15 @@ async function cleanAllRunArtifacts() {
 
 async function generate() {
   await preflight();
-  // Successful runs remove themselves. Anything left here is a failed or
-  // interrupted run, so retain only enough recent history for debugging.
-  await pruneFailedRunArtifacts(MAX_FAILED_RUNS - 1);
   const stamp = new Date().toISOString().replaceAll(":", "-").replaceAll(".", "-");
   const runDir = path.join(ARTIFACT_ROOT, stamp);
   const rawDir = path.join(runDir, "raw");
   const processedDir = path.join(runDir, "processed");
+  const storeDir = path.join(runDir, "store");
   await mkdir(path.join(rawDir, "light"), { recursive: true });
   await mkdir(path.join(rawDir, "dark"), { recursive: true });
   await mkdir(processedDir, { recursive: true });
+  await mkdir(storeDir, { recursive: true });
 
   const startedAt = Date.now();
   let metro;
@@ -482,17 +620,19 @@ async function generate() {
       metro = startMetro(path.join(runDir, "metro.log"));
       await waitForPort(METRO_PORT, 30_000);
     }
-    run("npx", [
-      "expo",
-      "run:ios",
-      "--configuration",
-      "Debug",
-      "--device",
-      simulator.udid,
-      "--no-bundler",
-    ]);
+    await runLogged(
+      "npx",
+      ["expo", "run:ios", "--configuration", "Debug", "--device", simulator.udid, "--no-bundler"],
+      {
+        label: "building and installing the iOS app",
+        logPath: path.join(runDir, "build-ios.log"),
+      },
+    );
     await mkdir(path.join(LOCAL_TOOL_HOME, ".maestro"), { recursive: true });
-    run(maestroCommand, ["--device", simulator.udid, "test", FLOW_PATH], {
+    await runLogged(maestroCommand, ["--device", simulator.udid, "test", FLOW_PATH], {
+      label: "capturing screenshots with Maestro",
+      logPath: path.join(runDir, "maestro.log"),
+      onOutputLine: createMaestroProgressReporter(),
       env: {
         JAVA_TOOL_OPTIONS: `-Duser.home=${LOCAL_TOOL_HOME}`,
         MAESTRO_CLI_ANALYSIS_NOTIFICATION_DISABLED: "true",
@@ -501,22 +641,31 @@ async function generate() {
       },
     });
 
-    await normalizeCaptures(rawDir, processedDir);
+    log("processing screenshots for website and App Store");
+    await normalizeCaptures(rawDir, processedDir, storeDir);
+    log("generating website hero images");
     await Promise.all([generateHero("light", processedDir), generateHero("dark", processedDir)]);
+    log("validating generated images");
     await validateAssetSet(processedDir);
+    await validateStoreAssetSet(storeDir);
     await replaceAssets(processedDir);
-    run("npm", ["--prefix", "website", "run", "build"]);
+    await runLogged("npm", ["--prefix", "website", "run", "build"], {
+      label: "building the website",
+      logPath: path.join(runDir, "website-build.log"),
+    });
 
     const changed = changedAssets();
+    await writeFile(path.join(runDir, SUCCESS_MARKER), "");
+    await removePreviousSuccessfulRuns(path.basename(runDir));
+    await pruneFailedRunArtifacts();
     log(`complete in ${Math.round((Date.now() - startedAt) / 1000)}s`);
     log(`generated ${ALL_ASSETS.length} assets with ${simulator.device}, iOS ${simulator.runtime}`);
+    log(`App Store set (${STORE_ASSETS.length} images): ${path.relative(ROOT, storeDir)}`);
     log(changed ? `changed assets:\n${changed}` : "assets already matched the generated output");
-    await rm(runDir, { recursive: true, force: true }).catch((error) => {
-      warn(`could not remove successful run artifacts: ${error.message}`);
-    });
-    log("cleaned successful run artifacts");
+    log(`successful run artifacts preserved: ${path.relative(ROOT, runDir)}`);
   } catch (error) {
     log(`failed run artifacts preserved: ${path.relative(ROOT, runDir)}`);
+    await pruneFailedRunArtifacts().catch(() => {});
     throw error;
   } finally {
     await stopMetro(metro);

@@ -120,7 +120,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
           ),
         }}
       />
-      <View collapsable={false} style={styles.screen}>
+      <View collapsable={false} style={styles.screen} testID="person-detail-ready">
         <ScrollView
           contentContainerStyle={[styles.content, { paddingBottom: 120 + insets.bottom }]}
           refreshControl={<RefreshControl {...refreshControlProps} />}

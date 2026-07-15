@@ -2,7 +2,7 @@
 
 **Status:** Draft — ready for implementation planning
 **Baseline:** Expo SDK 56, Expo Router, native iOS project, Next.js marketing website
-**Scope of this doc:** A deterministic, local-only Maestro workflow that refreshes Owed's website screenshots from the current app source. This document does **not** authorize cloud CI, EAS Simulator, App Store screenshot automation, or production-only test hooks.
+**Scope of this doc:** A deterministic, local-only Maestro workflow that refreshes Owed's website screenshots and produces a retained iOS App Store upload set from the current app source. This document does **not** authorize cloud CI, EAS Simulator, App Store uploads, or production-only test hooks.
 
 **Related docs**
 
@@ -88,6 +88,7 @@ The current workflow is slow and inconsistent:
 | **Output replacement**    | Capture and process in a temporary staging directory; replace website assets only when every validation passes                            |
 | **Source control**        | Leave generated changes unstaged for human review                                                                                         |
 | **Failure behavior**      | Non-zero exit, clear failed stage, preserve the previously valid website assets                                                           |
+| **Run retention**         | Keep the latest successful `store/` upload set until its replacement succeeds; also keep the three newest failed runs                     |
 | **Production safety**     | Screenshot bootstrap is development-only and must be inert or unreachable in production                                                   |
 
 Changing a frozen decision requires updating this PRD before implementation changes diverge from it.
@@ -128,6 +129,10 @@ The pipeline owns these existing files:
 ### 6.3 Ownership boundary
 
 Only the ten files listed above may be replaced. The command must not modify website source, app source, unrelated assets, or user-authored files unless implementation explicitly requires a generated manifest described by this PRD.
+
+### 6.4 App Store output
+
+Each successful run retains a `store/` directory containing normalized light and dark JPEGs for Home, Debts, People, Notifications, a partially paid debt with payment history, a detail-rich person, Activity, and Settings without developer tools. All sixteen store images are `1125 × 2436`. The four detail/activity/settings additions are never copied into `website/public/screens/`.
 
 ---
 
@@ -248,6 +253,10 @@ JavaScript/TypeScript UI changes must always be sourced from the current working
 
 Implementation may add lower-level debugging commands, but they are not part of the stable product interface.
 
+Long-running build, Maestro, and website validation output is written to log files inside the run
+directory. The terminal prints stable stage updates instead of interactive progress animations. If a
+stage fails, the command prints a cleaned tail of its log and preserves the full file for diagnosis.
+
 ### 10.2 Preflight
 
 Before changing any asset, the runner checks:
@@ -297,9 +306,10 @@ Before replacing checked-in assets, verify:
 - Replacement covers the complete owned set, not individual files as they arrive.
 - If website build validation fails after replacement, the command exits non-zero and clearly reports that generated assets are present for inspection. It must not use destructive Git commands to restore them.
 - Temporary simulator/capture resources are cleaned up on success, failure, or interruption where practical.
-- Successful raw and processed capture directories are deleted automatically. Failed or interrupted
-  runs retain artifacts for diagnosis, with only the three newest failures kept. The cached local
-  Maestro installation is not removed by automatic cleanup.
+- The latest successful run remains available while the next run is in progress. After a replacement
+  succeeds, the previous successful run is removed. The three newest failed or interrupted runs remain
+  available for diagnosis. A successful run's `store/` directory is the App Store upload set. The
+  cached local Maestro installation is not removed by automatic cleanup.
 - `npm run screenshots:clean` removes all retained screenshot run artifacts without deleting the
   cached Maestro installation.
 
@@ -317,6 +327,7 @@ Before replacing checked-in assets, verify:
 
 - [ ] From the repository root on a supported Mac, `npm run screenshots` completes without manual taps.
 - [ ] The run captures Home, Debts, People, and Reminders in light and dark modes.
+- [ ] The retained `store/` set also captures a partially paid debt with payment history, a detail-rich person, Activity, and Settings without developer tools in light and dark modes.
 - [ ] The run generates both hero composites from that run's captures.
 - [ ] All filenames match the current website imports; no website source edit is required after generation.
 - [ ] Full-screen outputs are valid `1125 × 2436` JPEGs.

@@ -15,12 +15,16 @@ describe("screenshot automation config", () => {
       target: "people",
       theme: "dark",
     });
+    expect(parseScreenshotAutomationConfig({ target: "debt-detail", theme: "light" })).toEqual({
+      target: "debt-detail",
+      theme: "light",
+    });
   });
 
   it("rejects missing, automatic, and unknown values", () => {
     expect(parseScreenshotAutomationConfig({})).toBeNull();
     expect(parseScreenshotAutomationConfig({ target: "home", theme: "auto" })).toBeNull();
-    expect(parseScreenshotAutomationConfig({ target: "settings", theme: "light" })).toBeNull();
+    expect(parseScreenshotAutomationConfig({ target: "unknown", theme: "light" })).toBeNull();
   });
 
   it("maps targets to stable application routes", () => {
@@ -28,5 +32,12 @@ describe("screenshot automation config", () => {
     expect(screenshotTargetHref("debts")).toBe("/debts");
     expect(screenshotTargetHref("people")).toBe("/people");
     expect(screenshotTargetHref("reminders")).toBe("/notifications");
+    expect(screenshotTargetHref("activity")).toBe("/activity");
+    expect(screenshotTargetHref("settings")).toBe("/settings?screenshotMode=store");
+  });
+
+  it("requires seeded fixture resolution for detail targets", () => {
+    expect(() => screenshotTargetHref("debt-detail")).toThrow(/seeded screenshot fixture/);
+    expect(() => screenshotTargetHref("person-detail")).toThrow(/seeded screenshot fixture/);
   });
 });

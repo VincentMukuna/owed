@@ -92,7 +92,7 @@ export function ActivityScreen() {
 
   if (isPending || !isSortHydrated) {
     return (
-      <View style={styles.screen}>
+      <View style={styles.screen} testID="activity-screen-loading">
         <LoadingSpinner />
       </View>
     );
@@ -101,7 +101,7 @@ export function ActivityScreen() {
   return (
     <>
       <Stack.Screen options={{ headerRight }} />
-      <View style={styles.screen}>
+      <View style={styles.screen} testID="activity-screen-ready">
         {activities.length === 0 ? (
           <ScrollView
             contentContainerStyle={styles.emptyScroll}

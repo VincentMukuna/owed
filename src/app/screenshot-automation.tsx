@@ -7,10 +7,7 @@ import { router, useLocalSearchParams } from "expo-router";
 import { StyleSheet } from "react-native-unistyles";
 
 import { prepareScreenshotAutomation } from "@/features/settings/dev/screenshot-automation";
-import {
-  parseScreenshotAutomationConfig,
-  screenshotTargetHref,
-} from "@/features/settings/dev/screenshot-automation-config";
+import { parseScreenshotAutomationConfig } from "@/features/settings/dev/screenshot-automation-config";
 
 type AutomationStatus = "preparing" | "invalid" | "unavailable" | "failed";
 
@@ -37,9 +34,9 @@ export default function ScreenshotAutomationRoute() {
 
     let cancelled = false;
     void prepareScreenshotAutomation(config)
-      .then(() => {
+      .then((href) => {
         if (!cancelled) {
-          router.replace(screenshotTargetHref(config.target));
+          router.replace(href);
         }
       })
       .catch((error: unknown) => {

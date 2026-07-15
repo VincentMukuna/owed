@@ -2,7 +2,7 @@ import type { ComponentType } from "react";
 
 import { ScrollView, Text, View } from "react-native";
 
-import { type Href, router } from "expo-router";
+import { type Href, router, useLocalSearchParams } from "expo-router";
 
 import {
   Bell,
@@ -48,6 +48,7 @@ const THEME_LABELS: Record<ThemePreference, string> = {
 const SETTINGS_ICON_SIZE = 16;
 
 export function SettingsScreen() {
+  const { screenshotMode } = useLocalSearchParams<{ screenshotMode?: string }>();
   useUnistyles();
   const tabScrollPadding = useTabScrollPadding();
   const defaultCurrency = useCurrentCurrency();
@@ -62,7 +63,7 @@ export function SettingsScreen() {
 
   return (
     <TabScreen>
-      <View style={styles.header}>
+      <View style={styles.header} testID="settings-screen-ready">
         <Text style={styles.title}>Settings</Text>
       </View>
 
@@ -154,7 +155,7 @@ export function SettingsScreen() {
 
         <GetHelpSection />
 
-        {DevToolsSection ? <DevToolsSection /> : null}
+        {DevToolsSection && screenshotMode !== "store" ? <DevToolsSection /> : null}
       </ScrollView>
     </TabScreen>
   );

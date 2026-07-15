@@ -56,6 +56,51 @@ name: Website screenshots
 - runFlow: helpers/assert-capture-ready.yaml
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/reminders
 
+- openLink: "owed://screenshot-automation?theme=light&target=debt-detail"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "debt-detail-ready"
+    timeout: 30000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/debt-details
+
+- openLink: "owed://screenshot-automation?theme=light&target=person-detail"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "person-detail-ready"
+    timeout: 30000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/person-detail
+
+- openLink: "owed://screenshot-automation?theme=light&target=activity"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "activity-screen-ready"
+    timeout: 30000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/activity
+
+- openLink: "owed://screenshot-automation?theme=light&target=settings"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen-ready"
+    timeout: 30000
+- assertNotVisible: "Developer"
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/settings
+
 - openLink: "owed://screenshot-automation?theme=dark&target=home"
 - tapOn:
     text: "Open"
@@ -99,3 +144,48 @@ name: Website screenshots
     timeout: 15000
 - runFlow: helpers/assert-capture-ready.yaml
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/reminders
+
+- openLink: "owed://screenshot-automation?theme=dark&target=debt-detail"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "debt-detail-ready"
+    timeout: 30000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/debt-details
+
+- openLink: "owed://screenshot-automation?theme=dark&target=person-detail"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "person-detail-ready"
+    timeout: 30000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/person-detail
+
+- openLink: "owed://screenshot-automation?theme=dark&target=activity"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "activity-screen-ready"
+    timeout: 30000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/activity
+
+- openLink: "owed://screenshot-automation?theme=dark&target=settings"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible:
+      id: "settings-screen-ready"
+    timeout: 30000
+- assertNotVisible: "Developer"
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/settings
