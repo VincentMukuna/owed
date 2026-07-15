@@ -4,7 +4,7 @@ import { Pressable, Text, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
-import { BottomSheetModal, BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import type { FlashListRef } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowUpDown, Search, Users } from "lucide-react-native";
@@ -147,7 +147,7 @@ export function PeopleScreen() {
   }
 
   return (
-    <BottomSheetModalProvider>
+    <>
       <TabScreen>
         <View style={styles.header}>
           {searchOpen ? (
@@ -206,7 +206,7 @@ export function PeopleScreen() {
           onSelectDirection={selectSortDirection}
         />
       </ViewOptionsSheet>
-    </BottomSheetModalProvider>
+    </>
   );
 }
 

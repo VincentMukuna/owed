@@ -26,7 +26,6 @@ import {
   BottomSheetBackdrop,
   type BottomSheetBackdropProps,
   BottomSheetModal,
-  BottomSheetModalProvider,
   BottomSheetScrollView,
 } from "@gorhom/bottom-sheet";
 import type { FlashListRef } from "@shopify/flash-list";
@@ -748,7 +747,7 @@ export function DebtsScreen() {
   }
 
   return (
-    <BottomSheetModalProvider>
+    <>
       <TabScreen>
         <View style={styles.header}>
           {searchOpen ? (
@@ -851,7 +850,7 @@ export function DebtsScreen() {
         value={datePickerValue}
         visible={datePickerTarget !== null}
       />
-    </BottomSheetModalProvider>
+    </>
   );
 }
 

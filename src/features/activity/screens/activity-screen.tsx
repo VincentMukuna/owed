@@ -4,7 +4,7 @@ import { RefreshControl, ScrollView, Text, View } from "react-native";
 
 import { Stack } from "expo-router";
 
-import { BottomSheetModal, BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import type { FlashListRef } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
 import { ArrowUpDown } from "lucide-react-native";
@@ -99,7 +99,7 @@ export function ActivityScreen() {
   }
 
   return (
-    <BottomSheetModalProvider>
+    <>
       <Stack.Screen options={{ headerRight }} />
       <View style={styles.screen}>
         {activities.length === 0 ? (
@@ -139,7 +139,7 @@ export function ActivityScreen() {
           onSelectDirection={(direction) => setSort({ criterion: "chronology", direction })}
         />
       </ViewOptionsSheet>
-    </BottomSheetModalProvider>
+    </>
   );
 }
 
