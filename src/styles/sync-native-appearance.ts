@@ -1,6 +1,7 @@
 import { Appearance } from "react-native";
 
 import * as SystemUI from "expo-system-ui";
+
 import { UnistylesRuntime } from "react-native-unistyles";
 
 import { type AppThemeName, type ThemePreference, appThemes } from "./themes";
