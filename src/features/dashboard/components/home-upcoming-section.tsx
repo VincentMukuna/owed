@@ -10,6 +10,7 @@ import {
 
 import { FlashList } from "@shopify/flash-list";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
+import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
@@ -26,6 +27,7 @@ import type { DebtCardView } from "@/features/debts/view-models";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 const CARD_GAP = 12;
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as typeof FlashList;
 
 type HomeUpcomingSectionProps = {
   onDebtAction: (action: DebtAction, debt: DebtCardView) => void;
@@ -41,6 +43,7 @@ export function HomeUpcomingSection({
   const { width } = useWindowDimensions();
   const cardWidth = width - HOME_PAGE_PADDING * 2;
   const [activeIndex, setActiveIndex] = useState(0);
+  const scrollProgress = useSharedValue(0);
 
   const renderItem = useCallback(
     ({ item }: { item: DebtCardView }) => (
@@ -62,11 +65,25 @@ export function HomeUpcomingSection({
     },
     [cardWidth, summary.debts.length],
   );
+  const handleScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollProgress.value = event.contentOffset.x / (cardWidth + CARD_GAP);
+    },
+  });
 
   return (
-    <HomeSection title="Upcoming">
-      <View style={styles.carouselGroup}>
-        <FlashList
+    <HomeSection
+      leadingAccessory={
+        <HomeCarouselPagination
+          activeIndex={activeIndex}
+          count={summary.debts.length}
+          progress={scrollProgress}
+        />
+      }
+      title="Upcoming"
+    >
+      <View>
+        <AnimatedFlashList
           data={summary.debts}
           decelerationRate="fast"
           disableIntervalMomentum
@@ -74,13 +91,14 @@ export function HomeUpcomingSection({
           ItemSeparatorComponent={UpcomingCardSeparator}
           keyExtractor={keyExtractor}
           onMomentumScrollEnd={handleMomentumScrollEnd}
+          onScroll={handleScroll}
           renderItem={renderItem}
+          scrollEventThrottle={16}
           showsHorizontalScrollIndicator={false}
           snapToAlignment="start"
           snapToInterval={cardWidth + CARD_GAP}
           style={styles.carousel}
         />
-        <HomeCarouselPagination activeIndex={activeIndex} count={summary.debts.length} />
       </View>
     </HomeSection>
   );
@@ -152,9 +170,6 @@ function UpcomingCardSeparator() {
 }
 
 const styles = StyleSheet.create((theme) => ({
-  carouselGroup: {
-    gap: 8,
-  },
   carousel: {
     height: 144,
     overflow: "visible",

@@ -10,6 +10,7 @@ import {
 
 import { FlashList } from "@shopify/flash-list";
 import { ChevronRight, CircleAlert, CircleCheck, Scale } from "lucide-react-native";
+import Animated, { useAnimatedScrollHandler, useSharedValue } from "react-native-reanimated";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
@@ -21,6 +22,7 @@ import {
 import { formatCurrency } from "@/lib/utils/formatters";
 
 const CARD_GAP = 12;
+const AnimatedFlashList = Animated.createAnimatedComponent(FlashList) as typeof FlashList;
 
 type InsightItem = {
   accent: "brand" | "success" | "warning";
@@ -57,6 +59,7 @@ export function HomeInsightsSection({
   const { width } = useWindowDimensions();
   const cardWidth = width - HOME_PAGE_PADDING * 2;
   const [activeIndex, setActiveIndex] = useState(0);
+  const scrollProgress = useSharedValue(0);
   const net = owedToYou - youOwe;
 
   const insights = useMemo<InsightItem[]>(() => {
@@ -123,11 +126,25 @@ export function HomeInsightsSection({
     },
     [cardWidth, insights.length],
   );
+  const handleScroll = useAnimatedScrollHandler({
+    onScroll: (event) => {
+      scrollProgress.value = event.contentOffset.x / (cardWidth + CARD_GAP);
+    },
+  });
 
   return (
-    <HomeSection title="Insights">
-      <View style={styles.carouselGroup}>
-        <FlashList
+    <HomeSection
+      leadingAccessory={
+        <HomeCarouselPagination
+          activeIndex={activeIndex}
+          count={insights.length}
+          progress={scrollProgress}
+        />
+      }
+      title="Insights"
+    >
+      <View>
+        <AnimatedFlashList
           data={insights}
           decelerationRate="fast"
           disableIntervalMomentum
@@ -135,13 +152,14 @@ export function HomeInsightsSection({
           ItemSeparatorComponent={InsightCardSeparator}
           keyExtractor={keyExtractor}
           onMomentumScrollEnd={handleMomentumScrollEnd}
+          onScroll={handleScroll}
           renderItem={renderItem}
+          scrollEventThrottle={16}
           showsHorizontalScrollIndicator={false}
           snapToAlignment="start"
           snapToInterval={cardWidth + CARD_GAP}
           style={styles.carousel}
         />
-        <HomeCarouselPagination activeIndex={activeIndex} count={insights.length} />
       </View>
     </HomeSection>
   );
@@ -193,9 +211,6 @@ function InsightCardSeparator() {
 }
 
 const styles = StyleSheet.create((theme) => ({
-  carouselGroup: {
-    gap: 8,
-  },
   carousel: {
     height: 116,
     overflow: "visible",
