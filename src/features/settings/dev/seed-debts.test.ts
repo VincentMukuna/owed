@@ -134,10 +134,7 @@ describe("simulateRealisticUsage", () => {
     expect(briefing.upcoming.count).toBe(7);
     expect(briefing.upcoming.owedToYou).toBeGreaterThan(0);
     expect(briefing.upcoming.youOwe).toBeGreaterThan(0);
-    expect(briefing.peopleInsights.map((person) => person.name)).toEqual([
-      "Olivia Bennett",
-      "James Carter",
-    ]);
+    expect(briefing.attentionCount).toBeGreaterThanOrEqual(5);
     expect(NOW.getTime() - newestPaymentTimes[2]).toBeLessThan(48 * 60 * 60 * 1000);
   });
 });

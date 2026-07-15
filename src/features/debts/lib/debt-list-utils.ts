@@ -39,18 +39,6 @@ export type HomeUpcomingSummary = {
   youOwe: number;
 };
 
-export type HomePersonInsight = {
-  id: string;
-  name: string;
-  initials: string;
-  currency: string;
-  amount: number;
-  openDebtCount: number;
-  overdueCount: number;
-  dueSoonCount: number;
-  inactiveDays: number;
-};
-
 export type HomeBriefing = {
   totalOwed: number;
   owedToYou: number;
@@ -58,16 +46,13 @@ export type HomeBriefing = {
   activeCount: number;
   overdueCount: number;
   dueSoonCount: number;
+  attentionCount: number;
   attentionDebts: DebtCardView[];
   upcoming: HomeUpcomingSummary;
-  peopleInsights: HomePersonInsight[];
 };
 
 export const HOME_ATTENTION_DEBT_LIMIT = 5;
-export const HOME_PEOPLE_INSIGHT_LIMIT = 2;
 export const HOME_UPCOMING_DAYS = 7;
-const HOME_STALE_PERSON_DAYS = 30;
-const DAY_MS = 24 * 60 * 60 * 1000;
 
 export type DebtFilterKey = "all" | "active" | "overdue" | "paid" | "paid-this-month" | "due-soon";
 export type DebtDirectionFilter = "all" | DebtDirection;
@@ -473,43 +458,24 @@ export function filterDebtsNeedingAttention(
   return sortDebtsByPreference(result, sortPreference, now);
 }
 
-type HomePersonAccumulator = HomePersonInsight & {
-  earliestDueDate: string;
-  lastActivityAt: string;
-};
-
 function compareHomeAttention(a: DebtCardView, b: DebtCardView): number {
   return (
     a.dueDateISO.localeCompare(b.dueDateISO) || b.remaining - a.remaining || compareStable(a, b)
   );
 }
 
-function compareHomePeople(a: HomePersonAccumulator, b: HomePersonAccumulator): number {
-  const aPriority = a.overdueCount > 0 ? 0 : a.dueSoonCount >= 2 ? 1 : 2;
-  const bPriority = b.overdueCount > 0 ? 0 : b.dueSoonCount >= 2 ? 1 : 2;
-
-  return (
-    aPriority - bPriority ||
-    a.earliestDueDate.localeCompare(b.earliestDueDate) ||
-    b.amount - a.amount ||
-    normalizePersonName(a.name).localeCompare(normalizePersonName(b.name))
-  );
-}
-
 /**
  * Builds every home signal from the warm debt-summary cache. The debt scan is
- * intentionally single-pass; only the small attention/person candidate sets
+ * intentionally single-pass; only the attention and upcoming candidate sets
  * are sorted afterward.
  */
 export function buildHomeBriefing(debts: DebtCardView[], now: Date = new Date()): HomeBriefing {
   const attentionCandidates: DebtCardView[] = [];
   const upcomingCandidates: DebtCardView[] = [];
-  const peopleById = new Map<string, HomePersonAccumulator>();
   const [today, , dueSoonEnd] = statusDateParams(now);
   const upcomingEndDate = new Date(now.getFullYear(), now.getMonth(), now.getDate());
   upcomingEndDate.setDate(upcomingEndDate.getDate() + HOME_UPCOMING_DAYS);
   const throughDate = toISODate(upcomingEndDate);
-  const staleBefore = new Date(now.getTime() - HOME_STALE_PERSON_DAYS * DAY_MS).toISOString();
   let totalOwed = 0;
   let owedToYou = 0;
   let youOwe = 0;
@@ -554,55 +520,6 @@ export function buildHomeBriefing(debts: DebtCardView[], now: Date = new Date())
         upcomingYouOwe += debt.remaining;
       }
     }
-
-    if (debt.direction !== "they_owe_me") {
-      continue;
-    }
-
-    const activityAt = debt.lastPaymentAt ?? debt.createdAt;
-    const person = peopleById.get(debt.personId) ?? {
-      id: debt.personId,
-      name: debt.name,
-      initials: debt.initials,
-      currency: debt.currency,
-      amount: 0,
-      openDebtCount: 0,
-      overdueCount: 0,
-      dueSoonCount: 0,
-      inactiveDays: 0,
-      earliestDueDate: debt.dueDateISO,
-      lastActivityAt: activityAt,
-    };
-
-    person.amount += debt.remaining;
-    person.openDebtCount += 1;
-    person.earliestDueDate =
-      debt.dueDateISO < person.earliestDueDate ? debt.dueDateISO : person.earliestDueDate;
-    person.lastActivityAt = activityAt > person.lastActivityAt ? activityAt : person.lastActivityAt;
-    if (debt.dueDateISO < today) {
-      person.overdueCount += 1;
-    } else if (debt.dueDateISO <= dueSoonEnd) {
-      person.dueSoonCount += 1;
-    }
-    peopleById.set(debt.personId, person);
-  }
-
-  const peopleCandidates: HomePersonAccumulator[] = [];
-  const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
-  for (const person of peopleById.values()) {
-    const isStale = person.lastActivityAt < staleBefore;
-    const hasRelationshipSignal =
-      person.openDebtCount >= 2 && (person.overdueCount > 0 || person.dueSoonCount >= 2 || isStale);
-
-    if (!hasRelationshipSignal) {
-      continue;
-    }
-
-    const lastActivityTime = new Date(person.lastActivityAt).getTime();
-    person.inactiveDays = Number.isNaN(lastActivityTime)
-      ? 0
-      : Math.max(0, Math.floor((startOfToday - lastActivityTime) / DAY_MS));
-    peopleCandidates.push(person);
   }
 
   return {
@@ -612,6 +529,7 @@ export function buildHomeBriefing(debts: DebtCardView[], now: Date = new Date())
     activeCount,
     overdueCount,
     dueSoonCount,
+    attentionCount: attentionCandidates.length,
     attentionDebts: attentionCandidates
       .sort(compareHomeAttention)
       .slice(0, HOME_ATTENTION_DEBT_LIMIT),
@@ -623,12 +541,5 @@ export function buildHomeBriefing(debts: DebtCardView[], now: Date = new Date())
       owedToYou: upcomingOwedToYou,
       youOwe: upcomingYouOwe,
     },
-    peopleInsights: peopleCandidates
-      .sort(compareHomePeople)
-      .slice(0, HOME_PEOPLE_INSIGHT_LIMIT)
-      .map(
-        ({ earliestDueDate: _earliestDueDate, lastActivityAt: _lastActivityAt, ...person }) =>
-          person,
-      ),
   };
 }

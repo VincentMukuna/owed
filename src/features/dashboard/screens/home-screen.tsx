@@ -18,7 +18,7 @@ import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
 import { useRecentActivities } from "@/features/activity/hooks/use-recent-activities";
 import { HomeActivitySection } from "@/features/dashboard/components/home-activity-section";
 import { HomeDebtSection } from "@/features/dashboard/components/home-debt-section";
-import { HomePeopleSection } from "@/features/dashboard/components/home-people-section";
+import { HomeInsightsSection } from "@/features/dashboard/components/home-insights-section";
 import { HomeUpcomingSection } from "@/features/dashboard/components/home-upcoming-section";
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
@@ -32,7 +32,7 @@ import { useRefreshControl } from "@/hooks/use-refresh-control";
 import { invalidateHomeQueries } from "@/lib/query/invalidate-queries";
 import { formatCurrency } from "@/lib/utils/formatters";
 
-type HomeModuleKey = "attention" | "people" | "activity";
+type HomeModuleKey = "attention" | "insights" | "activity";
 
 // The stat queries and navigation stay warm while the upcoming-first layout is evaluated.
 const SHOW_HOME_STATS = false;
@@ -52,7 +52,7 @@ export function HomeScreen() {
   const modules = useMemo(() => {
     const visible: HomeModuleKey[] = [];
     if (briefing.attentionDebts.length > 0) visible.push("attention");
-    if (briefing.peopleInsights.length > 0) visible.push("people");
+    visible.push("insights");
     if (recentActivity.length > 0) visible.push("activity");
     return visible;
   }, [briefing, recentActivity.length]);
@@ -86,14 +86,6 @@ export function HomeScreen() {
 
   const openActivity = useCallback(() => {
     router.push("/activity" as Href);
-  }, []);
-
-  const openPeople = useCallback(() => {
-    router.push("/people" as Href);
-  }, []);
-
-  const openPerson = useCallback((personId: string) => {
-    router.push(`/person/${personId}` as Href);
   }, []);
 
   const openNotifications = useCallback(() => {
@@ -142,6 +134,9 @@ export function HomeScreen() {
     });
   }, []);
 
+  const openActive = useCallback(() => openDebtsFilter("active"), [openDebtsFilter]);
+  const openSettled = useCallback(() => openDebtsFilter("paid-this-month"), [openDebtsFilter]);
+
   const openUpcoming = useCallback(() => {
     router.push({
       pathname: "/debts",
@@ -170,12 +165,18 @@ export function HomeScreen() {
         );
       }
 
-      if (item === "people") {
+      if (item === "insights") {
         return (
-          <HomePeopleSection
-            onPersonPress={openPerson}
-            onSeeAll={openPeople}
-            people={briefing.peopleInsights}
+          <HomeInsightsSection
+            activeCount={briefing.activeCount}
+            attentionCount={briefing.attentionCount}
+            onActivePress={openActive}
+            onAttentionPress={openAttention}
+            onDirectionPress={openDebtsDirection}
+            onSettledPress={openSettled}
+            owedToYou={briefing.owedToYou}
+            paidThisMonth={paidThisMonth}
+            youOwe={briefing.youOwe}
           />
         );
       }
@@ -184,13 +185,18 @@ export function HomeScreen() {
     },
     [
       briefing.attentionDebts,
-      briefing.peopleInsights,
+      briefing.activeCount,
+      briefing.attentionCount,
+      briefing.owedToYou,
+      briefing.youOwe,
       handleDebtAction,
+      openActive,
       openActivity,
       openAttention,
       openDebt,
-      openPeople,
-      openPerson,
+      openDebtsDirection,
+      openSettled,
+      paidThisMonth,
       recentActivity,
     ],
   );

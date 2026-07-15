@@ -101,6 +101,7 @@ describe("Home briefing", () => {
     );
 
     expect(result.attentionDebts.map(({ id }) => id)).toEqual(["partial-overdue", "due-tomorrow"]);
+    expect(result.attentionCount).toBe(2);
     expect(result.upcoming).toMatchObject({
       count: 2,
       fromDate: "2026-07-15",
@@ -110,45 +111,5 @@ describe("Home briefing", () => {
     });
     expect(result.upcoming.debts.map(({ id }) => id)).toEqual(["due-tomorrow", "due-next-week"]);
     expect(result.activeCount).toBe(4);
-  });
-
-  it("surfaces only meaningful multi-debt people follow-ups", () => {
-    const result = buildHomeBriefing(
-      [
-        debt("james-overdue", {
-          personId: "james",
-          name: "James",
-          initials: "JA",
-          dueDateISO: "2026-07-01",
-          createdAt: "2026-05-01T00:00:00.000Z",
-          remaining: 400,
-          status: "overdue",
-        }),
-        debt("james-active", {
-          personId: "james",
-          name: "James",
-          initials: "JA",
-          dueDateISO: "2026-08-01",
-          createdAt: "2026-05-02T00:00:00.000Z",
-          remaining: 600,
-        }),
-        debt("single-overdue", {
-          personId: "amina",
-          name: "Amina",
-          dueDateISO: "2026-07-01",
-          status: "overdue",
-        }),
-      ],
-      NOW,
-    );
-
-    expect(result.peopleInsights).toEqual([
-      expect.objectContaining({
-        id: "james",
-        amount: 1_000,
-        openDebtCount: 2,
-        overdueCount: 1,
-      }),
-    ]);
   });
 });
