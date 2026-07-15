@@ -1,6 +1,12 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 
-import { Text, View, useWindowDimensions } from "react-native";
+import {
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 
 import { FlashList } from "@shopify/flash-list";
 import { ArrowDownLeft, ArrowUpRight } from "lucide-react-native";
@@ -8,7 +14,7 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
-import { HomeSection } from "@/features/dashboard/components/home-section";
+import { HomeCarouselPagination, HomeSection } from "@/features/dashboard/components/home-section";
 import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
 import type { HomeUpcomingSummary } from "@/features/debts/lib/debt-list-utils";
 import { formatDueDate } from "@/features/debts/lib/format-dates";
@@ -16,23 +22,22 @@ import type { DebtCardView } from "@/features/debts/view-models";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 const CARD_GAP = 12;
-const CARD_MAX_WIDTH = 320;
+const HOME_PAGE_PADDING = 20;
 
 type HomeUpcomingSectionProps = {
   onDebtAction: (action: DebtAction, debt: DebtCardView) => void;
   onDebtPress: (debtId: string) => void;
-  onSeeAll: () => void;
   summary: HomeUpcomingSummary;
 };
 
 export function HomeUpcomingSection({
   onDebtAction,
   onDebtPress,
-  onSeeAll,
   summary,
 }: HomeUpcomingSectionProps) {
   const { width } = useWindowDimensions();
-  const cardWidth = Math.min(width - 72, CARD_MAX_WIDTH);
+  const cardWidth = width - HOME_PAGE_PADDING * 2;
+  const [activeIndex, setActiveIndex] = useState(0);
 
   const renderItem = useCallback(
     ({ item }: { item: DebtCardView }) => (
@@ -47,21 +52,33 @@ export function HomeUpcomingSection({
   );
 
   const keyExtractor = useCallback((debt: DebtCardView) => debt.id, []);
+  const handleMomentumScrollEnd = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const nextIndex = Math.round(event.nativeEvent.contentOffset.x / (cardWidth + CARD_GAP));
+      setActiveIndex(Math.max(0, Math.min(nextIndex, summary.debts.length - 1)));
+    },
+    [cardWidth, summary.debts.length],
+  );
 
   return (
-    <HomeSection actionLabel="See all" onActionPress={onSeeAll} title="Upcoming">
-      <FlashList
-        data={summary.debts}
-        decelerationRate="fast"
-        horizontal
-        ItemSeparatorComponent={UpcomingCardSeparator}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        showsHorizontalScrollIndicator={false}
-        snapToAlignment="start"
-        snapToInterval={cardWidth + CARD_GAP}
-        style={styles.carousel}
-      />
+    <HomeSection title="Upcoming">
+      <View style={styles.carouselGroup}>
+        <FlashList
+          data={summary.debts}
+          decelerationRate="fast"
+          disableIntervalMomentum
+          horizontal
+          ItemSeparatorComponent={UpcomingCardSeparator}
+          keyExtractor={keyExtractor}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          renderItem={renderItem}
+          showsHorizontalScrollIndicator={false}
+          snapToAlignment="start"
+          snapToInterval={cardWidth + CARD_GAP}
+          style={styles.carousel}
+        />
+        <HomeCarouselPagination activeIndex={activeIndex} count={summary.debts.length} />
+      </View>
     </HomeSection>
   );
 }
@@ -132,6 +149,9 @@ function UpcomingCardSeparator() {
 }
 
 const styles = StyleSheet.create((theme) => ({
+  carouselGroup: {
+    gap: 8,
+  },
   carousel: {
     height: 144,
     overflow: "visible",

@@ -137,20 +137,6 @@ export function HomeScreen() {
   const openActive = useCallback(() => openDebtsFilter("active"), [openDebtsFilter]);
   const openSettled = useCallback(() => openDebtsFilter("paid-this-month"), [openDebtsFilter]);
 
-  const openUpcoming = useCallback(() => {
-    router.push({
-      pathname: "/debts",
-      params: {
-        filter: "all",
-        direction: "all",
-        focusDate: "",
-        focusFrom: briefing.upcoming.fromDate,
-        focusTo: briefing.upcoming.throughDate,
-        focusType: "upcoming",
-      },
-    });
-  }, [briefing.upcoming.fromDate, briefing.upcoming.throughDate]);
-
   const renderItem = useCallback(
     ({ item }: { item: HomeModuleKey }) => {
       if (item === "attention") {
@@ -239,7 +225,6 @@ export function HomeScreen() {
           <HomeUpcomingSection
             onDebtAction={handleDebtAction}
             onDebtPress={openDebt}
-            onSeeAll={openUpcoming}
             summary={briefing.upcoming}
           />
         ) : null}
@@ -288,7 +273,6 @@ export function HomeScreen() {
       openDebt,
       openDebtsDirection,
       openDebtsFilter,
-      openUpcoming,
       paidThisMonth,
       theme,
     ],

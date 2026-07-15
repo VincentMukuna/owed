@@ -1,17 +1,23 @@
-import { useCallback, useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 
-import { Text, View, useWindowDimensions } from "react-native";
+import {
+  type NativeScrollEvent,
+  type NativeSyntheticEvent,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 
 import { FlashList } from "@shopify/flash-list";
 import { ChevronRight, CircleAlert, CircleCheck, Scale } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { HomeSection } from "@/features/dashboard/components/home-section";
+import { HomeCarouselPagination, HomeSection } from "@/features/dashboard/components/home-section";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 const CARD_GAP = 12;
-const CARD_MAX_WIDTH = 320;
+const HOME_PAGE_PADDING = 20;
 
 type InsightItem = {
   accent: "brand" | "success" | "warning";
@@ -46,7 +52,8 @@ export function HomeInsightsSection({
   onSettledPress,
 }: HomeInsightsSectionProps) {
   const { width } = useWindowDimensions();
-  const cardWidth = Math.min(width - 72, CARD_MAX_WIDTH);
+  const cardWidth = width - HOME_PAGE_PADDING * 2;
+  const [activeIndex, setActiveIndex] = useState(0);
   const net = owedToYou - youOwe;
 
   const insights = useMemo<InsightItem[]>(() => {
@@ -106,21 +113,33 @@ export function HomeInsightsSection({
     [cardWidth],
   );
   const keyExtractor = useCallback((item: InsightItem) => item.id, []);
+  const handleMomentumScrollEnd = useCallback(
+    (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+      const nextIndex = Math.round(event.nativeEvent.contentOffset.x / (cardWidth + CARD_GAP));
+      setActiveIndex(Math.max(0, Math.min(nextIndex, insights.length - 1)));
+    },
+    [cardWidth, insights.length],
+  );
 
   return (
     <HomeSection title="Insights">
-      <FlashList
-        data={insights}
-        decelerationRate="fast"
-        horizontal
-        ItemSeparatorComponent={InsightCardSeparator}
-        keyExtractor={keyExtractor}
-        renderItem={renderItem}
-        showsHorizontalScrollIndicator={false}
-        snapToAlignment="start"
-        snapToInterval={cardWidth + CARD_GAP}
-        style={styles.carousel}
-      />
+      <View style={styles.carouselGroup}>
+        <FlashList
+          data={insights}
+          decelerationRate="fast"
+          disableIntervalMomentum
+          horizontal
+          ItemSeparatorComponent={InsightCardSeparator}
+          keyExtractor={keyExtractor}
+          onMomentumScrollEnd={handleMomentumScrollEnd}
+          renderItem={renderItem}
+          showsHorizontalScrollIndicator={false}
+          snapToAlignment="start"
+          snapToInterval={cardWidth + CARD_GAP}
+          style={styles.carousel}
+        />
+        <HomeCarouselPagination activeIndex={activeIndex} count={insights.length} />
+      </View>
     </HomeSection>
   );
 }
@@ -171,6 +190,9 @@ function InsightCardSeparator() {
 }
 
 const styles = StyleSheet.create((theme) => ({
+  carouselGroup: {
+    gap: 8,
+  },
   carousel: {
     height: 116,
     overflow: "visible",
