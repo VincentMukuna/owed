@@ -80,7 +80,7 @@ const FAQ_ITEMS: FaqItem[] = [
     id: "free",
     question: "Is Owwed free?",
     answer:
-      "Yes.\n\nOwwed is free to use.\n\nIf you'd like to support development, you can do so from Settings.",
+      "Yes.\n\nOwwed is free to use, with no subscriptions and no ads.\n\nIt's also open source.",
   },
   {
     id: "name",
