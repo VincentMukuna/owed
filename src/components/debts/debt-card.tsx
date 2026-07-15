@@ -18,11 +18,21 @@ type DebtCardProps = {
   onPress: () => void;
   onAction?: (action: DebtAction, debt: DebtCardView) => void;
   showDirectionCue?: boolean;
+  supportingText?: string;
+  supportingTextTone?: "danger" | "warning";
   style?: StyleProp<ViewStyle>;
 };
 
 export const DebtCard = memo(
-  ({ debt, onPress, onAction, showDirectionCue = false, style }: DebtCardProps) => {
+  ({
+    debt,
+    onPress,
+    onAction,
+    showDirectionCue = false,
+    supportingText,
+    supportingTextTone,
+    style,
+  }: DebtCardProps) => {
     const { theme } = useUnistyles();
     const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
     const DirectionIcon = debt.direction === "they_owe_me" ? ArrowDownLeft : ArrowUpRight;
@@ -53,8 +63,15 @@ export const DebtCard = memo(
                     />
                   ) : null}
                 </View>
-                <Text muted style={styles.subtitle} numberOfLines={1}>
-                  {debt.subtitle ?? debt.reason}
+                <Text
+                  muted
+                  style={[
+                    styles.subtitle,
+                    supportingTextTone === "danger" ? styles.subtitleUrgent : null,
+                  ]}
+                  numberOfLines={1}
+                >
+                  {supportingText ?? debt.subtitle ?? debt.reason}
                 </Text>
               </View>
               <View style={styles.amountCol}>
@@ -152,6 +169,9 @@ const styles = StyleSheet.create((theme) => ({
   subtitle: {
     fontSize: 12,
     lineHeight: 17,
+  },
+  subtitleUrgent: {
+    fontWeight: "600",
   },
   amountCol: {
     alignItems: "flex-end",
