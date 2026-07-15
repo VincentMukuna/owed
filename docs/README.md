@@ -1,6 +1,6 @@
-# Owed documentation
+# Owwed documentation
 
-Product and design references for the Personal Credit Tracker MVP.
+Product, design, and architecture references for Owwed. Some documents are point-in-time PRDs and sprint plans kept as a historical record of how a feature was designed; the [performance guide](./performance.md) is a living document you should follow.
 
 | Document | Description |
 |----------|-------------|
