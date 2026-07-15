@@ -12,8 +12,9 @@
 | [design-brief.md](./design-brief.md) | Visual tone — calm, private, human |
 | [performance.md](./performance.md) | List/query performance — People list **must** use `FlashList` + `listSummaries()` |
 | [persistence-prd.md](./persistence-prd.md) | SQLite + React Query patterns |
+| [sorting-and-view-options-prd.md](./sorting-and-view-options-prd.md) | Supersedes this PRD's manual-sort deferral and §10 ordering rules |
 
-> This PRD intentionally focuses on the **product/UX** side. The person data model already exists and supports this feature (FK `debts.person_id → people.id`, `personRepository.listSummaries()`, `usePeople()`, prefetch + invalidation). The product agent's original data-model section is superseded by §7.
+> This PRD intentionally focuses on the **product/UX** side. The person data model already exists and supports this feature (FK `debts.person_id → people.id`, `personRepository.listSummaries()`, `usePeople()`, prefetch + invalidation). The product agent's original data-model section is superseded by §7. People ordering and manual sort controls are now governed by the Sorting and View Options PRD.
 
 ---
 
@@ -59,7 +60,7 @@ Without a People view a user can't easily answer:
 ## 4. Non-goals (v1)
 
 - **Manual person creation** — no standalone "Add person". People exist only via adding a debt. (No "No debts" person state to design.)
-- **Filter chips** (All / Active / Overdue / Settled) — deferred; v1 ships one smart default sort.
+- **Filter chips** (All / Active / Overdue / Settled) — still deferred. Sorting is specified separately in the Sorting and View Options PRD.
 - **Copy follow-up message** — deferred to a later phase (copy + tone frozen in §13 so it's drop-in later).
 - Contact import, WhatsApp / M-Pesa integration, automatic debtor messaging.
 - Duplicate-person merge, relationship/risk scoring, borrowing limits, shared/group debts, public profiles, collection workflows.
@@ -78,7 +79,7 @@ Agreed via grilling (§14). Do not re-litigate without product sign-off.
 | **Person scope** | People list = everyone with **≥1 non-archived linked debt**. No manual person creation in v1 |
 | **Person metadata** | **Edit Person** screen is the single place to set name/phone/notes. Add-debt stays name-only. Person detail hides phone/notes when empty |
 | **Person status** | Four states, priority **Overdue > Due soon > Active > Settled** (mirrors the debt engine, incl. `due-soon`) |
-| **Sort** | One smart default (§10). No manual sort/filter controls in v1 |
+| **Sort** | Superseded by [Sorting and View Options](./sorting-and-view-options-prd.md) |
 | **Search** | Name match always; phone match when phone present |
 | **v1 cut** | People list + Person detail + Add-debt-for-person + Edit Person + Search. **Defer:** filter chips, copy follow-up |
 | **Tone** | Calm, private, non-judgmental. Status vocab only: Overdue / Due soon / Active / Settled / Partially paid |
@@ -296,17 +297,9 @@ Notes:
 
 ---
 
-## 10. Sorting (smart default, no controls in v1)
+## 10. Sorting
 
-People list order:
-
-1. Overdue people (most overdue / soonest-past-due first)
-2. Due-soon people
-3. Active people by **highest remaining** amount
-4. Recently updated (`lastActivityAt`)
-5. Settled people last
-
-Implement as a single-pass comparator on the `PersonListView[]` (mirror `debt-list-utils` sort approach), computed once with `useMemo`. Manual sort/filter controls are out of scope (§4).
+Superseded by [PRD: Sorting and View Options](./sorting-and-view-options-prd.md), which retains a deterministic Needs attention default and adds user-selectable People orders.
 
 ---
 

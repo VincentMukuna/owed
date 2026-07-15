@@ -11,7 +11,14 @@ Product and design references for the Personal Credit Tracker MVP.
 | [people-prd.md](./people-prd.md) | **v1 People** — person-level view, Person detail, add-debt-for-person, edit person, search; Activity leaves the tab bar |
 | [bi-directional-debts-prd.md](./bi-directional-debts-prd.md) | **Bi-directional debts** — support both money owed to the user and money the user owes others without adding a separate module |
 | [debt-management-prd.md](./debt-management-prd.md) | **Debt management actions** — edit debt, archive debt, contextual payment actions, platform menus, and ledger-safe validation |
+| [sorting-and-view-options-prd.md](./sorting-and-view-options-prd.md) | **Sorting & View options** — contextual ordering for People, Debts, and the full Activity feed, with persistent per-screen preferences |
 | [backup-restore-prd.md](./backup-restore-prd.md) | **Backup & Restore** — local-first full app backup, destructive restore, and data ownership UX |
 | [backup-restore-implementation-plan.md](./backup-restore-implementation-plan.md) | **Backup & Restore implementation plan** — phased delivery, migration compatibility contract, and release test matrix |
 | [app-lock-prd.md](./app-lock-prd.md) | **App Lock** — four-digit PIN, optional biometrics, lifecycle locking, recovery, and privacy-cover requirements |
 | [performance.md](./performance.md) | **Scaling guidelines** — list/query/DB performance patterns and agent checklist |
+
+## Decision records
+
+| Record | Decision |
+|--------|----------|
+| [001-contextual-list-ordering.md](./decisions/001-contextual-list-ordering.md) | Use contextual, persistent ordering per surface instead of a universal sort menu |
