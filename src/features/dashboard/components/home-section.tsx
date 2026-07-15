@@ -6,6 +6,8 @@ import { StyleSheet } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 
+export const HOME_PAGE_PADDING = 20;
+
 type HomeSectionProps = {
   actionLabel?: string;
   children: ReactNode;

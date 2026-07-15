@@ -14,7 +14,11 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
 import { Avatar } from "@/components/ui/avatar";
-import { HomeCarouselPagination, HomeSection } from "@/features/dashboard/components/home-section";
+import {
+  HOME_PAGE_PADDING,
+  HomeCarouselPagination,
+  HomeSection,
+} from "@/features/dashboard/components/home-section";
 import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
 import type { HomeUpcomingSummary } from "@/features/debts/lib/debt-list-utils";
 import { formatDueDate } from "@/features/debts/lib/format-dates";
@@ -22,7 +26,6 @@ import type { DebtCardView } from "@/features/debts/view-models";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 const CARD_GAP = 12;
-const HOME_PAGE_PADDING = 20;
 
 type HomeUpcomingSectionProps = {
   onDebtAction: (action: DebtAction, debt: DebtCardView) => void;

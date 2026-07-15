@@ -76,7 +76,6 @@ import type { ReminderType } from "@/types";
 type DebtFocus =
   | { kind: "date"; date: string; type: ReminderType }
   | { kind: "attention" }
-  | { kind: "range"; from: string; to: string }
   | { kind: "paid-this-month" }
   | { kind: "filter"; filter: DebtFilterKey }
   | { kind: "direction"; direction: Exclude<DebtDirectionFilter, "all"> };
@@ -114,12 +113,8 @@ const SHEET_CONTAINER = (Platform.OS === "ios" ? FullWindowOverlay : undefined) 
 
 function scheduleDashboardFocusClear() {
   InteractionManager.runAfterInteractions(() => {
-    router.setParams({ focusDate: "", focusFrom: "", focusTo: "", focusType: "" });
+    router.setParams({ focusDate: "", focusType: "" });
   });
-}
-
-function isISODateParam(value: string | string[] | undefined): value is string {
-  return typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value);
 }
 
 function parseFilterParam(value: string | string[] | undefined): DebtFilterKey | null {
@@ -360,8 +355,6 @@ export function DebtsScreen() {
   const { data: debts = [], isPending } = useDebts();
   const params = useLocalSearchParams<{
     focusDate?: string;
-    focusFrom?: string;
-    focusTo?: string;
     focusType?: string;
     filter?: string;
     direction?: string;
@@ -401,15 +394,6 @@ export function DebtsScreen() {
       return { kind: "attention" };
     }
 
-    if (
-      focusType === "upcoming" &&
-      isISODateParam(params.focusFrom) &&
-      isISODateParam(params.focusTo) &&
-      params.focusFrom <= params.focusTo
-    ) {
-      return { kind: "range", from: params.focusFrom, to: params.focusTo };
-    }
-
     if (focusType === "paid-this-month") {
       return { kind: "paid-this-month" };
     }
@@ -435,26 +419,24 @@ export function DebtsScreen() {
       date: focusDate,
       type: focusType === "overdue" ? "overdue" : "due",
     };
-  }, [params.focusDate, params.focusFrom, params.focusTo, params.focusType]);
+  }, [params.focusDate, params.focusType]);
 
   const canUseLiquidGlass =
     Platform.OS === "ios" && isLiquidGlassAvailable() && isGlassEffectAPIAvailable();
 
   const clearDashboardFocusParams = useCallback(() => {
-    if (!params.focusType && !params.focusDate && !params.focusFrom && !params.focusTo) {
+    if (!params.focusType && !params.focusDate) {
       return;
     }
 
     scheduleDashboardFocusClear();
-  }, [params.focusDate, params.focusFrom, params.focusTo, params.focusType]);
+  }, [params.focusDate, params.focusType]);
 
   const dismissFocusBanner = useCallback(() => {
     setFilter("all");
     setDirection("all");
     router.setParams({
       focusDate: "",
-      focusFrom: "",
-      focusTo: "",
       focusType: "",
       filter: "",
       direction: "",
@@ -495,50 +477,41 @@ export function DebtsScreen() {
         ? filterDebtsByDueDate(debts, focus.date, sort)
         : focus?.kind === "attention"
           ? filterDebtsNeedingAttention(debts, sort)
-          : focus?.kind === "range"
+          : focus?.kind === "paid-this-month"
             ? filterSearchAndSortDebts(
                 debts,
-                "all",
+                "paid-this-month",
                 deferredSearchQuery,
                 "all",
-                { from: focus.from, to: focus.to },
+                undefined,
                 sort,
               )
-            : focus?.kind === "paid-this-month"
+            : focus?.kind === "filter"
               ? filterSearchAndSortDebts(
                   debts,
-                  "paid-this-month",
+                  focus.filter,
                   deferredSearchQuery,
                   "all",
                   undefined,
                   sort,
                 )
-              : focus?.kind === "filter"
+              : focus?.kind === "direction"
                 ? filterSearchAndSortDebts(
                     debts,
-                    focus.filter,
-                    deferredSearchQuery,
                     "all",
+                    deferredSearchQuery,
+                    focus.direction,
                     undefined,
                     sort,
                   )
-                : focus?.kind === "direction"
-                  ? filterSearchAndSortDebts(
-                      debts,
-                      "all",
-                      deferredSearchQuery,
-                      focus.direction,
-                      undefined,
-                      sort,
-                    )
-                  : filterSearchAndSortDebts(
-                      debts,
-                      deferredFilter,
-                      deferredSearchQuery,
-                      deferredDirection,
-                      dateRange,
-                      sort,
-                    ),
+                : filterSearchAndSortDebts(
+                    debts,
+                    deferredFilter,
+                    deferredSearchQuery,
+                    deferredDirection,
+                    dateRange,
+                    sort,
+                  ),
     [debts, deferredFilter, deferredSearchQuery, deferredDirection, dateRange, focus, sort],
   );
 
@@ -614,22 +587,22 @@ export function DebtsScreen() {
     (key: DebtFilterKey) => {
       selectionChange();
       setFilter(key);
-      if (params.focusType || params.focusDate || params.focusFrom || params.focusTo) {
+      if (params.focusType || params.focusDate) {
         scheduleDashboardFocusClear();
       }
     },
-    [params.focusDate, params.focusFrom, params.focusTo, params.focusType],
+    [params.focusDate, params.focusType],
   );
 
   const selectDirection = useCallback(
     (key: DebtDirectionFilter) => {
       selectionChange();
       setDirection(key);
-      if (params.focusType || params.focusDate || params.focusFrom || params.focusTo) {
+      if (params.focusType || params.focusDate) {
         scheduleDashboardFocusClear();
       }
     },
-    [params.focusDate, params.focusFrom, params.focusTo, params.focusType],
+    [params.focusDate, params.focusType],
   );
 
   const openDatePicker = useCallback(
@@ -693,8 +666,6 @@ export function DebtsScreen() {
     resetSort();
     router.setParams({
       focusDate: "",
-      focusFrom: "",
-      focusTo: "",
       focusType: "",
       direction: "",
       filter: "",
@@ -741,10 +712,6 @@ export function DebtsScreen() {
 
     if (focus.kind === "attention") {
       return `${count} ${count === 1 ? "debt needs" : "debts need"} attention`;
-    }
-
-    if (focus.kind === "range") {
-      return `${count} upcoming through ${formatDueDate(focus.to)}`;
     }
 
     if (focus.kind === "filter") {

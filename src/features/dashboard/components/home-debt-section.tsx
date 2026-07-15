@@ -33,11 +33,12 @@ export function HomeDebtSection({
         return (
           <ListRowContainer
             key={debt.id}
-            leadingInset={LIST_LEADING_INSET_AVATAR_MD + 2}
+            leadingInset={LIST_LEADING_INSET_AVATAR_MD}
             showDivider={index > 0}
           >
             <DebtCard
               debt={debt}
+              density="compact"
               onAction={onDebtAction}
               onPress={() => onDebtPress(debt.id)}
               showDirectionCue={showDirectionCue}

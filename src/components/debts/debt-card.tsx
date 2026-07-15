@@ -15,6 +15,7 @@ import { formatCurrency } from "@/lib/utils/formatters";
 
 type DebtCardProps = {
   debt: DebtCardView;
+  density?: "comfortable" | "compact";
   onPress: () => void;
   onAction?: (action: DebtAction, debt: DebtCardView) => void;
   showDirectionCue?: boolean;
@@ -26,6 +27,7 @@ type DebtCardProps = {
 export const DebtCard = memo(
   ({
     debt,
+    density = "comfortable",
     onPress,
     onAction,
     showDirectionCue = false,
@@ -40,7 +42,10 @@ export const DebtCard = memo(
       debt.direction === "they_owe_me" ? theme.colors.success : theme.colors.danger;
 
     const content = (
-      <PressableScale onPress={onPress} style={[styles.card, style]}>
+      <PressableScale
+        onPress={onPress}
+        style={[styles.card, density === "compact" ? styles.cardCompact : null, style]}
+      >
         <View style={styles.row}>
           <Avatar
             initials={debt.initials}
@@ -132,10 +137,13 @@ const styles = StyleSheet.create((theme) => ({
   card: {
     paddingVertical: 12,
   },
+  cardCompact: {
+    paddingVertical: 10,
+  },
   row: {
     flexDirection: "row",
     alignItems: "center",
-    gap: 14,
+    gap: 12,
   },
   body: {
     flex: 1,
@@ -150,6 +158,7 @@ const styles = StyleSheet.create((theme) => ({
   meta: {
     flex: 1,
     minWidth: 0,
+    gap: 4,
   },
   nameRow: {
     flexDirection: "row",
@@ -177,6 +186,7 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "flex-end",
     flexShrink: 0,
     maxWidth: "42%",
+    gap: 4,
   },
   amount: {
     fontSize: 16,

@@ -13,11 +13,14 @@ import { ChevronRight, CircleAlert, CircleCheck, Scale } from "lucide-react-nati
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import { PressableScale } from "@/components/shared/pressable-scale";
-import { HomeCarouselPagination, HomeSection } from "@/features/dashboard/components/home-section";
+import {
+  HOME_PAGE_PADDING,
+  HomeCarouselPagination,
+  HomeSection,
+} from "@/features/dashboard/components/home-section";
 import { formatCurrency } from "@/lib/utils/formatters";
 
 const CARD_GAP = 12;
-const HOME_PAGE_PADDING = 20;
 
 type InsightItem = {
   accent: "brand" | "success" | "warning";

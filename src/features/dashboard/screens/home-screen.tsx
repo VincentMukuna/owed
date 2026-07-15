@@ -19,6 +19,7 @@ import { useRecentActivities } from "@/features/activity/hooks/use-recent-activi
 import { HomeActivitySection } from "@/features/dashboard/components/home-activity-section";
 import { HomeDebtSection } from "@/features/dashboard/components/home-debt-section";
 import { HomeInsightsSection } from "@/features/dashboard/components/home-insights-section";
+import { HOME_PAGE_PADDING } from "@/features/dashboard/components/home-section";
 import { HomeUpcomingSection } from "@/features/dashboard/components/home-upcoming-section";
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
@@ -99,8 +100,6 @@ export function HomeScreen() {
         filter: "all",
         direction: "all",
         focusDate: "",
-        focusFrom: "",
-        focusTo: "",
         focusType: filter === "paid-this-month" ? "paid-this-month" : `filter-${filter}`,
       },
     });
@@ -113,8 +112,6 @@ export function HomeScreen() {
         filter: "all",
         direction: "all",
         focusDate: "",
-        focusFrom: "",
-        focusTo: "",
         focusType: `direction-${direction}`,
       },
     });
@@ -127,8 +124,6 @@ export function HomeScreen() {
         filter: "all",
         direction: "all",
         focusDate: "",
-        focusFrom: "",
-        focusTo: "",
         focusType: "attention",
       },
     });
@@ -379,7 +374,7 @@ const styles = StyleSheet.create((theme) => ({
     marginTop: 2,
   },
   scroll: {
-    paddingHorizontal: 20,
+    paddingHorizontal: HOME_PAGE_PADDING,
     paddingBottom: FAB_SCROLL_PADDING,
   },
   listHeader: {

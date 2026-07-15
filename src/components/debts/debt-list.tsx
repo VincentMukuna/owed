@@ -5,11 +5,12 @@ import { RefreshControl, type RefreshControlProps } from "react-native";
 import { FlashList, type FlashListRef } from "@shopify/flash-list";
 
 import { DebtCard } from "@/components/debts/debt-card";
-import { ListRowContainer } from "@/components/shared/list-inset-divider";
+import {
+  LIST_LEADING_INSET_AVATAR_MD,
+  ListRowContainer,
+} from "@/components/shared/list-inset-divider";
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import type { DebtCardView } from "@/features/debts/view-models";
-
-const DEBT_LIST_TEXT_INSET = 54;
 
 type DebtListProps = {
   debts: DebtCardView[];
@@ -38,7 +39,7 @@ const DebtListInner = forwardRef<FlashListRef<DebtCardView>, DebtListProps>(
   ) => {
     const renderItem = useCallback(
       ({ item, index }: { item: DebtCardView; index: number }) => (
-        <ListRowContainer leadingInset={DEBT_LIST_TEXT_INSET} showDivider={index > 0}>
+        <ListRowContainer leadingInset={LIST_LEADING_INSET_AVATAR_MD} showDivider={index > 0}>
           <DebtCard
             debt={item}
             onAction={onDebtAction}
