@@ -1,0 +1,101 @@
+appId: com.vincentmukuna.owed
+name: Website screenshots
+---
+- launchApp:
+    stopApp: true
+    permissions:
+      notifications: deny
+
+- runFlow:
+    when:
+      visible: "Explore app"
+    commands:
+      - tapOn: "Explore app"
+
+- openLink: "owed://screenshot-automation?theme=light&target=home"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: "Here's what's unsettled"
+    timeout: 30000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/home
+
+- openLink: "owed://debts"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*Olivia Bennett.*"
+    timeout: 15000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/debts
+
+- openLink: "owed://people"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*Olivia Bennett.*"
+    timeout: 15000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/people
+
+- openLink: "owed://home"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: "Here's what's unsettled"
+    timeout: 15000
+- tapOn: ".*Notifications.*"
+- extendedWaitUntil:
+    visible: ".*Due today.*"
+    timeout: 15000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/reminders
+
+- openLink: "owed://screenshot-automation?theme=dark&target=home"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: "Here's what's unsettled"
+    timeout: 30000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/home
+
+- openLink: "owed://debts"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*Olivia Bennett.*"
+    timeout: 15000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/debts
+
+- openLink: "owed://people"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: ".*Olivia Bennett.*"
+    timeout: 15000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/people
+
+- openLink: "owed://home"
+- tapOn:
+    text: "Open"
+    optional: true
+- extendedWaitUntil:
+    visible: "Here's what's unsettled"
+    timeout: 15000
+- tapOn: ".*Notifications.*"
+- extendedWaitUntil:
+    visible: ".*Due today.*"
+    timeout: 15000
+- runFlow: helpers/assert-capture-ready.yaml
+- takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/reminders

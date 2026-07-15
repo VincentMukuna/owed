@@ -1,0 +1,5 @@
+appId: com.vincentmukuna.owed
+---
+- assertNotVisible: ".*Open debugger to view warnings.*"
+- assertNotVisible: ".*Never forget.*what's owed.*"
+- assertNotVisible: "Explore app"
