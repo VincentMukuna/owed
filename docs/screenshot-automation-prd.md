@@ -297,6 +297,11 @@ Before replacing checked-in assets, verify:
 - Replacement covers the complete owned set, not individual files as they arrive.
 - If website build validation fails after replacement, the command exits non-zero and clearly reports that generated assets are present for inspection. It must not use destructive Git commands to restore them.
 - Temporary simulator/capture resources are cleaned up on success, failure, or interruption where practical.
+- Successful raw and processed capture directories are deleted automatically. Failed or interrupted
+  runs retain artifacts for diagnosis, with only the three newest failures kept. The cached local
+  Maestro installation is not removed by automatic cleanup.
+- `npm run screenshots:clean` removes all retained screenshot run artifacts without deleting the
+  cached Maestro installation.
 
 ### 11.3 Repository safety
 

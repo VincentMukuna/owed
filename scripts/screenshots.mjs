@@ -2,7 +2,16 @@
 
 import { spawn, spawnSync } from "node:child_process";
 import { constants as fsConstants } from "node:fs";
-import { access, copyFile, mkdir, readFile, rename, rm, writeFile } from "node:fs/promises";
+import {
+  access,
+  copyFile,
+  mkdir,
+  readFile,
+  readdir,
+  rename,
+  rm,
+  writeFile,
+} from "node:fs/promises";
 import { createRequire } from "node:module";
 import net from "node:net";
 import path from "node:path";
@@ -26,6 +35,7 @@ const FULL_WIDTH = 1125;
 const FULL_HEIGHT = 2436;
 const HERO_WIDTH = 1920;
 const HERO_HEIGHT = 1440;
+const MAX_FAILED_RUNS = 3;
 
 const SCREENS = ["home", "debts", "people", "reminders"];
 const THEMES = ["light", "dark"];
@@ -46,6 +56,10 @@ function log(message) {
 
 function fail(message) {
   throw new Error(message);
+}
+
+function warn(message) {
+  process.stderr.write(`[screenshots] warning: ${message}\n`);
 }
 
 function commandExists(command) {
@@ -417,8 +431,40 @@ async function checkOnly() {
   log(`validated ${ALL_ASSETS.length} checked-in assets`);
 }
 
+async function listArtifactRunDirectories() {
+  const entries = await readdir(ARTIFACT_ROOT, { withFileTypes: true }).catch((error) => {
+    if (error?.code === "ENOENT") return [];
+    throw error;
+  });
+  return entries
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => entry.name)
+    .sort((a, b) => b.localeCompare(a));
+}
+
+async function pruneFailedRunArtifacts(keepCount = MAX_FAILED_RUNS) {
+  const runDirectories = await listArtifactRunDirectories();
+  const stale = runDirectories.slice(Math.max(0, keepCount));
+  await Promise.all(
+    stale.map((directory) =>
+      rm(path.join(ARTIFACT_ROOT, directory), { recursive: true, force: true }),
+    ),
+  );
+  if (stale.length > 0) {
+    log(`pruned ${stale.length} old screenshot artifact ${stale.length === 1 ? "run" : "runs"}`);
+  }
+}
+
+async function cleanAllRunArtifacts() {
+  await rm(ARTIFACT_ROOT, { recursive: true, force: true });
+  log("removed all screenshot run artifacts; cached Maestro tools were kept");
+}
+
 async function generate() {
   await preflight();
+  // Successful runs remove themselves. Anything left here is a failed or
+  // interrupted run, so retain only enough recent history for debugging.
+  await pruneFailedRunArtifacts(MAX_FAILED_RUNS - 1);
   const stamp = new Date().toISOString().replaceAll(":", "-").replaceAll(".", "-");
   const runDir = path.join(ARTIFACT_ROOT, stamp);
   const rawDir = path.join(runDir, "raw");
@@ -465,7 +511,13 @@ async function generate() {
     log(`complete in ${Math.round((Date.now() - startedAt) / 1000)}s`);
     log(`generated ${ALL_ASSETS.length} assets with ${simulator.device}, iOS ${simulator.runtime}`);
     log(changed ? `changed assets:\n${changed}` : "assets already matched the generated output");
-    log(`run artifacts: ${path.relative(ROOT, runDir)}`);
+    await rm(runDir, { recursive: true, force: true }).catch((error) => {
+      warn(`could not remove successful run artifacts: ${error.message}`);
+    });
+    log("cleaned successful run artifacts");
+  } catch (error) {
+    log(`failed run artifacts preserved: ${path.relative(ROOT, runDir)}`);
+    throw error;
   } finally {
     await stopMetro(metro);
     if (simulator?.udid) {
@@ -475,7 +527,9 @@ async function generate() {
 }
 
 try {
-  if (process.argv.includes("--check")) {
+  if (process.argv.includes("--clean")) {
+    await cleanAllRunArtifacts();
+  } else if (process.argv.includes("--check")) {
     await checkOnly();
   } else {
     await generate();

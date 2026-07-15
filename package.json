@@ -79,6 +79,7 @@
     "website": "npm --prefix website run dev",
     "screenshots": "node ./scripts/screenshots.mjs",
     "screenshots:check": "node ./scripts/screenshots.mjs --check",
+    "screenshots:clean": "node ./scripts/screenshots.mjs --clean",
     "test": "vitest run",
     "test:watch": "vitest",
     "lint": "expo lint",
