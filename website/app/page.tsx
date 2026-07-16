@@ -10,12 +10,21 @@ export const metadata: Metadata = {
 };
 
 const workflow = [
-  ["See what is outstanding", "See who owes what and what you still need to pay."],
-  ["Keep the full picture", "Save the amount, payments, due date, and remaining balance together."],
-  [
-    "Get a reminder when you need it",
-    "Set reminders on your phone so you do not have to remember every date.",
-  ],
+  {
+    title: "See what is outstanding",
+    text: "See who owes what and what you still need to pay, without piecing the story together.",
+    note: "One calm overview",
+  },
+  {
+    title: "Keep the full picture",
+    text: "Amounts, payments, due dates, and remaining balances stay together from start to finish.",
+    note: "A history you can trust",
+  },
+  {
+    title: "Remember at the right time",
+    text: "Set a private reminder on your phone and let Owwed hold the date for you.",
+    note: "Quiet, useful reminders",
+  },
 ];
 
 const faqs = [
@@ -52,86 +61,85 @@ export default function Home() {
       <Header />
       <main>
         <section className="hero">
-          <div className="container hero-copy">
-            <span className="eyebrow">
-              <span className="status-dot" aria-hidden="true" /> Private by design
-            </span>
-            <h1>
-              A simpler way
-              <br />
-              to remember money.
-            </h1>
-            <p className="hero-summary">
-              Keep track of money you have lent, borrowed, and paid back without digging through
-              messages, notes, or spreadsheets.
-            </p>
-            <div className="hero-cta">
-              <StoreButtons />
+          <div className="container hero-layout">
+            <div className="hero-copy">
+              <span className="eyebrow">
+                <span className="status-dot" aria-hidden="true" /> Private by design
+              </span>
+              <h1>A simpler way to remember money.</h1>
+              <p className="hero-summary">
+                Keep track of money you have lent, borrowed, and paid back without digging through
+                messages, notes, or spreadsheets.
+              </p>
+              <div className="hero-cta">
+                <StoreButtons />
+              </div>
+              <ul className="hero-trust" aria-label="Owwed benefits">
+                <li>Free beta</li>
+                <li>No account</li>
+                <li>Data stays on your device</li>
+              </ul>
             </div>
-            <ul className="hero-trust" aria-label="Owwed benefits">
-              <li>Free beta</li>
-              <li>No account</li>
-              <li>Data stays on your device</li>
-            </ul>
-          </div>
-          <div className="container hero-visual" aria-label="Owwed shown on three phones">
-            <Image
-              className="theme-image-light"
-              src="/screens/hero.png"
-              alt="The Owwed home, debts, and people screens on three phones"
-              width="1920"
-              height="1440"
-              fetchPriority="high"
-              sizes="(max-width: 1180px) 100vw, 1180px"
-            />
-            <Image
-              className="theme-image-dark"
-              src="/screens/hero-dark.png"
-              alt="The Owwed home, debts, and people screens in dark mode on three phones"
-              width="1920"
-              height="1440"
-              fetchPriority="high"
-              sizes="(max-width: 1180px) 100vw, 1180px"
-            />
+            <div className="hero-showcase" aria-label="Owwed home screen on an iPhone">
+              <span className="showcase-orbit orbit-one" aria-hidden="true" />
+              <span className="showcase-orbit orbit-two" aria-hidden="true" />
+              <div className="phone-frame hero-phone">
+                <span className="face-id-blob" aria-hidden="true" />
+                <Image
+                  className="theme-image-light"
+                  src="/screens/home.jpeg"
+                  alt="Owwed home screen showing outstanding balances and upcoming debts"
+                  width="473"
+                  height="1024"
+                  fetchPriority="high"
+                  sizes="(max-width: 640px) 68vw, 310px"
+                />
+                <Image
+                  className="theme-image-dark"
+                  src="/screens/home-dark.jpeg"
+                  alt="Owwed home screen in dark mode showing outstanding balances and upcoming debts"
+                  width="473"
+                  height="1024"
+                  fetchPriority="high"
+                  sizes="(max-width: 640px) 68vw, 310px"
+                />
+              </div>
+            </div>
           </div>
         </section>
 
         <section className="workflow-section" id="how-it-works" aria-labelledby="workflow-title">
           <div className="container workflow-layout">
-            <div>
-              <p className="section-label">What Owwed does</p>
-              <h2 id="workflow-title">Every money promise, in one place.</h2>
+            <div className="workflow-heading">
+              <div>
+                <p className="section-label">What Owwed does</p>
+                <h2 id="workflow-title">Every money promise, in one place.</h2>
+              </div>
               <p className="section-intro">
                 Whether you covered dinner, lent a friend money, or need to pay someone back, Owwed
-                shows what is still outstanding and what has already been paid.
+                keeps the details clear without making the relationship feel transactional.
               </p>
-              <ol className="workflow-list">
-                {workflow.map(([title, text]) => (
-                  <li key={title}>
+            </div>
+            <ol className="workflow-list">
+              {workflow.map(({ title, text, note }, index) => (
+                <li key={title}>
+                  <div className={`workflow-motif motif-${index + 1}`} aria-hidden="true">
+                    <span />
+                    <span />
+                    <span />
+                  </div>
+                  <span className="workflow-number">0{index + 1}</span>
+                  <div className="workflow-copy">
+                    <p className="workflow-note">{note}</p>
                     <h3>{title}</h3>
                     <p>{text}</p>
-                  </li>
-                ))}
-              </ol>
-            </div>
-            <div className="phone-frame workflow-phone">
-              <span className="face-id-blob" aria-hidden="true" />
-              <Image
-                className="theme-image-light"
-                src="/screens/home.jpeg"
-                alt="Owwed home screen showing outstanding balances and upcoming debts"
-                width="473"
-                height="1024"
-                sizes="(max-width: 640px) 72vw, 326px"
-              />
-              <Image
-                className="theme-image-dark"
-                src="/screens/home-dark.jpeg"
-                alt="Owwed home screen in dark mode showing outstanding balances and upcoming debts"
-                width="473"
-                height="1024"
-                sizes="(max-width: 640px) 72vw, 326px"
-              />
+                  </div>
+                </li>
+              ))}
+            </ol>
+            <div className="workflow-footnote">
+              <span className="status-dot" aria-hidden="true" />
+              Designed for the small, everyday money moments between people.
             </div>
           </div>
         </section>
