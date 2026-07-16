@@ -92,12 +92,7 @@ export const DebtCard = memo(
                 </Text>
               </View>
               <View style={styles.amountCol}>
-                <Text
-                  adjustsFontSizeToFit
-                  minimumFontScale={0.78}
-                  numberOfLines={1}
-                  style={styles.amount}
-                >
+                <Text numberOfLines={1} style={styles.amount}>
                   {formatCurrency(
                     debt.status === "paid" ? debt.amount : debt.remaining,
                     debt.currency,
@@ -182,7 +177,8 @@ const styles = StyleSheet.create((theme) => ({
     flexShrink: 0,
   },
   name: {
-    flexShrink: 1,
+    flex: 1,
+    minWidth: 0,
     fontSize: 15,
     fontWeight: "600",
     lineHeight: 20,
@@ -196,7 +192,8 @@ const styles = StyleSheet.create((theme) => ({
   },
   amountCol: {
     alignItems: "flex-end",
-    flexShrink: 0,
+    flexGrow: 0,
+    flexShrink: 1,
     maxWidth: "42%",
     gap: 4,
   },
