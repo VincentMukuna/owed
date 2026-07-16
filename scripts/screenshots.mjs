@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+import { Buffer } from "node:buffer";
 import { spawn, spawnSync } from "node:child_process";
 import { constants as fsConstants } from "node:fs";
 import {
@@ -23,7 +24,6 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const requireFromWebsite = createRequire(path.join(ROOT, "website", "package.json"));
 const sharp = requireFromWebsite("sharp");
 
-const APP_ID = "com.vincentmukuna.owed";
 const SIMULATOR_NAME = "Owed Website Screenshots";
 const PREFERRED_DEVICE_NAMES = [
   "iPhone 13 Pro Max",
@@ -38,8 +38,11 @@ const ARTIFACT_ROOT = path.join(ROOT, ".artifacts", "screenshots");
 const LOCAL_MAESTRO = path.join(ROOT, ".artifacts", "tools", "maestro", "bin", "maestro");
 const LOCAL_TOOL_HOME = path.join(ROOT, ".artifacts", "tools", "home");
 const SUCCESS_MARKER = ".success";
+const METRO_START_TIMEOUT_MS = 90_000;
 const FULL_WIDTH = 1125;
 const FULL_HEIGHT = 2436;
+const STORE_WIDTH = 1284;
+const STORE_HEIGHT = 2778;
 const HERO_WIDTH = 1920;
 const HERO_HEIGHT = 1440;
 const MAX_FAILED_RUNS = 3;
@@ -60,7 +63,7 @@ const STORE_ASSETS = THEMES.flatMap((theme) =>
   STORE_SCREENS.map((screen) => ({
     screen,
     theme,
-    filename: `${screen}${theme === "dark" ? "-dark" : ""}.jpeg`,
+    filename: `${screen}${theme === "dark" ? "-dark" : ""}.png`,
   })),
 );
 let maestroCommand = "maestro";
@@ -136,9 +139,7 @@ async function runLogged(command, args, options) {
 
     if (status !== 0) {
       const detail = logTail(await readFile(options.logPath, "utf8"));
-      fail(
-        `${options.label} failed with status ${status}.${detail ? `\n\n${detail}` : ""}`,
-      );
+      fail(`${options.label} failed with status ${status}.${detail ? `\n\n${detail}` : ""}`);
     }
   } finally {
     clearInterval(heartbeat);
@@ -170,9 +171,9 @@ function parseJsonCommand(command, args) {
   return JSON.parse(run(command, args, { capture: true }));
 }
 
-async function isPortOpen(port) {
+async function isHostPortOpen(host, port) {
   return new Promise((resolve) => {
-    const socket = net.createConnection({ host: "127.0.0.1", port });
+    const socket = net.createConnection({ host, port });
     socket.once("connect", () => {
       socket.destroy();
       resolve(true);
@@ -185,13 +186,30 @@ async function isPortOpen(port) {
   });
 }
 
-async function waitForPort(port, timeoutMs) {
+async function isPortOpen(port) {
+  const results = await Promise.all([
+    isHostPortOpen("127.0.0.1", port),
+    isHostPortOpen("::1", port),
+  ]);
+  return results.some(Boolean);
+}
+
+async function waitForMetro(metro, timeoutMs) {
   const deadline = Date.now() + timeoutMs;
   while (Date.now() < deadline) {
-    if (await isPortOpen(port)) return;
+    if (await isPortOpen(METRO_PORT)) return;
+    if (metro.child.exitCode !== null) {
+      const detail = logTail(Buffer.concat(metro.output).toString());
+      fail(
+        `Metro exited with status ${metro.child.exitCode} before opening port ${METRO_PORT}.${detail ? `\n\n${detail}` : ""}`,
+      );
+    }
     await new Promise((resolve) => setTimeout(resolve, 500));
   }
-  fail(`Metro did not open port ${port} within ${timeoutMs / 1000}s.`);
+  const detail = logTail(Buffer.concat(metro.output).toString());
+  fail(
+    `Metro did not open port ${METRO_PORT} within ${timeoutMs / 1000}s.${detail ? `\n\n${detail}` : ""}`,
+  );
 }
 
 function metroOwnerCwd() {
@@ -276,6 +294,15 @@ function prepareSimulator() {
   const deviceType = selectDeviceType();
   let simulator = findExistingSimulator(runtime.identifier);
   let udid;
+
+  if (simulator && simulator.deviceTypeIdentifier !== deviceType.identifier) {
+    if (simulator.state === "Booted") {
+      run("xcrun", ["simctl", "shutdown", simulator.udid]);
+    }
+    log(`recreating the screenshot simulator as ${deviceType.name}`);
+    run("xcrun", ["simctl", "delete", simulator.udid]);
+    simulator = undefined;
+  }
 
   if (simulator) {
     udid = simulator.udid;
@@ -363,10 +390,7 @@ async function normalizeCaptures(rawDir, processedDir, storeDir) {
     const input = path.join(rawDir, asset.theme, `${asset.screen}.png`);
     const output = path.join(storeDir, asset.filename);
     await access(input, fsConstants.R_OK).catch(() => fail(`Missing Maestro capture: ${input}`));
-    await sharp(input)
-      .resize(FULL_WIDTH, FULL_HEIGHT, { fit: "cover", position: "centre" })
-      .jpeg({ quality: 90, chromaSubsampling: "4:4:4", mozjpeg: true })
-      .toFile(output);
+    await copyFile(input, output);
   }
 }
 
@@ -507,17 +531,17 @@ async function validateStoreAssetSet(directory) {
   await Promise.all(
     STORE_ASSETS.map(({ filename }) =>
       validateImage(path.join(directory, filename), {
-        format: "jpeg",
-        width: FULL_WIDTH,
-        height: FULL_HEIGHT,
+        format: "png",
+        width: STORE_WIDTH,
+        height: STORE_HEIGHT,
       }),
     ),
   );
 
   for (const screen of STORE_SCREENS) {
     const [light, dark] = await Promise.all([
-      readFile(path.join(directory, `${screen}.jpeg`)),
-      readFile(path.join(directory, `${screen}-dark.jpeg`)),
+      readFile(path.join(directory, `${screen}.png`)),
+      readFile(path.join(directory, `${screen}-dark.png`)),
     ]);
     if (light.equals(dark)) fail(`${screen} store light and dark captures are byte-identical.`);
   }
@@ -615,11 +639,12 @@ async function generate() {
   let metro;
   let simulator;
   try {
-    simulator = prepareSimulator();
     if (!reuseExistingMetro) {
+      log(`starting Metro on port ${METRO_PORT}`);
       metro = startMetro(path.join(runDir, "metro.log"));
-      await waitForPort(METRO_PORT, 30_000);
     }
+    simulator = prepareSimulator();
+    if (metro) await waitForMetro(metro, METRO_START_TIMEOUT_MS);
     await runLogged(
       "npx",
       ["expo", "run:ios", "--configuration", "Debug", "--device", simulator.udid, "--no-bundler"],

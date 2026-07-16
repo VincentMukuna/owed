@@ -16,9 +16,10 @@ export function useTabScrollPadding(extra = 24): number {
 type TabScreenProps = {
   children: ReactNode;
   style?: ViewStyle;
+  testID?: string;
 };
 
-export function TabScreen({ children, style }: TabScreenProps) {
+export function TabScreen({ children, style, testID }: TabScreenProps) {
   const { theme } = useUnistyles();
 
   return (
@@ -26,7 +27,11 @@ export function TabScreen({ children, style }: TabScreenProps) {
       edges={["top", "left", "right"]}
       style={[styles.safe, { backgroundColor: theme.colors.background }]}
     >
-      <View style={[styles.content, style, { backgroundColor: theme.colors.background }]}>
+      <View
+        collapsable={!testID}
+        style={[styles.content, style, { backgroundColor: theme.colors.background }]}
+        testID={testID}
+      >
         {children}
       </View>
     </SafeAreaView>

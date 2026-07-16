@@ -770,7 +770,7 @@ export function DebtsScreen() {
 
   return (
     <>
-      <TabScreen>
+      <TabScreen testID="debts-screen-ready">
         <View style={styles.header}>
           {searchOpen ? (
             <>

@@ -6,48 +6,37 @@ name: Website screenshots
     permissions:
       notifications: deny
 
-- runFlow:
-    when:
-      visible: "Explore app"
-    commands:
-      - tapOn: "Explore app"
-
 - openLink: "owed://screenshot-automation?theme=light&target=home"
 - tapOn:
     text: "Open"
     optional: true
 - extendedWaitUntil:
-    visible: "Here's what's unsettled"
+    visible:
+      id: "home-screen-ready"
     timeout: 30000
 - runFlow: helpers/assert-capture-ready.yaml
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/home
 
 - openLink: "owed://debts"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
-    visible: ".*Olivia Bennett.*"
+    visible:
+      id: "debts-screen-ready"
     timeout: 15000
 - runFlow: helpers/assert-capture-ready.yaml
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/debts
 
 - openLink: "owed://people"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
-    visible: ".*Olivia Bennett.*"
+    visible:
+      id: "people-screen-ready"
     timeout: 15000
 - runFlow: helpers/assert-capture-ready.yaml
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/people
 
 - openLink: "owed://home"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
-    visible: "Here's what's unsettled"
+    visible:
+      id: "home-screen-ready"
     timeout: 15000
 - tapOn: ".*Notifications.*"
 - extendedWaitUntil:
@@ -57,9 +46,6 @@ name: Website screenshots
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/reminders
 
 - openLink: "owed://screenshot-automation?theme=light&target=debt-detail"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
     visible:
       id: "debt-detail-ready"
@@ -68,9 +54,6 @@ name: Website screenshots
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/debt-details
 
 - openLink: "owed://screenshot-automation?theme=light&target=person-detail"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
     visible:
       id: "person-detail-ready"
@@ -79,20 +62,14 @@ name: Website screenshots
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/person-detail
 
 - openLink: "owed://screenshot-automation?theme=light&target=activity"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
     visible:
-      id: "activity-screen-ready"
+      id: "Activity"
     timeout: 30000
 - runFlow: helpers/assert-capture-ready.yaml
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/activity
 
 - openLink: "owed://screenshot-automation?theme=light&target=settings"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
     visible:
       id: "settings-screen-ready"
@@ -102,41 +79,33 @@ name: Website screenshots
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/light/settings
 
 - openLink: "owed://screenshot-automation?theme=dark&target=home"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
-    visible: "Here's what's unsettled"
+    visible:
+      id: "home-screen-ready"
     timeout: 30000
 - runFlow: helpers/assert-capture-ready.yaml
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/home
 
 - openLink: "owed://debts"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
-    visible: ".*Olivia Bennett.*"
+    visible:
+      id: "debts-screen-ready"
     timeout: 15000
 - runFlow: helpers/assert-capture-ready.yaml
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/debts
 
 - openLink: "owed://people"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
-    visible: ".*Olivia Bennett.*"
+    visible:
+      id: "people-screen-ready"
     timeout: 15000
 - runFlow: helpers/assert-capture-ready.yaml
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/people
 
 - openLink: "owed://home"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
-    visible: "Here's what's unsettled"
+    visible:
+      id: "home-screen-ready"
     timeout: 15000
 - tapOn: ".*Notifications.*"
 - extendedWaitUntil:
@@ -146,9 +115,6 @@ name: Website screenshots
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/reminders
 
 - openLink: "owed://screenshot-automation?theme=dark&target=debt-detail"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
     visible:
       id: "debt-detail-ready"
@@ -157,9 +123,6 @@ name: Website screenshots
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/debt-details
 
 - openLink: "owed://screenshot-automation?theme=dark&target=person-detail"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
     visible:
       id: "person-detail-ready"
@@ -168,20 +131,14 @@ name: Website screenshots
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/person-detail
 
 - openLink: "owed://screenshot-automation?theme=dark&target=activity"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
     visible:
-      id: "activity-screen-ready"
+      id: "Activity"
     timeout: 30000
 - runFlow: helpers/assert-capture-ready.yaml
 - takeScreenshot: ${MAESTRO_SCREENSHOT_DIR}/dark/activity
 
 - openLink: "owed://screenshot-automation?theme=dark&target=settings"
-- tapOn:
-    text: "Open"
-    optional: true
 - extendedWaitUntil:
     visible:
       id: "settings-screen-ready"

@@ -148,7 +148,7 @@ export function PeopleScreen() {
 
   return (
     <>
-      <TabScreen>
+      <TabScreen testID="people-screen-ready">
         <View style={styles.header}>
           {searchOpen ? (
             <>

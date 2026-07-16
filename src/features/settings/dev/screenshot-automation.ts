@@ -19,6 +19,7 @@ import {
 import { simulateRealisticUsage } from "./seed-debts";
 
 export const SCREENSHOT_REFERENCE_NOW = new Date("2026-07-15T12:00:00.000Z");
+let screenshotFixturePrepared = false;
 
 export async function prepareScreenshotAutomation(
   config: ScreenshotAutomationConfig,
@@ -29,10 +30,15 @@ export async function prepareScreenshotAutomation(
 
   useUiStore.getState().clearToast();
   await Promise.all([completeOnboarding(), disableAppLock()]);
-  await resetDatabase();
-  await Promise.all([saveDefaultCurrency("USD"), saveThemePreference(config.theme)]);
-  await simulateRealisticUsage(SCREENSHOT_REFERENCE_NOW);
-  await runReminderSync();
+  if (!screenshotFixturePrepared) {
+    await resetDatabase();
+    await Promise.all([saveDefaultCurrency("USD"), saveThemePreference(config.theme)]);
+    await simulateRealisticUsage(SCREENSHOT_REFERENCE_NOW);
+    await runReminderSync();
+    screenshotFixturePrepared = true;
+  } else {
+    await saveThemePreference(config.theme);
+  }
 
   // Root launch prefetches before this route runs. Clear those snapshots so the
   // target route reads the freshly seeded fixture through its normal query hook.

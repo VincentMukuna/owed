@@ -316,7 +316,7 @@ export function HomeScreen() {
   }
 
   return (
-    <TabScreen>
+    <TabScreen testID="home-screen-ready">
       <View style={styles.header}>
         <View>
           <Text style={styles.kicker}>Good morning</Text>

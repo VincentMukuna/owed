@@ -132,7 +132,7 @@ Only the ten files listed above may be replaced. The command must not modify web
 
 ### 6.4 App Store output
 
-Each successful run retains a `store/` directory containing normalized light and dark JPEGs for Home, Debts, People, Notifications, a partially paid debt with payment history, a detail-rich person, Activity, and Settings without developer tools. All sixteen store images are `1125 × 2436`. The four detail/activity/settings additions are never copied into `website/public/screens/`.
+Each successful run retains a `store/` directory containing the untouched light and dark Maestro PNG captures for Home, Debts, People, Notifications, a partially paid debt with payment history, a detail-rich person, Activity, and Settings without developer tools. All sixteen store images are native iPhone 13 Pro Max captures at the App Store-compatible `1284 × 2778` size. Only the website copies are resized and converted to JPEG. The four detail/activity/settings additions are never copied into `website/public/screens/`.
 
 ---
 
@@ -330,7 +330,7 @@ Before replacing checked-in assets, verify:
 - [ ] The retained `store/` set also captures a partially paid debt with payment history, a detail-rich person, Activity, and Settings without developer tools in light and dark modes.
 - [ ] The run generates both hero composites from that run's captures.
 - [ ] All filenames match the current website imports; no website source edit is required after generation.
-- [ ] Full-screen outputs are valid `1125 × 2436` JPEGs.
+- [ ] Website full-screen outputs are valid `1125 × 2436` JPEGs; App Store outputs are untouched `1284 × 2778` PNGs.
 - [ ] Hero outputs are valid `1920 × 1440` PNGs.
 - [ ] `npm run screenshots:check` passes on the generated set.
 - [ ] The website production build passes.
