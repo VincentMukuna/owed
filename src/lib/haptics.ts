@@ -7,6 +7,11 @@ export function lightImpact() {
   void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
 }
 
+export function mediumImpact() {
+  if (Platform.OS === "web") return;
+  void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+}
+
 export function selectionChange() {
   if (Platform.OS === "web") return;
   void Haptics.selectionAsync();

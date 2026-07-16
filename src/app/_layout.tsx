@@ -11,6 +11,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { useUnistyles } from "react-native-unistyles";
 
+import { SettleCelebration } from "@/components/shared/settle-celebration";
 import { Toast } from "@/components/shared/toast";
 import { HOME_RECENT_ACTIVITY_LIMIT } from "@/features/activity/constants";
 import { loadRecentActivities } from "@/features/activity/hooks/use-recent-activities";
@@ -379,6 +380,7 @@ export default function RootLayout() {
               </BottomSheetModalProvider>
             </ThemeProvider>
             <Toast />
+            <SettleCelebration />
           </AppLockGate>
         ) : null}
       </QueryClientProvider>
