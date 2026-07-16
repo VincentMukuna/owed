@@ -91,6 +91,7 @@ export default function Home() {
                   alt="Owwed home screen showing outstanding balances and upcoming debts"
                   width="473"
                   height="1024"
+                  draggable={false}
                   fetchPriority="high"
                   sizes="(max-width: 640px) 68vw, 310px"
                 />
@@ -100,6 +101,7 @@ export default function Home() {
                   alt="Owwed home screen in dark mode showing outstanding balances and upcoming debts"
                   width="473"
                   height="1024"
+                  draggable={false}
                   fetchPriority="high"
                   sizes="(max-width: 640px) 68vw, 310px"
                 />
