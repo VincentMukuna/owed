@@ -22,7 +22,7 @@ import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
 import type { CardDebtStatus, DebtDetailView } from "@/features/debts/view-models";
 import { useRefreshControl } from "@/hooks/use-refresh-control";
-import { lightImpact } from "@/lib/haptics";
+import { lightImpact, selectionChange } from "@/lib/haptics";
 import { LOADING_DETAIL_HEADER_OPTIONS } from "@/lib/navigation/stack-options";
 import { formatCurrency, getFirstName } from "@/lib/utils/formatters";
 
@@ -87,6 +87,11 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
     router.push(`/record-payment?debtId=${debt.id}` as Href);
   };
 
+  const openPerson = () => {
+    selectionChange();
+    router.push(`/person/${debt.personId}` as Href);
+  };
+
   const handleDebtAction = (action: DebtAction) => {
     if (action === "record-payment") {
       openRecordPayment();
@@ -123,9 +128,16 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
         options={{
           headerTitle: () => (
             <View style={styles.headerTitleRow}>
-              <Text numberOfLines={1} style={styles.headerTitleText}>
-                {debt.name}
-              </Text>
+              <Pressable
+                accessibilityRole="link"
+                hitSlop={8}
+                onPress={openPerson}
+                style={styles.headerTitlePressable}
+              >
+                <Text numberOfLines={1} style={styles.headerTitleText}>
+                  {debt.name}
+                </Text>
+              </Pressable>
               <DirectionIcon
                 color={directionColor}
                 size={14}
@@ -315,6 +327,10 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     gap: 5,
     maxWidth: "100%",
+  },
+  headerTitlePressable: {
+    flexShrink: 1,
+    minWidth: 0,
   },
   headerTitleText: {
     flexShrink: 1,
