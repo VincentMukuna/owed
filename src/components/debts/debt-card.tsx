@@ -41,8 +41,20 @@ export const DebtCard = memo(
     const directionColor =
       debt.direction === "they_owe_me" ? theme.colors.success : theme.colors.danger;
 
+    const amountLabel = formatCurrency(
+      debt.status === "paid" ? debt.amount : debt.remaining,
+      debt.currency,
+    );
+    const directionLabel = debt.direction === "they_owe_me" ? "owes you" : "you owe";
+    const accessibilityLabel =
+      debt.status === "paid"
+        ? `${debt.name}, settled, ${amountLabel}`
+        : `${debt.name}, ${directionLabel} ${amountLabel}`;
+
     const content = (
       <PressableScale
+        accessibilityRole="button"
+        accessibilityLabel={accessibilityLabel}
         onPress={onPress}
         style={[styles.card, density === "compact" ? styles.cardCompact : null, style]}
       >

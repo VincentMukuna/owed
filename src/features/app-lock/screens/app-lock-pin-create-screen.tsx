@@ -9,9 +9,9 @@ import { StyleSheet } from "react-native-unistyles";
 import { AppPinScreen } from "@/features/app-lock/components/app-pin-screen";
 import { useBiometricAvailability } from "@/features/app-lock/hooks/use-biometric-availability";
 import {
+  type PinSetupMode,
   clearPendingPinSetup,
   getPendingPinSetup,
-  type PinSetupMode,
   setPendingPinSetup,
 } from "@/features/app-lock/lib/pending-pin-setup";
 import {

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { LogBox, Text, View } from "react-native";
 
@@ -13,24 +13,22 @@ type AutomationStatus = "preparing" | "invalid" | "unavailable" | "failed";
 
 export default function ScreenshotAutomationRoute() {
   const params = useLocalSearchParams<{ target?: string | string[]; theme?: string | string[] }>();
+  const config = useMemo(
+    () => (__DEV__ ? parseScreenshotAutomationConfig(params) : null),
+    [params],
+  );
   const [status, setStatus] = useState<AutomationStatus>(() =>
     __DEV__ ? "preparing" : "unavailable",
   );
 
   useEffect(() => {
-    if (!__DEV__) {
+    if (!__DEV__ || !config) {
       return;
     }
 
     // Marketing captures should never contain development warning chrome. This
     // route only exists as an active bootstrap in development builds.
     LogBox.ignoreAllLogs();
-
-    const config = parseScreenshotAutomationConfig(params);
-    if (!config) {
-      setStatus("invalid");
-      return;
-    }
 
     let cancelled = false;
     void prepareScreenshotAutomation(config)
@@ -51,11 +49,15 @@ export default function ScreenshotAutomationRoute() {
     return () => {
       cancelled = true;
     };
-  }, [params]);
+  }, [config]);
+
+  // Invalid requests are derived rather than set in an effect to avoid
+  // cascading renders; a missing config in dev means the params were unusable.
+  const displayStatus: AutomationStatus = __DEV__ && !config ? "invalid" : status;
 
   return (
-    <View accessibilityLabel={`screenshot-automation-${status}`} style={styles.screen}>
-      <Text style={styles.text}>{statusCopy(status)}</Text>
+    <View accessibilityLabel={`screenshot-automation-${displayStatus}`} style={styles.screen}>
+      <Text style={styles.text}>{statusCopy(displayStatus)}</Text>
     </View>
   );
 }

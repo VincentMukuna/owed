@@ -1,42 +1,41 @@
 import { type ReactNode, useEffect } from "react";
 
-
-
-import { AccessibilityInfo, Platform, Pressable, Text, View, useWindowDimensions } from "react-native";
-
-
+import {
+  AccessibilityInfo,
+  Platform,
+  Pressable,
+  Text,
+  View,
+  useWindowDimensions,
+} from "react-native";
 
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
 
-
-
-import { ChevronLeft, Delete, Fingerprint, LockKeyhole, ScanFace, Wallet } from "lucide-react-native";
-import Animated, { ZoomIn, ZoomOut, cancelAnimation, useAnimatedStyle, useReducedMotion, useSharedValue, withDelay, withRepeat, withSequence, withTiming } from "react-native-reanimated";
+import {
+  ChevronLeft,
+  Delete,
+  Fingerprint,
+  LockKeyhole,
+  ScanFace,
+  Wallet,
+} from "lucide-react-native";
+import Animated, {
+  ZoomIn,
+  ZoomOut,
+  cancelAnimation,
+  useAnimatedStyle,
+  useReducedMotion,
+  useSharedValue,
+  withDelay,
+  withRepeat,
+  withSequence,
+  withTiming,
+} from "react-native-reanimated";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
-
-
 import { PressableScale } from "@/components/shared/pressable-scale";
 import type { BiometricAvailability } from "@/features/app-lock/types";
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 const PIN_LENGTH = 4;
 const KEYPAD_ROWS = [

@@ -188,7 +188,9 @@ export function CurrencyConvertScreen() {
               <Text style={styles.rateSuffix}>{toCurrency}</Text>
             </View>
           </View>
-          {isSuggestedRatePending ? <Text style={styles.hint}>Fetching suggested rate…</Text> : null}
+          {isSuggestedRatePending ? (
+            <Text style={styles.hint}>Fetching suggested rate…</Text>
+          ) : null}
           {isSuggestedRateSuccess && suggestedRate ? (
             <Text style={styles.hint}>
               Suggested rate ({formatRateDate(suggestedRate.date)}). Confirm before converting.
