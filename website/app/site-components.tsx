@@ -1,7 +1,8 @@
 import Link from "next/link";
-
 import { FiMoon, FiSun } from "react-icons/fi";
 import { SiApple } from "react-icons/si";
+
+const IOS_BETA_URL = "https://testflight.apple.com/join/B16wcXJ5";
 
 export function Brand() {
   return (
@@ -17,19 +18,15 @@ export function Brand() {
 export function StoreButtons({ compact = false }: { compact?: boolean }) {
   return (
     <div className={`store-buttons${compact ? " compact" : ""}`}>
-      <a className="store-button" href="https://testflight.apple.com/join/B16wcXJ5">
+      <a className="store-button" href={IOS_BETA_URL}>
         <SiApple className="store-icon" aria-hidden="true" />
         <span className="store-copy">
-          <span className="store-kicker">Coming soon</span>
-          <strong>App Store</strong>
+          <span className="store-kicker">Try the iOS beta</span>
+          <strong>TestFlight</strong>
         </span>
       </a>
-      <Link className="store-button secondary" href="/android">
-        <span className="google-play-icon" aria-hidden="true" />
-        <span className="store-copy">
-          <span className="store-kicker">Join the waitlist</span>
-          <strong>Google Play</strong>
-        </span>
+      <Link className="android-waitlist-link" href="/android">
+        On Android? Join the waitlist <span aria-hidden="true">→</span>
       </Link>
     </div>
   );
@@ -59,26 +56,16 @@ export function Header() {
         <Brand />
         <div className="nav-actions">
           <nav className="desktop-nav" aria-label="Main navigation">
-            <Link href="/#features">Features</Link>
             <Link href="/#privacy">Privacy</Link>
             <Link href="/help">Help</Link>
-            <Link className="nav-cta" href="/#download">
-              Download
-            </Link>
+            <a className="nav-cta" href={IOS_BETA_URL}>
+              Try iOS beta
+            </a>
           </nav>
+          <a className="nav-cta mobile-cta" href={IOS_BETA_URL}>
+            Try iOS beta
+          </a>
           <ThemeToggle />
-          <details className="mobile-menu">
-            <summary aria-label="Open navigation">
-              <span></span>
-              <span></span>
-            </summary>
-            <nav aria-label="Mobile navigation">
-              <Link href="/#features">Features</Link>
-              <Link href="/#privacy">Privacy</Link>
-              <Link href="/help">Help</Link>
-              <Link href="/#download">Download</Link>
-            </nav>
-          </details>
         </div>
       </div>
     </header>
@@ -91,15 +78,15 @@ export function Footer() {
       <div className="container footer-grid">
         <div>
           <Brand />
-          <p>A private place to remember money between people.</p>
+          <p>A private debt tracker for money between people.</p>
           <p className="crafted">Built with care by Vincent.</p>
         </div>
         <div className="footer-links">
           <div>
             <strong>Product</strong>
-            <Link href="/#features">Features</Link>
+            <Link href="/#how-it-works">How it works</Link>
             <Link href="/#privacy">Privacy</Link>
-            <Link href="/#download">Download</Link>
+            <a href={IOS_BETA_URL}>Try iOS beta</a>
           </div>
           <div>
             <strong>Resources</strong>

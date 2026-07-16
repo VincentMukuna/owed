@@ -1,108 +1,36 @@
 import type { Metadata } from "next";
-import type { IconType } from "react-icons";
-import { FiClock, FiDollarSign, FiLock, FiSmartphone } from "react-icons/fi";
-
-
+import Image from "next/image";
 
 import { Footer, Header, StoreButtons } from "./site-components";
-
-
-
-
-
-
-
-
-
-
-
-
 
 export const metadata: Metadata = {
   title: "Owwed: Private Debt Tracker for Friends & Family",
   description:
-    "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.",
+    "Keep track of money you owe and money owed to you in a private, local-first iPhone app. Try the free beta with no account required.",
 };
 
-const productScreens = [
-  {
-    image: "/screens/home.jpeg",
-    darkImage: "/screens/home-dark.jpeg",
-    title: "Home",
-    text: "See everything unsettled at a glance.",
-  },
-  {
-    image: "/screens/debts.jpeg",
-    darkImage: "/screens/debts-dark.jpeg",
-    title: "Debts",
-    text: "Keep every promise, due date, and balance together.",
-  },
-  {
-    image: "/screens/people.jpeg",
-    darkImage: "/screens/people-dark.jpeg",
-    title: "People",
-    text: "View every promise grouped by person.",
-  },
-  {
-    image: "/screens/reminders.jpeg",
-    darkImage: "/screens/reminders-dark.jpeg",
-    title: "Reminders",
-    text: "Know what is due without keeping it in your head.",
-  },
-];
-
-const features: { icon: IconType; title: string; text: string }[] = [
-  {
-    icon: FiDollarSign,
-    title: "Keep track of every promise",
-    text: "Track money people owe you, money you owe them, payments, and due dates in one place.",
-  },
-  {
-    icon: FiClock,
-    title: "Never forget what happened",
-    text: "See payment history, reminders, and remaining balances at a glance.",
-  },
-  {
-    icon: FiLock,
-    title: "Private by default",
-    text: "App Lock, local-first storage, and backups when you choose.",
-  },
-  {
-    icon: FiSmartphone,
-    title: "Works wherever you are",
-    text: "No account required. Works offline from the moment you install it.",
-  },
+const workflow = [
+  ["See what is outstanding", "See who owes what and what you still need to pay."],
+  ["Keep the full picture", "Save the amount, payments, due date, and remaining balance together."],
+  [
+    "Get a reminder when you need it",
+    "Set reminders on your phone so you do not have to remember every date.",
+  ],
 ];
 
 const faqs = [
   [
     "What is Owwed?",
-    "Owwed is a private app for recording money you’ve lent and money you owe. It keeps amounts, due dates, payments, reminders, and people together on your device.",
+    "Owwed is a private app for recording money you’ve lent and money you owe. It keeps balances, payments, due dates, and reminders together.",
   ],
   [
-    "Does Owwed send money or split bills?",
-    "No. Owwed records informal money promises; it doesn’t move money, connect to a bank, or contact anyone on your behalf.",
+    "Does it move money?",
+    "No. Owwed records informal debts. It doesn’t connect to a bank, send money, or contact anyone on your behalf.",
   ],
-  ["Is Owwed free?", "Yes. Owwed has no subscriptions and no ads."],
+  ["Is it free?", "Yes. The beta is free, with no subscriptions or ads."],
   [
-    "Does it require an account?",
-    "No. You can start immediately without creating an account or sharing an email address.",
-  ],
-  [
-    "Does Owwed upload my data?",
-    "No. Your debts, people, and payments stay on your device by default.",
-  ],
-  [
-    "Can I back up my data?",
-    "Yes. You can create and restore a backup yourself. Owwed never uploads a backup unless you explicitly choose where to save or share it.",
-  ],
-  [
-    "Can I track money I owe?",
-    "Yes. Each promise can be for money owed to you or money you owe someone else.",
-  ],
-  [
-    "How do reminders work?",
-    "Reminders are scheduled on your device. They help you remember due dates without sending messages to the other person.",
+    "Where is my data stored?",
+    "Your debts, people, and payments stay on your device by default. You can create a backup yourself whenever you choose.",
   ],
 ];
 
@@ -112,9 +40,10 @@ export default function Home() {
     "@type": "SoftwareApplication",
     name: "Owwed",
     applicationCategory: "FinanceApplication",
-    operatingSystem: "iOS, Android",
+    operatingSystem: "iOS",
     description:
-      "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.",
+      "Keep track of money you owe and money owed to you in a private, local-first iPhone app.",
+    downloadUrl: "https://testflight.apple.com/join/B16wcXJ5",
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   };
 
@@ -125,198 +54,126 @@ export default function Home() {
         <section className="hero">
           <div className="container hero-copy">
             <span className="eyebrow">
-              <span className="status-dot"></span> Private by design
+              <span className="status-dot" aria-hidden="true" /> Private by design
             </span>
             <h1>
               A simpler way
               <br />
               to remember money.
             </h1>
-            <p>
-              Track money you’ve lent, money you owe, payments, reminders, and due dates, all in one
-              private place.
+            <p className="hero-summary">
+              Keep track of money you have lent, borrowed, and paid back without digging through
+              messages, notes, or spreadsheets.
             </p>
             <div className="hero-cta">
               <StoreButtons />
-              <p className="hero-note">
-                Built for friends, family, roommates, and everyday life. Local-first and free.
-              </p>
             </div>
+            <ul className="hero-trust" aria-label="Owwed benefits">
+              <li>Free beta</li>
+              <li>No account</li>
+              <li>Data stays on your device</li>
+            </ul>
           </div>
-          <div className="container hero-visual" aria-label="Owwed app shown on three phones">
-            <img
+          <div className="container hero-visual" aria-label="Owwed shown on three phones">
+            <Image
               className="theme-image-light"
               src="/screens/hero.png"
               alt="The Owwed home, debts, and people screens on three phones"
+              width="1920"
+              height="1440"
+              fetchPriority="high"
+              sizes="(max-width: 1180px) 100vw, 1180px"
             />
-            <img
+            <Image
               className="theme-image-dark"
               src="/screens/hero-dark.png"
               alt="The Owwed home, debts, and people screens in dark mode on three phones"
+              width="1920"
+              height="1440"
+              fetchPriority="high"
+              sizes="(max-width: 1180px) 100vw, 1180px"
             />
           </div>
         </section>
 
-        <section className="screen-story" aria-labelledby="screens-title">
-          <div className="container section-heading split-heading">
+        <section className="workflow-section" id="how-it-works" aria-labelledby="workflow-title">
+          <div className="container workflow-layout">
             <div>
-              <span className="eyebrow">What Owwed does</span>
-              <h2 id="screens-title">
-                Every money promise,
-                <br />
-                in one place.
-              </h2>
-            </div>
-            <p>
-              Whether you covered dinner, lent money to a friend, or still need to pay someone back,
-              Owwed shows what’s outstanding and what’s already been paid.
-            </p>
-          </div>
-          <div className="container screen-grid">
-            {productScreens.map((screen, index) => (
-              <article className={`screen-card screen-${index + 1}`} key={screen.title}>
-                <div className="screen-copy">
-                  <span>0{index + 1}</span>
-                  <h3>{screen.title}</h3>
-                  <p>{screen.text}</p>
-                </div>
-                <div className="phone-frame">
-                  <span className="face-id-blob" aria-hidden="true" />
-                  <img
-                    className="theme-image-light"
-                    src={screen.image}
-                    alt={`${screen.title} screen in the Owwed app`}
-                    loading="lazy"
-                  />
-                  <img
-                    className="theme-image-dark"
-                    src={screen.darkImage}
-                    alt={`${screen.title} screen in the Owwed app in dark mode`}
-                    loading="lazy"
-                  />
-                </div>
-              </article>
-            ))}
-          </div>
-        </section>
-
-        <section className="why-section" id="features" aria-labelledby="why-title">
-          <div className="container section-heading centered">
-            <span className="eyebrow">Why Owwed</span>
-            <h2 id="why-title">Made to be quietly useful.</h2>
-            <p>
-              No ecosystem to join. No dashboard to maintain. Just a reliable place to remember.
-            </p>
-          </div>
-          <div className="container three-up">
-            <article>
-              <span className="big-number">01</span>
-              <h3>Local-first</h3>
-              <p>Your data stays on your device, where it belongs.</p>
-            </article>
-            <article>
-              <span className="big-number">02</span>
-              <h3>No account</h3>
-              <p>Open the app and start. There is no sign-up in the way.</p>
-            </article>
-            <article>
-              <span className="big-number">03</span>
-              <h3>Free</h3>
-              <p>No subscriptions, no ads, and no unnecessary complexity.</p>
-            </article>
-          </div>
-        </section>
-
-        <section className="philosophy-section">
-          <div className="container philosophy-grid">
-            <div className="philosophy-copy">
-              <span className="eyebrow light">The idea</span>
-              <h2>Built for real life.</h2>
-              <p>
-                Money between friends and family shouldn’t require spreadsheets, complicated finance
-                apps, or accounts.
+              <p className="section-label">What Owwed does</p>
+              <h2 id="workflow-title">Every money promise, in one place.</h2>
+              <p className="section-intro">
+                Whether you covered dinner, lent a friend money, or need to pay someone back, Owwed
+                shows what is still outstanding and what has already been paid.
               </p>
-              <p>Track what matters, stay organized, and move on with your day.</p>
+              <ol className="workflow-list">
+                {workflow.map(([title, text]) => (
+                  <li key={title}>
+                    <h3>{title}</h3>
+                    <p>{text}</p>
+                  </li>
+                ))}
+              </ol>
             </div>
-            <div className="dark-phone-wrap">
+            <div className="phone-frame workflow-phone">
               <span className="face-id-blob" aria-hidden="true" />
-              <img
-                src="/screens/home-dark.jpeg"
-                alt="Owwed home screen in dark mode"
-                loading="lazy"
+              <Image
+                className="theme-image-light"
+                src="/screens/home.jpeg"
+                alt="Owwed home screen showing outstanding balances and upcoming debts"
+                width="473"
+                height="1024"
+                sizes="(max-width: 640px) 72vw, 326px"
               />
-              <div className="floating-note">
-                <span></span>Your day stays yours.
-              </div>
+              <Image
+                className="theme-image-dark"
+                src="/screens/home-dark.jpeg"
+                alt="Owwed home screen in dark mode showing outstanding balances and upcoming debts"
+                width="473"
+                height="1024"
+                sizes="(max-width: 640px) 72vw, 326px"
+              />
             </div>
           </div>
         </section>
 
-        <section className="privacy-section" id="privacy" aria-labelledby="privacy-title">
-          <div className="container privacy-intro">
-            <span className="eyebrow">Privacy</span>
-            <h2 id="privacy-title">Your data belongs to you.</h2>
-            <p>
-              Owwed stores your information on your device by default. No account, bank connection,
-              tracking, or cloud storage is required. You choose if and when to create a backup.
-            </p>
-          </div>
-          <div className="container privacy-list">
-            {[
-              "Local-first",
-              "No account required",
-              "No tracking",
-              "No ads",
-              "No bank connections",
-              "No cloud required",
-            ].map((item, index) => (
-              <div className="privacy-row" key={item}>
-                <span>0{index + 1}</span>
-                <strong>{item}</strong>
-                <span className="check" aria-hidden="true">
-                  ✓
-                </span>
-              </div>
-            ))}
-          </div>
-          <div className="container privacy-link">
-            <a href="/privacy">
-              Read the plain-language privacy policy <span>→</span>
-            </a>
-          </div>
-        </section>
-
-        <section className="features-section" aria-labelledby="features-title">
-          <div className="container features-layout">
-            <div className="feature-grid">
-              {features.map(({ icon: Icon, title, text }) => (
-                <article className="feature-item" key={title}>
-                  <span className="feature-icon-wrap">
-                    <Icon className="feature-icon" aria-hidden="true" />
-                  </span>
-                  <h3>{title}</h3>
-                  <p>{text}</p>
-                </article>
-              ))}
+        <section className="trust-section" id="privacy" aria-labelledby="trust-title">
+          <div className="container trust-layout">
+            <div className="trust-copy">
+              <p className="section-label section-label-light">Private by default</p>
+              <h2 id="trust-title">Your data stays with you.</h2>
+              <p>
+                Owwed does not need an account or a cloud service. Your data stays on your phone
+                unless you choose to create a backup.
+              </p>
+              <a href="/privacy">Read the plain-language privacy policy →</a>
             </div>
-            <div className="features-copy">
-              <span className="eyebrow">Details</span>
-              <h2 id="features-title">
-                Built around one,
-                <br />
-                simple idea.
-              </h2>
-              <p>Owwed focuses on one job: helping you remember money between people.</p>
-            </div>
+            <ul className="trust-list">
+              <li>
+                <strong>Local-first</strong>
+                <span>Debts, people, and payments are stored on your device.</span>
+              </li>
+              <li>
+                <strong>No account</strong>
+                <span>Download it and start keeping track.</span>
+              </li>
+              <li>
+                <strong>Works offline</strong>
+                <span>Your records remain available without a connection.</span>
+              </li>
+              <li>
+                <strong>Backups are your choice</strong>
+                <span>Make and save a backup when you need one.</span>
+              </li>
+            </ul>
           </div>
         </section>
 
         <section className="faq-section" aria-labelledby="faq-title">
           <div className="container faq-grid">
             <div className="faq-copy">
-              <span className="eyebrow">FAQ</span>
-              <h2 id="faq-title">A few honest answers.</h2>
-              <p>Still wondering about something? The help center goes a little deeper.</p>
+              <p className="section-label">Questions</p>
+              <h2 id="faq-title">A few things you might want to know.</h2>
+              <p>There is more detail in the help center if you need it.</p>
               <a href="/help">Visit the help center →</a>
             </div>
             <div className="faq-list">
@@ -333,14 +190,11 @@ export default function Home() {
           </div>
         </section>
 
-        <section className="download-section" id="download">
+        <section className="download-section" id="try-owed">
           <div className="container download-card">
-            <span className="eyebrow light">Get Owwed</span>
-            <h2 style={{ maxWidth: "550px" }}>
-              Your private debt tracker is ready
-              <br />
-            </h2>
-            <p>Owwed is on the App Store soon. Join the Android waitlist.</p>
+            <p className="section-label section-label-light">Get Owwed</p>
+            <h2>Try Owwed on iPhone.</h2>
+            <p>The beta is available now through TestFlight. No account needed.</p>
             <StoreButtons compact />
           </div>
         </section>

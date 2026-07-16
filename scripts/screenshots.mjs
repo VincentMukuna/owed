@@ -45,6 +45,7 @@ const STORE_WIDTH = 1284;
 const STORE_HEIGHT = 2778;
 const HERO_WIDTH = 1920;
 const HERO_HEIGHT = 1440;
+const PHONE_HEIGHT_RATIO = 2.06;
 const MAX_FAILED_RUNS = 3;
 
 const SCREENS = ["home", "debts", "people", "reminders"];
@@ -401,7 +402,7 @@ function roundedRectSvg(width, height, radius, fill, stroke = "none", strokeWidt
 }
 
 async function buildPhone(screenPath, width) {
-  const height = Math.round(width * (FULL_HEIGHT / FULL_WIDTH));
+  const height = Math.round(width * PHONE_HEIGHT_RATIO);
   const bezel = Math.max(10, Math.round(width * 0.025));
   const radius = Math.round(width * 0.15);
   const faceIdWidth = Math.round(width * 0.24);

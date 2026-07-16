@@ -1,6 +1,17 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
+
+
+
 import "./globals.css";
+
+
+
+
+
+
+
+
 
 const geist = Geist({ variable: "--font-geist", subsets: ["latin"] });
 
@@ -17,7 +28,7 @@ const themeControlsScript = `(function(){var media=window.matchMedia('(prefers-c
 const title = "Owwed: Private Debt Tracker for Friends & Family";
 const socialTitle = "Owwed: A simpler way to remember money";
 const description =
-  "Track money you’ve lent, money you owe, payments, reminders, and due dates in one private, local-first app. Free, with no account required.";
+  "Keep track of money you owe and money owed to you in a private, local-first iPhone app. Try the free beta with no account required.";
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
@@ -34,7 +45,7 @@ export const metadata: Metadata = {
         url: "/og.png",
         width: 1536,
         height: 1024,
-        alt: "Owwed: a simpler way to remember money",
+        alt: "Owwed private debt tracker shown on three iPhones",
       },
     ],
   },
@@ -47,11 +58,9 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" data-scroll-behavior="smooth" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeBootScript }} />
       </head>
