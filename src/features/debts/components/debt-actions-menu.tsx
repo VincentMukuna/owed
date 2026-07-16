@@ -26,7 +26,7 @@ import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 import type { DebtCardView, DebtDetailView } from "@/features/debts/view-models";
 
-export type DebtAction = "record-payment" | "edit-debt" | "archive-debt";
+export type DebtAction = "record-payment" | "mark-paid" | "edit-debt" | "archive-debt";
 
 type DebtActionsMenuProps = {
   debt: DebtCardView | DebtDetailView;
@@ -43,6 +43,11 @@ function buildActions(debt: DebtCardView | DebtDetailView, dangerColor: ColorVal
       id: "record-payment",
       title: "Add Payment",
       image: "plus.circle",
+    });
+    actions.push({
+      id: "mark-paid",
+      title: "Mark as Paid",
+      image: "checkmark.circle",
     });
   }
 
@@ -102,7 +107,12 @@ export function DebtActionsMenu({
   const handlePressAction = (event: NativeActionEvent) => {
     const action = event.nativeEvent.event as DebtAction;
 
-    if (action === "record-payment" || action === "edit-debt" || action === "archive-debt") {
+    if (
+      action === "record-payment" ||
+      action === "mark-paid" ||
+      action === "edit-debt" ||
+      action === "archive-debt"
+    ) {
       onAction(action, debt);
     }
   };

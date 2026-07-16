@@ -24,6 +24,7 @@ import { HomeUpcomingSection } from "@/features/dashboard/components/home-upcomi
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebts } from "@/features/debts/hooks/use-debts";
+import { useMarkDebtPaid } from "@/features/debts/hooks/use-mark-debt-paid";
 import { usePaidThisMonth } from "@/features/debts/hooks/use-paid-this-month";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import { type DebtFilterKey, buildHomeBriefing } from "@/features/debts/lib/debt-list-utils";
@@ -42,6 +43,7 @@ export function HomeScreen() {
   const { theme } = useUnistyles();
   const queryClient = useQueryClient();
   const archiveDebt = useArchiveDebt();
+  const { markDebtPaid } = useMarkDebtPaid();
   const { data: debts = [], isPending } = useDebts();
   const { data: paidThisMonth = 0 } = usePaidThisMonth();
   const { data: recentActivity = [] } = useRecentActivities(HOME_RECENT_ACTIVITY_LIMIT);
@@ -74,11 +76,16 @@ export function HomeScreen() {
         return;
       }
 
+      if (action === "mark-paid") {
+        markDebtPaid(debt);
+        return;
+      }
+
       confirmArchiveDebt(debt, () => {
         archiveDebt.mutate({ debtId: debt.id });
       });
     },
-    [archiveDebt],
+    [archiveDebt, markDebtPaid],
   );
 
   const openAdd = useCallback(() => {

@@ -17,6 +17,7 @@ import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/de
 import { debtKeys } from "@/features/debts/hooks/query-keys";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebt } from "@/features/debts/hooks/use-debt";
+import { useMarkDebtPaid } from "@/features/debts/hooks/use-mark-debt-paid";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
 import type { CardDebtStatus, DebtDetailView } from "@/features/debts/view-models";
@@ -34,6 +35,7 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const archiveDebt = useArchiveDebt();
+  const { markDebtPaid } = useMarkDebtPaid();
   const { data: debt, isPending } = useDebt(debtId);
   const [copied, setCopied] = useState(false);
 
@@ -93,6 +95,11 @@ export function DebtDetailScreen({ debtId }: DebtDetailScreenProps) {
 
     if (action === "edit-debt") {
       router.push(`/edit-debt?debtId=${debt.id}` as Href);
+      return;
+    }
+
+    if (action === "mark-paid") {
+      markDebtPaid(debt);
       return;
     }
 

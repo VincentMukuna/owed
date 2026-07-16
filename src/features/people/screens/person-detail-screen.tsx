@@ -15,6 +15,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { type DebtAction, DebtActionsMenu } from "@/features/debts/components/debt-actions-menu";
 import { peopleKeys } from "@/features/debts/hooks/query-keys";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
+import { useMarkDebtPaid } from "@/features/debts/hooks/use-mark-debt-paid";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import { formatRelativeDay, toISODate } from "@/features/debts/lib/format-dates";
 import { DEBT_STATUS_LABELS } from "@/features/debts/lib/status-engine";
@@ -37,6 +38,7 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
   const insets = useSafeAreaInsets();
   const queryClient = useQueryClient();
   const archiveDebt = useArchiveDebt();
+  const { markDebtPaid } = useMarkDebtPaid();
   const { data: person, isPending } = usePersonDetail(personId);
   const [directionFilter, setDirectionFilter] = useState<DebtDirection | null>(null);
 
@@ -90,6 +92,11 @@ export function PersonDetailScreen({ personId }: PersonDetailScreenProps) {
 
     if (action === "edit-debt") {
       router.push(`/edit-debt?debtId=${debt.id}` as Href);
+      return;
+    }
+
+    if (action === "mark-paid") {
+      markDebtPaid(debt);
       return;
     }
 

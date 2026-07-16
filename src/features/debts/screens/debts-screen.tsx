@@ -46,6 +46,7 @@ import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import { DueDatePickerModal } from "@/features/debts/components/due-date-picker-modal";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebts } from "@/features/debts/hooks/use-debts";
+import { useMarkDebtPaid } from "@/features/debts/hooks/use-mark-debt-paid";
 import { confirmArchiveDebt } from "@/features/debts/lib/archive-confirmation";
 import {
   DEBT_SORT_CRITERIA,
@@ -352,6 +353,7 @@ export function DebtsScreen() {
   const { theme } = useUnistyles();
   const queryClient = useQueryClient();
   const archiveDebt = useArchiveDebt();
+  const { markDebtPaid } = useMarkDebtPaid();
   const { data: debts = [], isPending } = useDebts();
   const params = useLocalSearchParams<{
     focusDate?: string;
@@ -551,11 +553,16 @@ export function DebtsScreen() {
         return;
       }
 
+      if (action === "mark-paid") {
+        markDebtPaid(debt);
+        return;
+      }
+
       confirmArchiveDebt(debt, () => {
         archiveDebt.mutate({ debtId: debt.id });
       });
     },
-    [archiveDebt],
+    [archiveDebt, markDebtPaid],
   );
 
   const toggleFilters = useCallback(() => {
