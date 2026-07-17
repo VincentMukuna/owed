@@ -13,7 +13,7 @@ import {
   SettingsNavRow,
   SettingsSection,
 } from "@/features/settings/components/settings-ui";
-import { PRIVACY_POLICY_URL, TERMS_OF_USE_URL } from "@/features/settings/lib/legal-links";
+import { PRIVACY_POLICY_URL, SITE_URL, TERMS_OF_USE_URL } from "@/features/settings/lib/legal-links";
 import { selectionChange } from "@/lib/haptics";
 
 const appVersion = Constants.expoConfig?.version ?? "1.0.0";
@@ -59,6 +59,7 @@ export function AboutScreen() {
                   style={styles.appIcon}
                 />
               }
+              onPress={() => openUrl(SITE_URL)}
             />
           </SettingsCard>
         </SettingsSection>
