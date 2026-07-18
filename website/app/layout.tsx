@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 
 import "./globals.css";
 
@@ -66,6 +67,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
       <body className={geist.variable}>
         {children}
         <Analytics />
+        <SpeedInsights />
         <script dangerouslySetInnerHTML={{ __html: themeControlsScript }} />
       </body>
     </html>
