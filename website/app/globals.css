@@ -4,7 +4,7 @@
   --cream: #f4f2ec;
   --paper: #fbfaf7;
   --ink: #161914;
-  --muted: #6f746d;
+  --muted: #616660;
   --line: #dcded7;
   --green: #173c2b;
   --green-2: #285842;
@@ -602,7 +602,7 @@ a.store-button {
 }
 
 .workflow-number {
-  color: #858c84;
+  color: var(--muted);
   font-size: 11px;
   font-weight: 680;
   letter-spacing: 0.13em;
@@ -885,7 +885,7 @@ a.store-button {
   gap: clamp(70px, 9vw, 130px);
 }
 
-.faq-copy > p {
+.faq-copy > p:not(.section-label) {
   max-width: 340px;
   color: var(--muted);
   line-height: 1.6;
@@ -1052,7 +1052,7 @@ a.store-button {
   margin-top: 80px;
   padding-top: 24px;
   border-top: 1px solid var(--line);
-  color: #8a8f87;
+  color: #52574f;
   font-size: 11px;
 }
 
@@ -1736,6 +1736,10 @@ html[data-theme="dark"] .faq-list summary span {
 
 html[data-theme="dark"] .download-card {
   background: #173c2b;
+}
+
+html[data-theme="dark"] .footer-bottom {
+  color: var(--muted);
 }
 
 html[data-theme="dark"] .help-topics article {
