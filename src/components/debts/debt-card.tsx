@@ -177,7 +177,7 @@ const styles = StyleSheet.create((theme) => ({
     flexShrink: 0,
   },
   name: {
-    flex: 1,
+    flexShrink: 1,
     minWidth: 0,
     fontSize: 15,
     fontWeight: "600",
