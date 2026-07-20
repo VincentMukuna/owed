@@ -43,9 +43,12 @@ function StoreButton({ link }: { link: StoreLink }) {
 
 export function StoreButtons({ compact = false }: { compact?: boolean }) {
   const { ios, android } = getStoreLinks();
+  const hasWaitlist = android.kind === "waitlist";
 
   return (
-    <div className={`store-buttons${compact ? " compact" : ""}`}>
+    <div
+      className={`store-buttons${compact ? " compact" : ""}${hasWaitlist ? " has-waitlist" : ""}`}
+    >
       <StoreButton link={ios} />
       <StoreButton link={android} />
     </div>

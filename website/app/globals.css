@@ -993,6 +993,12 @@ a.store-button {
   gap: 12px;
 }
 
+.download-card .store-buttons.has-waitlist {
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
 .download-card .store-button {
   color: var(--ink);
   background: #f5f6f1;
@@ -1931,12 +1937,19 @@ html[data-theme="dark"] .feedback-again {
       width: 100%;
     }
 
-    .store-buttons {
+    .store-buttons:not(.has-waitlist) {
       flex-direction: row;
       flex-wrap: nowrap;
       justify-content: center;
       align-items: center;
       gap: 10px;
+      width: 100%;
+    }
+
+    .store-buttons.has-waitlist {
+      flex-direction: column;
+      align-items: center;
+      gap: 4px;
       width: 100%;
     }
 
