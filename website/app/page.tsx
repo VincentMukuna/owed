@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 
+import { getDownloadSectionCopy, getStoreLinks } from "./lib/store-links";
 import { Footer, Header, StoreButtons } from "./site-components";
 
 export const metadata: Metadata = {
@@ -44,15 +45,30 @@ const faqs = [
 ];
 
 export default function Home() {
+  const storeLinks = getStoreLinks();
+  const downloadCopy = getDownloadSectionCopy(storeLinks);
+  const downloadUrl =
+    storeLinks.ios.kind !== "hidden"
+      ? storeLinks.ios.href
+      : storeLinks.android.kind !== "waitlist"
+        ? storeLinks.android.href
+        : undefined;
+  const operatingSystems = [
+    storeLinks.ios.kind !== "hidden" ? "iOS" : null,
+    storeLinks.android.kind === "playStore" || storeLinks.android.kind === "playBeta"
+      ? "Android"
+      : null,
+  ].filter(Boolean);
+
   const structuredData = {
     "@context": "https://schema.org",
     "@type": "SoftwareApplication",
     name: "Owwed",
     applicationCategory: "FinanceApplication",
-    operatingSystem: "iOS",
+    operatingSystem: operatingSystems.join(", ") || "iOS",
     description:
-      "Keep track of money you owe and money owed to you in a private, local-first iPhone app.",
-    downloadUrl: "https://testflight.apple.com/join/B16wcXJ5",
+      "Keep track of money you owe and money owed to you in a private, local-first phone app.",
+    ...(downloadUrl ? { downloadUrl } : {}),
     offers: { "@type": "Offer", price: "0", priceCurrency: "USD" },
   };
 
@@ -203,8 +219,8 @@ export default function Home() {
         <section className="download-section" id="try-owed">
           <div className="container download-card">
             <p className="section-label section-label-light">Get Owwed</p>
-            <h2>Try Owwed on iPhone.</h2>
-            <p>The beta is available now through TestFlight. No account needed.</p>
+            <h2>{downloadCopy.title}</h2>
+            <p>{downloadCopy.body}</p>
             <StoreButtons compact />
           </div>
         </section>

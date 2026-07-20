@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { FiMoon, FiSun } from "react-icons/fi";
-import { SiApple } from "react-icons/si";
+import { SiApple, SiGoogleplay } from "react-icons/si";
 
-const IOS_BETA_URL = "https://testflight.apple.com/join/B16wcXJ5";
+import { getStoreLinks, type StoreLink } from "./lib/store-links";
 
 export function Brand() {
   return (
@@ -15,19 +15,39 @@ export function Brand() {
   );
 }
 
+function StoreButton({ link }: { link: StoreLink }) {
+  if (link.kind === "hidden") {
+    return null;
+  }
+
+  if (link.kind === "waitlist") {
+    return (
+      <Link className="android-waitlist-link" href={link.href}>
+        {link.kicker} {link.label} <span aria-hidden="true">→</span>
+      </Link>
+    );
+  }
+
+  const Icon = link.kind === "appStore" || link.kind === "testFlight" ? SiApple : SiGoogleplay;
+
+  return (
+    <a className="store-button" href={link.href}>
+      <Icon className="store-icon" aria-hidden="true" />
+      <span className="store-copy">
+        <span className="store-kicker">{link.kicker}</span>
+        <strong>{link.label}</strong>
+      </span>
+    </a>
+  );
+}
+
 export function StoreButtons({ compact = false }: { compact?: boolean }) {
+  const { ios, android } = getStoreLinks();
+
   return (
     <div className={`store-buttons${compact ? " compact" : ""}`}>
-      <a className="store-button" href={IOS_BETA_URL}>
-        <SiApple className="store-icon" aria-hidden="true" />
-        <span className="store-copy">
-          <span className="store-kicker">Try the iOS beta</span>
-          <strong>TestFlight</strong>
-        </span>
-      </a>
-      <Link className="android-waitlist-link" href="/android">
-        On Android? Join the waitlist <span aria-hidden="true">→</span>
-      </Link>
+      <StoreButton link={ios} />
+      <StoreButton link={android} />
     </div>
   );
 }
@@ -49,7 +69,38 @@ function ThemeToggle() {
   );
 }
 
+function NavStoreCta({
+  link,
+  className,
+}: {
+  link: StoreLink;
+  className?: string;
+}) {
+  if (link.kind === "hidden") {
+    return null;
+  }
+
+  const classes = ["nav-cta", className].filter(Boolean).join(" ");
+
+  if (link.kind === "waitlist") {
+    return (
+      <Link className={classes} href={link.href}>
+        {link.navLabel}
+      </Link>
+    );
+  }
+
+  return (
+    <a className={classes} href={link.href}>
+      {link.navLabel}
+    </a>
+  );
+}
+
 export function Header() {
+  const { ios, android } = getStoreLinks();
+  const showIosCta = ios.kind !== "hidden";
+
   return (
     <header className="site-header">
       <div className="container nav-shell">
@@ -58,13 +109,13 @@ export function Header() {
           <nav className="desktop-nav" aria-label="Main navigation">
             <Link href="/#privacy">Privacy</Link>
             <Link href="/help">Help</Link>
-            <a className="nav-cta" href={IOS_BETA_URL}>
-              Try iOS beta
-            </a>
+            {showIosCta ? <NavStoreCta className="nav-cta-ios" link={ios} /> : null}
+            <NavStoreCta className="nav-cta-android" link={android} />
           </nav>
-          <a className="nav-cta mobile-cta" href={IOS_BETA_URL}>
-            Try iOS beta
-          </a>
+          {showIosCta ? (
+            <NavStoreCta className="nav-cta-ios mobile-cta" link={ios} />
+          ) : null}
+          <NavStoreCta className="nav-cta-android mobile-cta" link={android} />
           <ThemeToggle />
         </div>
       </div>
@@ -73,6 +124,9 @@ export function Header() {
 }
 
 export function Footer() {
+  const { ios } = getStoreLinks();
+  const showIosCta = ios.kind !== "hidden";
+
   return (
     <footer className="site-footer">
       <div className="container footer-grid">
@@ -86,7 +140,7 @@ export function Footer() {
             <strong>Product</strong>
             <Link href="/#how-it-works">How it works</Link>
             <Link href="/#privacy">Privacy</Link>
-            <a href={IOS_BETA_URL}>Try iOS beta</a>
+            {showIosCta ? <a href={ios.href}>{ios.navLabel}</a> : null}
           </div>
           <div>
             <strong>Resources</strong>

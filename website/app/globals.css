@@ -177,6 +177,18 @@ summary:focus-visible {
   display: none;
 }
 
+.nav-cta-android {
+  display: none;
+}
+
+html[data-os="android"] .nav-cta-ios {
+  display: none;
+}
+
+html[data-os="android"] .desktop-nav .nav-cta-android {
+  display: inline-flex;
+}
+
 .theme-toggle {
   display: grid;
   place-items: center;
@@ -978,9 +990,7 @@ a.store-button {
 
 .download-card .store-buttons {
   margin-top: 34px;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  gap: 12px;
 }
 
 .download-card .store-button {
@@ -1821,6 +1831,14 @@ html[data-theme="dark"] .feedback-again {
     font-size: 13px;
   }
 
+  .mobile-cta.nav-cta-android {
+    display: none;
+  }
+
+  html[data-os="android"] .mobile-cta.nav-cta-android {
+    display: inline-flex;
+  }
+
   .trust-layout,
   .faq-grid,
   .legal-wrap,
@@ -1914,13 +1932,16 @@ html[data-theme="dark"] .feedback-again {
     }
 
     .store-buttons {
-      flex-direction: column;
+      flex-direction: row;
+      flex-wrap: nowrap;
+      justify-content: center;
       align-items: center;
-      gap: 4px;
+      gap: 10px;
       width: 100%;
     }
 
     .store-button {
+      flex: 0 0 auto;
       width: max-content;
       max-width: 100%;
       min-height: 56px;

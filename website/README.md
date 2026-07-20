@@ -24,7 +24,34 @@ Open [http://localhost:3000](http://localhost:3000).
 
 ## Environment
 
-The feedback form and Android waitlist submit to a Supabase backend. Configure these in a `.env.local` file if you want those forms to work locally:
+Copy [`.env.example`](./.env.example) to `.env.local` and fill in what you need.
+
+### Store and beta links
+
+CTA buttons on the homepage, header, and footer are driven by these public vars (baked in at **build** time):
+
+| Variable | When to set |
+| --- | --- |
+| `NEXT_PUBLIC_IOS_BETA_URL` | TestFlight join URL (current default) |
+| `NEXT_PUBLIC_IOS_STORE_URL` | App Store URL after Apple approval |
+| `NEXT_PUBLIC_ANDROID_BETA_URL` | Play open/closed testing opt-in URL |
+| `NEXT_PUBLIC_ANDROID_STORE_URL` | Production Play Store listing URL |
+
+**Priority:** a store URL wins over a beta URL. If both Android URLs are empty, the site shows the `/android` waitlist.
+
+**Flip workflow (Vercel):** set the new URL in project env → redeploy. No code change.
+
+Examples:
+
+1. Open testing ready → set `NEXT_PUBLIC_ANDROID_BETA_URL` → redeploy  
+2. Production Play live → set `NEXT_PUBLIC_ANDROID_STORE_URL` → redeploy  
+3. App Store approved → set `NEXT_PUBLIC_IOS_STORE_URL` → redeploy  
+
+Old `/android` waitlist links redirect to the Play store or beta URL once either Android env is set.
+
+### Feedback and waitlist backend
+
+The feedback form and Android waitlist submit to a Supabase backend:
 
 ```
 NEXT_PUBLIC_FEEDBACK_SUPABASE_URL=https://your-project.supabase.co
