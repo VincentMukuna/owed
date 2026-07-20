@@ -216,7 +216,7 @@ export function SettingsTrailingRow({
   return (
     <SettingsRowShell bordered={bordered}>
       <View style={styles.rowContent}>
-        <Text numberOfLines={1} style={styles.label}>
+        <Text numberOfLines={1} style={styles.trailingLabel}>
           {label}
         </Text>
         <View style={styles.trailingControl}>{trailing}</View>
@@ -327,6 +327,13 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: "500",
     color: theme.colors.text,
   },
+  trailingLabel: {
+    flexShrink: 0,
+    fontSize: 14,
+    lineHeight: 20,
+    fontWeight: "500",
+    color: theme.colors.text,
+  },
   detailCopy: {
     flex: 1,
     minWidth: 0,
@@ -353,7 +360,8 @@ const styles = StyleSheet.create((theme) => ({
     textAlign: "right",
   },
   trailingControl: {
-    flexShrink: 0,
+    flex: 1,
+    minWidth: 0,
     justifyContent: "center",
     alignItems: "flex-end",
   },
