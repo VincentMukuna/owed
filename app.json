@@ -15,7 +15,10 @@
       }
     },
     "android": {
-      "blockedPermissions": ["android.permission.WRITE_CONTACTS"],
+      "blockedPermissions": [
+        "android.permission.WRITE_CONTACTS",
+        "android.permission.READ_MEDIA_IMAGES"
+      ],
       "adaptiveIcon": {
         "backgroundColor": "#1A3A2A",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -29,6 +32,7 @@
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
+      "./plugins/with-android-release-build-memory",
       "expo-router",
       [
         "expo-splash-screen",
