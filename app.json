@@ -7,6 +7,7 @@
     "icon": "./assets/images/icon.png",
     "scheme": "owed",
     "userInterfaceStyle": "automatic",
+    "platforms": ["ios", "android"],
     "ios": {
       "icon": "./assets/expo.icon",
       "bundleIdentifier": "com.vincentmukuna.owed",
@@ -26,10 +27,6 @@
       },
       "predictiveBackGestureEnabled": false,
       "package": "com.vincentmukuna.owed"
-    },
-    "web": {
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
       "./plugins/with-android-release-build-memory",
