@@ -249,6 +249,7 @@ type DebtsFiltersSheetContentProps = {
   filter: DebtFilterKey;
   hasViewChanges: boolean;
   onClearRangeDate: (target: DateRangeTarget) => void;
+  onDone: () => void;
   onOpenDatePicker: (target: DateRangeTarget) => void;
   onResetView: () => void;
   onSelectDirection: (key: DebtDirectionFilter) => void;
@@ -269,6 +270,7 @@ function DebtsFiltersSheetContentInner({
   filter,
   hasViewChanges,
   onClearRangeDate,
+  onDone,
   onOpenDatePicker,
   onResetView,
   onSelectDirection,
@@ -343,6 +345,10 @@ function DebtsFiltersSheetContentInner({
         onSelectCriterion={onSelectSortCriterion}
         onSelectDirection={onSelectSortDirection}
       />
+
+      <PressableScale onPress={onDone} style={styles.sheetDoneButton}>
+        <Text style={styles.sheetDoneText}>Done</Text>
+      </PressableScale>
     </View>
   );
 }
@@ -573,6 +579,10 @@ export function DebtsScreen() {
     }
     filtersSheetRef.current?.present();
   }, [filtersOpen]);
+
+  const closeFilters = useCallback(() => {
+    filtersSheetRef.current?.dismiss();
+  }, []);
 
   const handleFiltersSheetChange = useCallback((index: number) => {
     setFiltersOpen(index >= 0);
@@ -859,6 +869,7 @@ export function DebtsScreen() {
             filter={filter}
             hasViewChanges={hasViewChanges}
             onClearRangeDate={clearRangeDate}
+            onDone={closeFilters}
             onOpenDatePicker={openDatePicker}
             onResetView={resetViewOptions}
             onSelectDirection={selectDirection}
@@ -978,6 +989,18 @@ const styles = StyleSheet.create((theme) => ({
   },
   sheetResetMuted: {
     color: theme.colors.mutedLight,
+  },
+  sheetDoneButton: {
+    marginTop: 4,
+    backgroundColor: theme.colors.primary,
+    borderRadius: 16,
+    paddingVertical: 16,
+    alignItems: "center",
+  },
+  sheetDoneText: {
+    color: theme.colors.primaryForeground,
+    fontSize: 15,
+    fontWeight: "600",
   },
   tabsWrap: {
     gap: 8,
