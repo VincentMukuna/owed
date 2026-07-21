@@ -36,20 +36,17 @@ export const DebtCard = memo(
     style,
   }: DebtCardProps) => {
     const { theme } = useUnistyles();
+    const isPaid = debt.status === "paid";
     const pct = debt.amount > 0 ? ((debt.amount - debt.remaining) / debt.amount) * 100 : 0;
     const DirectionIcon = debt.direction === "they_owe_me" ? ArrowDownLeft : ArrowUpRight;
     const directionColor =
       debt.direction === "they_owe_me" ? theme.colors.success : theme.colors.danger;
 
-    const amountLabel = formatCurrency(
-      debt.status === "paid" ? debt.amount : debt.remaining,
-      debt.currency,
-    );
+    const amountLabel = formatCurrency(isPaid ? debt.amount : debt.remaining, debt.currency);
     const directionLabel = debt.direction === "they_owe_me" ? "owes you" : "you owe";
-    const accessibilityLabel =
-      debt.status === "paid"
-        ? `${debt.name}, settled, ${amountLabel}`
-        : `${debt.name}, ${directionLabel} ${amountLabel}`;
+    const accessibilityLabel = isPaid
+      ? `${debt.name}, settled, ${amountLabel}`
+      : `${debt.name}, ${directionLabel} ${amountLabel}`;
 
     const content = (
       <PressableScale
@@ -68,7 +65,7 @@ export const DebtCard = memo(
             <View style={styles.topRow}>
               <View style={styles.meta}>
                 <View style={styles.nameRow}>
-                  <Text numberOfLines={1} style={styles.name}>
+                  <Text numberOfLines={1} style={[styles.name, isPaid ? styles.namePaid : null]}>
                     {debt.name}
                   </Text>
                   {showDirectionCue ? (
@@ -92,15 +89,18 @@ export const DebtCard = memo(
                 </Text>
               </View>
               <View style={styles.amountCol}>
-                <Text numberOfLines={1} style={styles.amount}>
-                  {formatCurrency(
-                    debt.status === "paid" ? debt.amount : debt.remaining,
-                    debt.currency,
-                  )}
+                <Text
+                  numberOfLines={1}
+                  style={[styles.amount, isPaid ? styles.amountPaid : null]}
+                >
+                  {formatCurrency(isPaid ? debt.amount : debt.remaining, debt.currency)}
                 </Text>
                 <View style={styles.dueRow}>
-                  <Text style={styles.dueDate} numberOfLines={1}>
-                    {debt.status === "paid" ? formatPaidWhen(debt.lastPaymentAt) : debt.dueDate}
+                  <Text
+                    style={[styles.dueDate, isPaid ? styles.dueDatePaid : null]}
+                    numberOfLines={1}
+                  >
+                    {isPaid ? formatPaidWhen(debt.lastPaymentAt) : debt.dueDate}
                   </Text>
                 </View>
               </View>
@@ -183,6 +183,9 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: "600",
     lineHeight: 20,
   },
+  namePaid: {
+    color: theme.colors.muted,
+  },
   subtitle: {
     fontSize: 12,
     lineHeight: 17,
@@ -203,6 +206,10 @@ const styles = StyleSheet.create((theme) => ({
     lineHeight: 21,
     fontVariant: ["tabular-nums"],
   },
+  amountPaid: {
+    color: theme.colors.muted,
+    textDecorationLine: "line-through",
+  },
   dueRow: {
     alignItems: "flex-end",
   },
@@ -211,5 +218,9 @@ const styles = StyleSheet.create((theme) => ({
     fontWeight: "500",
     color: theme.colors.muted,
     lineHeight: 17,
+  },
+  dueDatePaid: {
+    color: theme.colors.paidText,
+    fontWeight: "600",
   },
 }));
