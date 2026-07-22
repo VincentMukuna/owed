@@ -35,11 +35,11 @@ export function AndroidWaitlistForm() {
     return (
       <div className="android-success" role="status" aria-live="polite">
         <span className="android-success-mark" aria-hidden="true">✓</span>
-        <h2>{status === "duplicate" ? "You’re already on the list." : "You’re on the list."}</h2>
+        <h2>{status === "duplicate" ? "You’re already signed up." : "You’re signed up."}</h2>
         <p>
           {status === "duplicate"
-            ? "We’ll email this address when Owwed is ready on Google Play."
-            : "We’ll email you when Owwed is ready on Google Play."}
+            ? "We’ll email this address a link to join the Android beta."
+            : "We’ll email you a link to join the Android beta."}
         </p>
       </div>
     );
@@ -102,7 +102,7 @@ export function AndroidWaitlistForm() {
           </p>
         ) : null}
       </div>
-      <p className="android-form-note">One email when Android launches on Google Play.</p>
+      <p className="android-form-note">One email with your Android beta invite.</p>
     </form>
   );
 }

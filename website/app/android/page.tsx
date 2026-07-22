@@ -6,9 +6,9 @@ import { Footer, Header } from "../site-components";
 import { AndroidWaitlistForm } from "./android-waitlist-form";
 
 export const metadata: Metadata = {
-  title: "Android Waitlist · Owwed",
+  title: "Android Beta · Owwed",
   description:
-    "Join the waitlist for Owwed on Google Play. Leave your email for a one-time Android release note.",
+    "Request an invite to the Owwed Android beta. Leave your email and we’ll send you a join link.",
   alternates: { canonical: "/android" },
 };
 
@@ -28,8 +28,8 @@ export default function AndroidPage() {
             <span className="status-dot" />
             Android
           </span>
-          <h1>Join the Waitlist.</h1>
-          <p>Leave your email and we’ll tell you when Owwed is ready on Android.</p>
+          <h1>Join the Android beta.</h1>
+          <p>Leave your email and we’ll send you a link to join the beta.</p>
           <AndroidWaitlistForm />
         </div>
       </main>

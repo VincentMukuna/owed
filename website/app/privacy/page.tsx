@@ -40,9 +40,9 @@ export default function PrivacyPage() {
           information in a feedback submission.
         </p>
         <p>
-          If you join the Android waitlist, Owwed stores the email address you provide and uses it to
-          send a notice when the app becomes available on Google Play. The address is not used for
-          other marketing unless you later provide consent.
+          If you request an Android beta invite, Owwed stores the email address you provide and uses
+          it to send a link to join the beta. The address is not used for other marketing unless you
+          later provide consent.
         </p>
       </section>
 
@@ -81,7 +81,7 @@ export default function PrivacyPage() {
           stored records.
         </p>
         <p>
-          To request deletion of feedback or a waitlist email you submitted, use the{" "}
+          To request deletion of feedback or a beta invite email you submitted, use the{" "}
           <a href="/feedback">feedback form</a>.
         </p>
       </section>

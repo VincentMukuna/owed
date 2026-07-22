@@ -79,8 +79,8 @@ function androidLink(storeUrl: string | null, betaUrl: string | null): StoreLink
     kind: "waitlist",
     href: "/android",
     kicker: "On Android?",
-    label: "Join the waitlist",
-    navLabel: "Android waitlist",
+    label: "Join the beta",
+    navLabel: "Android beta",
   };
 }
 
@@ -125,7 +125,7 @@ export function getDownloadSectionCopy(links: StoreLinks): {
   if (ios.kind === "appStore" && android.kind === "waitlist") {
     return {
       title: "Get Owwed on iPhone.",
-      body: "Available on the App Store. Android is coming; join the waitlist to get a note when it ships.",
+      body: "Available on the App Store. Leave your email for an Android beta invite.",
     };
   }
 
@@ -146,7 +146,7 @@ export function getDownloadSectionCopy(links: StoreLinks): {
   if (ios.kind === "testFlight" && android.kind === "waitlist") {
     return {
       title: "Try Owwed on iPhone.",
-      body: "The beta is available now through TestFlight. No account needed.",
+      body: "The iOS beta is available through TestFlight. Leave your email for an Android beta invite.",
     };
   }
 
@@ -162,6 +162,6 @@ export function getDownloadSectionCopy(links: StoreLinks): {
 
   return {
     title: "Get Owwed.",
-    body: "Leave your email on the Android waitlist and we will tell you when it is ready.",
+    body: "Leave your email and we will send you a link to join the Android beta.",
   };
 }
