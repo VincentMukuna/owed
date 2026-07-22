@@ -21,6 +21,7 @@ import { HomeDebtSection } from "@/features/dashboard/components/home-debt-secti
 import { HomeInsightsSection } from "@/features/dashboard/components/home-insights-section";
 import { HOME_PAGE_PADDING } from "@/features/dashboard/components/home-section";
 import { HomeUpcomingSection } from "@/features/dashboard/components/home-upcoming-section";
+import { getTimeOfDayGreeting } from "@/features/dashboard/lib/greeting";
 import type { DebtAction } from "@/features/debts/components/debt-actions-menu";
 import { useArchiveDebt } from "@/features/debts/hooks/use-archive-debt";
 import { useDebts } from "@/features/debts/hooks/use-debts";
@@ -326,7 +327,7 @@ export function HomeScreen() {
     <TabScreen testID="home-screen-ready">
       <View style={styles.header}>
         <View>
-          <Text style={styles.kicker}>Good morning</Text>
+          <Text style={styles.kicker}>{getTimeOfDayGreeting()}</Text>
           <Text style={styles.pageTitleLg}>{"Here's what's unsettled"}</Text>
         </View>
         <BellBadgeButton onPress={openNotifications} />
