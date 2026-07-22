@@ -8,6 +8,7 @@ import {
   getOwwedProductId,
   readSupabaseErrorMessage,
 } from "../lib/feedback-supabase-server";
+import { tryCatch } from "../lib/try-catch";
 import {
   sendWaitlistJoinedAck,
   sendWaitlistJoinedNotify,
@@ -27,51 +28,56 @@ export async function joinAndroidWaitlist(email: string): Promise<JoinAndroidWai
     return { ok: false, error: "Enter a valid email address." };
   }
 
-  try {
-    const { supabaseUrl } = getFeedbackSupabaseConfig();
-    const productId = await getOwwedProductId();
+  const { data, error } = await tryCatch(insertWaitlistSignup(trimmed));
 
-    const response = await fetch(`${supabaseUrl}/rest/v1/waitlist_signups`, {
-      method: "POST",
-      headers: {
-        ...getFeedbackServiceHeaders(),
-        Prefer: "return=minimal",
-      },
-      body: JSON.stringify({
-        product_id: productId,
-        email: trimmed,
-        platform: "android",
-        source: "website",
-        status: "pending",
-        metadata: { page: "/android" },
-      }),
-    });
-
-    if (response.ok) {
-      after(async () => {
-        try {
-          await Promise.all([
-            sendWaitlistJoinedAck(trimmed),
-            sendWaitlistJoinedNotify(trimmed),
-          ]);
-        } catch (emailError) {
-          console.error("Waitlist emails failed after signup:", emailError);
-        }
-      });
-
-      return { ok: true, alreadyJoined: false };
-    }
-
-    const error = await readSupabaseErrorMessage(response, "Waitlist request");
-
-    if (response.status === 409 || error.code === "23505") {
-      return { ok: true, alreadyJoined: true };
-    }
-
-    console.error("Waitlist signup failed:", error.message, error.code);
-    return { ok: false, error: GENERIC_ERROR };
-  } catch (error) {
+  if (error) {
     console.error("Waitlist signup failed:", error);
     return { ok: false, error: GENERIC_ERROR };
   }
+
+  return data;
+}
+
+async function insertWaitlistSignup(email: string): Promise<JoinAndroidWaitlistResult> {
+  const { supabaseUrl } = getFeedbackSupabaseConfig();
+  const productId = await getOwwedProductId();
+
+  const response = await fetch(`${supabaseUrl}/rest/v1/waitlist_signups`, {
+    method: "POST",
+    headers: {
+      ...getFeedbackServiceHeaders(),
+      Prefer: "return=minimal",
+    },
+    body: JSON.stringify({
+      product_id: productId,
+      email,
+      platform: "android",
+      source: "website",
+      status: "pending",
+      metadata: { page: "/android" },
+    }),
+  });
+
+  if (response.ok) {
+    after(async () => {
+      const { error } = await tryCatch(
+        Promise.all([sendWaitlistJoinedAck(email), sendWaitlistJoinedNotify(email)]),
+      );
+
+      if (error) {
+        console.error("Waitlist emails failed after signup:", error);
+      }
+    });
+
+    return { ok: true, alreadyJoined: false };
+  }
+
+  const supabaseError = await readSupabaseErrorMessage(response, "Waitlist request");
+
+  if (response.status === 409 || supabaseError.code === "23505") {
+    return { ok: true, alreadyJoined: true };
+  }
+
+  console.error("Waitlist signup failed:", supabaseError.message, supabaseError.code);
+  return { ok: false, error: GENERIC_ERROR };
 }
