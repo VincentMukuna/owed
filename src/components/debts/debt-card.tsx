@@ -89,10 +89,7 @@ export const DebtCard = memo(
                 </Text>
               </View>
               <View style={styles.amountCol}>
-                <Text
-                  numberOfLines={1}
-                  style={[styles.amount, isPaid ? styles.amountPaid : null]}
-                >
+                <Text numberOfLines={1} style={[styles.amount, isPaid ? styles.amountPaid : null]}>
                   {formatCurrency(isPaid ? debt.amount : debt.remaining, debt.currency)}
                 </Text>
                 <View style={styles.dueRow}>
