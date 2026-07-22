@@ -32,14 +32,23 @@ type WaitlistSignupRow = {
   invited_at: string | null;
 };
 
-export async function loginWaitlistAdmin(password: string) {
-  if (!verifyAdminPassword(password)) {
-    return { ok: false as const, error: "Incorrect password." };
-  }
+const GENERIC_ERROR = "Something went wrong. Please try again.";
+const LOAD_ERROR = "Failed to load waitlist.";
+const SEND_ERROR = "Failed to send invite.";
 
-  await createAdminSession();
-  revalidatePath("/admin/android-waitlist");
-  return { ok: true as const };
+export async function loginWaitlistAdmin(password: string) {
+  try {
+    if (!verifyAdminPassword(password)) {
+      return { ok: false as const, error: "Incorrect password." };
+    }
+
+    await createAdminSession();
+    revalidatePath("/admin/android-waitlist");
+    return { ok: true as const };
+  } catch (error) {
+    console.error("Waitlist admin login failed:", error);
+    return { ok: false as const, error: GENERIC_ERROR };
+  }
 }
 
 export async function logoutWaitlistAdmin() {
@@ -71,10 +80,9 @@ export async function listAndroidWaitlistSignups(): Promise<
     });
 
     if (!response.ok) {
-      return {
-        ok: false,
-        error: (await readSupabaseErrorMessage(response, "Waitlist list")).message,
-      };
+      const error = await readSupabaseErrorMessage(response, "Waitlist list");
+      console.error("Waitlist list failed:", error.message, error.code);
+      return { ok: false, error: LOAD_ERROR };
     }
 
     const rows = (await response.json()) as WaitlistSignupRow[];
@@ -90,10 +98,8 @@ export async function listAndroidWaitlistSignups(): Promise<
       })),
     };
   } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : "Failed to load waitlist.",
-    };
+    console.error("Waitlist list failed:", error);
+    return { ok: false, error: LOAD_ERROR };
   }
 }
 
@@ -119,10 +125,9 @@ export async function sendAndroidWaitlistInvite(signupId: string) {
     });
 
     if (!lookup.ok) {
-      return {
-        ok: false as const,
-        error: (await readSupabaseErrorMessage(lookup, "Waitlist lookup")).message,
-      };
+      const error = await readSupabaseErrorMessage(lookup, "Waitlist lookup");
+      console.error("Waitlist invite lookup failed:", error.message, error.code);
+      return { ok: false as const, error: SEND_ERROR };
     }
 
     const rows = (await lookup.json()) as Array<{
@@ -158,18 +163,15 @@ export async function sendAndroidWaitlistInvite(signupId: string) {
     );
 
     if (!update.ok) {
-      return {
-        ok: false as const,
-        error: (await readSupabaseErrorMessage(update, "Waitlist update")).message,
-      };
+      const error = await readSupabaseErrorMessage(update, "Waitlist update");
+      console.error("Waitlist invite update failed:", error.message, error.code);
+      return { ok: false as const, error: SEND_ERROR };
     }
 
     revalidatePath("/admin/android-waitlist");
     return { ok: true as const };
   } catch (error) {
-    return {
-      ok: false as const,
-      error: error instanceof Error ? error.message : "Failed to send invite.",
-    };
+    console.error("Waitlist invite send failed:", error);
+    return { ok: false as const, error: SEND_ERROR };
   }
 }

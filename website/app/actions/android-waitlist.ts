@@ -14,6 +14,7 @@ import {
 } from "../lib/waitlist-email";
 
 const EMAIL_PATTERN = /^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i;
+const GENERIC_ERROR = "Something went wrong. Please try again.";
 
 export type JoinAndroidWaitlistResult =
   | { ok: true; alreadyJoined: boolean }
@@ -67,11 +68,10 @@ export async function joinAndroidWaitlist(email: string): Promise<JoinAndroidWai
       return { ok: true, alreadyJoined: true };
     }
 
-    return { ok: false, error: error.message };
+    console.error("Waitlist signup failed:", error.message, error.code);
+    return { ok: false, error: GENERIC_ERROR };
   } catch (error) {
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : "Something went wrong. Please try again.",
-    };
+    console.error("Waitlist signup failed:", error);
+    return { ok: false, error: GENERIC_ERROR };
   }
 }
