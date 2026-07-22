@@ -1,8 +1,8 @@
 # Owwed — Marketing Website
 
-The marketing and support site for [Owwed](../README.md), built with [Next.js](https://nextjs.org/) (App Router) and static export.
+The marketing and support site for [Owwed](../README.md), built with [Next.js](https://nextjs.org/) (App Router).
 
-It hosts the landing page, help center, feedback form, Android waitlist, and the privacy policy and terms of service.
+It hosts the landing page, help center, feedback form, Android waitlist, waitlist admin, and the privacy policy and terms of service.
 
 ## Getting started
 
@@ -18,7 +18,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | Command | Description |
 | --- | --- |
 | `npm run dev` | Start the local dev server |
-| `npm run build` | Production build (static export) |
+| `npm run build` | Production build |
 | `npm start` | Serve the production build |
 | `npm run lint` | ESLint (Next.js config) |
 
@@ -51,25 +51,47 @@ Old `/android` waitlist links redirect to the Play store or beta URL once either
 
 ### Feedback and waitlist backend
 
-The feedback form and Android waitlist submit to a Supabase backend:
-
 ```
 NEXT_PUBLIC_FEEDBACK_SUPABASE_URL=https://your-project.supabase.co
 NEXT_PUBLIC_FEEDBACK_SUPABASE_PUBLISHABLE_KEY=
+FEEDBACK_SUPABASE_SERVICE_ROLE_KEY=
 ```
 
-Leaving them unset is fine for working on layout and content — the forms simply won't submit.
+Leaving the public vars unset is fine for layout work — forms simply won't submit.
+
+### Android waitlist emails (Resend)
+
+Closed testing flow:
+
+1. User joins `/android` → server action stores the row as `pending`
+2. You get a notify email; they get a waitlist acknowledgment (no Play link yet)
+3. You add them in Play Console
+4. You open `/admin/android-waitlist` and click **Send invite**
+
+| Variable | Purpose |
+| --- | --- |
+| `RESEND_API_KEY` | Resend API key |
+| `WAITLIST_FROM_EMAIL` | e.g. `beta@owwed.builtby.vin` |
+| `WAITLIST_REPLY_TO` | Where replies go (your Gmail) |
+| `WAITLIST_NOTIFY_EMAIL` | Where new-signup pings go |
+| `WAITLIST_ANDROID_INVITE_URL` | Play link put in the invite email |
+| `WAITLIST_ADMIN_PASSWORD` | Shared password for `/admin/android-waitlist` |
+| `WAITLIST_ADMIN_SESSION_SECRET` | Random secret for signing the admin cookie |
+
+Apply the feedback-app migration that adds `status` / `invited_at` before using the admin send flow.
 
 ## Structure
 
 ```
 app/
-  page.tsx           # Landing page
-  help/              # Help center
-  feedback/          # Feedback form
-  android/           # Android waitlist
-  privacy/, terms/   # Legal pages
-  lib/               # Supabase form helpers
-  site-components.tsx # Shared header, footer, brand, store buttons
-public/              # Static assets (icons, screenshots, OG image)
+  page.tsx                 # Landing page
+  help/                    # Help center
+  feedback/                # Feedback form
+  android/                 # Android waitlist
+  admin/android-waitlist/  # Password-protected invite sender
+  privacy/, terms/         # Legal pages
+  actions/                 # Server actions
+  lib/                     # Supabase + email helpers
+  site-components.tsx      # Shared header, footer, brand, store buttons
+public/                    # Static assets (icons, screenshots, OG image)
 ```

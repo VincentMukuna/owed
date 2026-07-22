@@ -1459,6 +1459,226 @@ a.store-button {
   line-height: 1.6;
 }
 
+.waitlist-admin-shell {
+  min-height: 100vh;
+  background: var(--cream);
+}
+
+.waitlist-admin-page {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 28px 0 120px;
+  text-align: left;
+}
+
+.waitlist-admin-top {
+  margin-bottom: 48px;
+}
+
+.waitlist-admin-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 19px;
+  font-weight: 730;
+  letter-spacing: -0.03em;
+}
+
+.waitlist-admin-page h1 {
+  margin: 22px 0 14px;
+  font-size: clamp(36px, 6vw, 52px);
+  line-height: 1.05;
+  letter-spacing: -0.055em;
+  font-weight: 650;
+  text-wrap: balance;
+}
+
+.waitlist-admin-lede {
+  margin: 0;
+  color: var(--muted);
+  font-size: 16px;
+  line-height: 1.65;
+  max-width: 420px;
+}
+
+.waitlist-admin {
+  margin-top: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+}
+
+.waitlist-admin-toolbar {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.waitlist-admin-hint {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.waitlist-admin-ghost {
+  flex: 0 0 auto;
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  font-size: 14px;
+  font-weight: 650;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.waitlist-admin-ok {
+  margin: 0;
+  color: var(--green-2);
+  font-size: 14px;
+}
+
+.waitlist-admin-section h2 {
+  margin: 0 0 12px;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.waitlist-admin-empty {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.waitlist-admin-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.waitlist-admin-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 14px 16px;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  background: var(--paper);
+}
+
+.waitlist-admin-row-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+}
+
+.waitlist-admin-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.waitlist-admin-email-text {
+  display: inline-block;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  font-size: 15px;
+  font-weight: 650;
+}
+
+.waitlist-admin-email-copy {
+  flex: 0 0 auto;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  color: var(--muted);
+  opacity: 0;
+  transition:
+    opacity 0.15s,
+    background 0.15s,
+    color 0.15s;
+}
+
+.waitlist-admin-row:hover .waitlist-admin-email-copy,
+.waitlist-admin-row:focus-within .waitlist-admin-email-copy,
+.waitlist-admin-email.is-copied .waitlist-admin-email-copy {
+  opacity: 1;
+}
+
+.waitlist-admin-email:hover .waitlist-admin-email-copy,
+.waitlist-admin-email:focus-visible .waitlist-admin-email-copy {
+  background: rgba(22, 25, 20, 0.06);
+  color: var(--ink);
+}
+
+.waitlist-admin-email.is-copied .waitlist-admin-email-copy {
+  color: var(--green-2);
+}
+
+.waitlist-admin-meta {
+  display: block;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.waitlist-admin-send {
+  flex: 0 0 auto;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 0;
+  border-radius: 12px;
+  background: var(--green);
+  color: #f4f5ef;
+  font: inherit;
+  font-size: 14px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.waitlist-admin-send:disabled {
+  opacity: 0.72;
+  cursor: wait;
+}
+
+.waitlist-admin-row-muted {
+  background: transparent;
+}
+
+html[data-theme="dark"] .waitlist-admin-row {
+  border-color: #343934;
+  background: #121512;
+}
+
+html[data-theme="dark"] .waitlist-admin-row-muted {
+  background: transparent;
+}
+
+html[data-theme="dark"] .waitlist-admin-send {
+  background: #72b68e;
+  color: #08100b;
+}
+
 .feedback-form {
   display: flex;
   flex-direction: column;

@@ -8,7 +8,7 @@ import { AndroidWaitlistForm } from "./android-waitlist-form";
 export const metadata: Metadata = {
   title: "Android Beta · Owwed",
   description:
-    "Request an invite to the Owwed Android beta. Leave your email and we’ll send you a join link.",
+    "Request an invite to the Owwed Android closed beta. Leave your email and we’ll follow up with a join link.",
   alternates: { canonical: "/android" },
 };
 
@@ -29,7 +29,9 @@ export default function AndroidPage() {
             Android
           </span>
           <h1>Join the Android beta.</h1>
-          <p>Leave your email and we’ll send you a link to join the beta.</p>
+          <p>
+            Leave your email. We’ll add you to closed testing, then send the Play Store invite.
+          </p>
           <AndroidWaitlistForm />
         </div>
       </main>
