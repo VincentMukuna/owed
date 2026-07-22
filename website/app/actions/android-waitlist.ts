@@ -1,5 +1,7 @@
 "use server";
 
+import { after } from "next/server";
+
 import {
   getFeedbackServiceHeaders,
   getFeedbackSupabaseConfig,
@@ -45,14 +47,16 @@ export async function joinAndroidWaitlist(email: string): Promise<JoinAndroidWai
     });
 
     if (response.ok) {
-      try {
-        await Promise.all([
-          sendWaitlistJoinedAck(trimmed),
-          sendWaitlistJoinedNotify(trimmed),
-        ]);
-      } catch (emailError) {
-        console.error("Waitlist emails failed after signup:", emailError);
-      }
+      after(async () => {
+        try {
+          await Promise.all([
+            sendWaitlistJoinedAck(trimmed),
+            sendWaitlistJoinedNotify(trimmed),
+          ]);
+        } catch (emailError) {
+          console.error("Waitlist emails failed after signup:", emailError);
+        }
+      });
 
       return { ok: true, alreadyJoined: false };
     }
