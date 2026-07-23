@@ -35,23 +35,29 @@ function getNotifyEmail() {
 }
 
 function getInviteUrl() {
-  const url = process.env.WAITLIST_ANDROID_INVITE_URL;
-
-  if (!url) {
+  if (!process.env.WAITLIST_ANDROID_INVITE_URL?.trim()) {
     throw new Error("WAITLIST_ANDROID_INVITE_URL is not configured.");
   }
 
-  return url;
+  // Same-domain hop so Resend doesn’t flag play.google.com as a mismatched URL.
+  return `${getSiteOrigin()}/go/android`;
+}
+
+function getSiteOrigin() {
+  const explicit = process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "");
+  if (explicit) {
+    return explicit;
+  }
+
+  if (process.env.VERCEL_PROJECT_PRODUCTION_URL) {
+    return `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`;
+  }
+
+  return "http://localhost:3000";
 }
 
 function getAdminUrl() {
-  const siteUrl =
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "http://localhost:3000");
-
-  return `${siteUrl}/admin/android-waitlist`;
+  return `${getSiteOrigin()}/admin/android-waitlist`;
 }
 
 async function sendEmail(input: {
@@ -78,9 +84,9 @@ export async function sendWaitlistJoinedAck(to: string) {
   const text = [
     "Hi,",
     "",
-    "Thanks for offering to test Owwed. You’re on the Android beta waitlist.",
+    "Thanks for helping me test Owwed. You’re on the Android waitlist.",
     "",
-    "We’ll email you the Play Store link once you’ve been added to closed testing.",
+    "I’ll email you the install link once I’ve added your email to the testing group.",
     "",
     "Thanks,",
     "Vincent",
@@ -88,14 +94,14 @@ export async function sendWaitlistJoinedAck(to: string) {
 
   const html = `
     <p>Hi,</p>
-    <p>Thanks for offering to test Owwed. You’re on the Android beta waitlist.</p>
-    <p>We’ll email you the Play Store link once you’ve been added to closed testing.</p>
+    <p>Thanks for helping me test Owwed. You’re on the Android waitlist.</p>
+    <p>I’ll email you the install link once I’ve added your email to the testing group.</p>
     <p>Thanks,<br/>Vincent</p>
   `.trim();
 
   await sendEmail({
     to,
-    subject: "You’re on the Owwed Android waitlist",
+    subject: "You’re on the Owwed waitlist",
     text,
     html,
   });
@@ -132,11 +138,13 @@ export async function sendAndroidBetaInvite(to: string) {
   const text = [
     "Hi,",
     "",
-    "Thanks for offering to test Owwed. You can join the Android beta here:",
+    "Thanks for helping me test Owwed. I’ve added your email to the Android testing group.",
+    "",
+    "Install the app here:",
     "",
     inviteUrl,
     "",
-    "I'd appreciate any feedback or issues you notice.",
+    "Please let me know if the link doesn’t work or if you notice any issues.",
     "",
     "Thanks,",
     "Vincent",
@@ -144,15 +152,16 @@ export async function sendAndroidBetaInvite(to: string) {
 
   const html = `
     <p>Hi,</p>
-    <p>Thanks for offering to test Owwed. You can join the Android beta here:</p>
+    <p>Thanks for helping me test Owwed. I’ve added your email to the Android testing group.</p>
+    <p>Install the app here:</p>
     <p><a href="${inviteUrl}">${inviteUrl}</a></p>
-    <p>I'd appreciate any feedback or issues you notice.</p>
+    <p>Please let me know if the link doesn’t work or if you notice any issues.</p>
     <p>Thanks,<br/>Vincent</p>
   `.trim();
 
   await sendEmail({
     to,
-    subject: "Owwed Android beta",
+    subject: "Your Owwed test link",
     text,
     html,
   });

@@ -74,7 +74,7 @@ Closed testing flow:
 | `WAITLIST_FROM_EMAIL` | e.g. `beta@owwed.builtby.vin` |
 | `WAITLIST_REPLY_TO` | Where replies go (your Gmail) |
 | `WAITLIST_NOTIFY_EMAIL` | Where new-signup pings go |
-| `WAITLIST_ANDROID_INVITE_URL` | Play link put in the invite email |
+| `WAITLIST_ANDROID_INVITE_URL` | Play Store URL; `/go/android` redirects here (emails link to `/go/android`) |
 | `WAITLIST_ADMIN_PASSWORD` | Shared password for `/admin/android-waitlist` |
 | `WAITLIST_ADMIN_SESSION_SECRET` | Random secret for signing the admin cookie |
 
