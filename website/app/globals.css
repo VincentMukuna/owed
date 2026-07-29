@@ -133,8 +133,12 @@ summary:focus-visible {
   border-radius: 11px;
   color: #f2f3ed;
   background: var(--green);
-  font-size: 15px;
-  font-weight: 800;
+}
+
+.brand-mark-icon {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 .desktop-nav {

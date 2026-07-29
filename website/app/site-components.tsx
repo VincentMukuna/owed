@@ -4,12 +4,67 @@ import { SiApple, SiGoogleplay } from "react-icons/si";
 
 import { getStoreLinks, type StoreLink } from "./lib/store-links";
 
+export function BrandMark() {
+  return (
+    <span className="brand-mark" aria-hidden="true">
+      <svg
+        className="brand-mark-icon"
+        viewBox="0 0 512 512"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <rect
+          x="56"
+          y="40"
+          width="400"
+          height="432"
+          rx="64"
+          stroke="currentColor"
+          strokeWidth="44"
+        />
+        <line
+          x1="120"
+          y1="152"
+          x2="392"
+          y2="152"
+          stroke="currentColor"
+          strokeWidth="40"
+          strokeLinecap="round"
+        />
+        <line
+          x1="120"
+          y1="248"
+          x2="392"
+          y2="248"
+          stroke="currentColor"
+          strokeWidth="40"
+          strokeLinecap="round"
+        />
+        <line
+          x1="120"
+          y1="344"
+          x2="296"
+          y2="344"
+          stroke="currentColor"
+          strokeWidth="40"
+          strokeLinecap="round"
+        />
+        <path
+          d="M328 376 L364 416 L432 328"
+          stroke="currentColor"
+          strokeWidth="40"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        />
+      </svg>
+    </span>
+  );
+}
+
 export function Brand() {
   return (
     <Link className="brand" href="/" aria-label="Owwed home">
-      <span className="brand-mark" aria-hidden="true">
-        O
-      </span>
+      <BrandMark />
       <span>Owwed</span>
     </Link>
   );

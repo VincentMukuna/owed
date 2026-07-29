@@ -3,6 +3,7 @@ import Link from "next/link";
 
 import { listAndroidWaitlistSignups } from "../../actions/waitlist-admin";
 import { isAdminAuthenticated } from "../../lib/waitlist-admin-auth";
+import { BrandMark } from "../../site-components";
 import { WaitlistAdminLoginForm } from "./login-form";
 import { WaitlistAdminPanel } from "./waitlist-admin-panel";
 
@@ -20,9 +21,7 @@ export default async function AndroidWaitlistAdminPage() {
       <div className="container waitlist-admin-page">
         <div className="waitlist-admin-top">
           <Link className="waitlist-admin-brand" href="/">
-            <span className="brand-mark" aria-hidden="true">
-              O
-            </span>
+            <BrandMark />
             Owwed
           </Link>
         </div>
