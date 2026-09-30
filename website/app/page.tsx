@@ -14,17 +14,14 @@ const workflow = [
   {
     title: "See what is outstanding",
     text: "See who owes what and what you still need to pay, without piecing the story together.",
-    note: "One calm overview",
   },
   {
     title: "Keep the full picture",
     text: "Amounts, payments, due dates, and remaining balances stay together from start to finish.",
-    note: "A history you can trust",
   },
   {
     title: "Remember at the right time",
     text: "Set a private reminder on your phone and let Owwed hold the date for you.",
-    note: "Quiet, useful reminders",
   },
 ];
 
@@ -79,9 +76,6 @@ export default function Home() {
         <section className="hero">
           <div className="container hero-layout">
             <div className="hero-copy">
-              <span className="eyebrow">
-                <span className="status-dot" aria-hidden="true" /> Private by design
-              </span>
               <h1>A simpler way to remember money.</h1>
               <p className="hero-summary">
                 Keep track of money you have lent, borrowed, and paid back without digging through
@@ -91,7 +85,7 @@ export default function Home() {
                 <StoreButtons />
               </div>
               <ul className="hero-trust" aria-label="Owwed benefits">
-                <li>Free beta</li>
+                <li>Free</li>
                 <li>No account</li>
                 <li>Data stays on your device</li>
               </ul>
@@ -130,7 +124,6 @@ export default function Home() {
           <div className="container workflow-layout">
             <div className="workflow-heading">
               <div>
-                <p className="section-label">What Owwed does</p>
                 <h2 id="workflow-title">Every money promise, in one place.</h2>
               </div>
               <p className="section-intro">
@@ -139,7 +132,7 @@ export default function Home() {
               </p>
             </div>
             <ol className="workflow-list">
-              {workflow.map(({ title, text, note }, index) => (
+              {workflow.map(({ title, text }, index) => (
                 <li key={title}>
                   <div className={`workflow-motif motif-${index + 1}`} aria-hidden="true">
                     <span />
@@ -148,7 +141,6 @@ export default function Home() {
                   </div>
                   <span className="workflow-number">0{index + 1}</span>
                   <div className="workflow-copy">
-                    <p className="workflow-note">{note}</p>
                     <h3>{title}</h3>
                     <p>{text}</p>
                   </div>
@@ -165,7 +157,6 @@ export default function Home() {
         <section className="trust-section" id="privacy" aria-labelledby="trust-title">
           <div className="container trust-layout">
             <div className="trust-copy">
-              <p className="section-label section-label-light">Private by default</p>
               <h2 id="trust-title">Your data stays with you.</h2>
               <p>
                 Owwed does not need an account or a cloud service. Your data stays on your phone
@@ -197,7 +188,6 @@ export default function Home() {
         <section className="faq-section" aria-labelledby="faq-title">
           <div className="container faq-grid">
             <div className="faq-copy">
-              <p className="section-label">Questions</p>
               <h2 id="faq-title">A few things you might want to know.</h2>
               <p>There is more detail in the help center if you need it.</p>
               <a href="/help">Visit the help center →</a>
@@ -218,7 +208,6 @@ export default function Home() {
 
         <section className="download-section" id="try-owed">
           <div className="container download-card">
-            <p className="section-label section-label-light">Get Owwed</p>
             <h2>{downloadCopy.title}</h2>
             <p>{downloadCopy.body}</p>
             <StoreButtons compact />

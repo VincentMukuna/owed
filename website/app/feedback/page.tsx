@@ -15,10 +15,6 @@ export default function FeedbackPage() {
       <Header />
       <main className="simple-main">
         <div className="container simple-wrap">
-          <span className="eyebrow">
-            <span className="status-dot" />
-            Feedback
-          </span>
           <h1>Tell us what happened.</h1>
           <p>Bugs, ideas, and quiet notes all help. Keep money details out of your message.</p>
           <FeedbackForm />

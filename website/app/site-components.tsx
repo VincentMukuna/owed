@@ -191,7 +191,12 @@ export function Footer() {
         <div>
           <Brand />
           <p>A private debt tracker for money between people.</p>
-          <p className="crafted">Built with care by Vincent.</p>
+          <p className="crafted">
+            Built with care by{" "}
+            <a href="https://builtby.vin" rel="author">
+              Vincent <span aria-hidden="true">↗</span>
+            </a>
+          </p>
         </div>
         <div className="footer-links">
           <div>

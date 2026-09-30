@@ -51,7 +51,6 @@ export default function HelpPage() {
       <Header />
       <main className="help-main">
         <div className="container help-hero">
-          <span className="eyebrow">Help center</span>
           <h1>How can we help?</h1>
           <p>Clear answers for the few things Owwed asks you to think about.</p>
         </div>
