@@ -77,11 +77,14 @@ const styles = StyleSheet.create((theme) => ({
   fabBody: {
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 6,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 4,
+        blurRadius: 8 * 2,
+        color: `rgba(0, 0, 0, ${0.2})`,
+      },
+    ],
   },
   solidFab: {
     backgroundColor: theme.colors.fab,

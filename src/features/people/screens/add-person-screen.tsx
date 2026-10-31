@@ -135,11 +135,14 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: 1,
     borderColor: theme.colors.border,
     padding: 16,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
-    shadowRadius: theme.name === "light" ? 1.5 : 2,
-    elevation: theme.name === "light" ? 0 : 1,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 1,
+        blurRadius: (theme.name === "light" ? 1.5 : 2) * 2,
+        color: `rgba(0, 0, 0, ${theme.name === "light" ? 0.025 : 0.05})`,
+      },
+    ],
   },
   label: {
     fontSize: 11,

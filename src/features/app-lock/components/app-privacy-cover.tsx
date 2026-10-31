@@ -36,11 +36,14 @@ const styles = StyleSheet.create((theme) => ({
     backgroundColor: theme.colors.primary,
     alignItems: "center",
     justifyContent: "center",
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 8,
+        blurRadius: 16 * 2,
+        color: `rgba(0, 0, 0, ${0.15})`,
+      },
+    ],
   },
   wordmark: {
     color: theme.colors.text,

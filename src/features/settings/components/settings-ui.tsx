@@ -291,11 +291,14 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     overflow: "hidden",
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: theme.name === "dark" ? 0.16 : 0,
-    shadowRadius: theme.name === "dark" ? 8 : 0,
-    elevation: theme.name === "dark" ? 3 : 0,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 4,
+        blurRadius: (theme.name === "dark" ? 8 : 0) * 2,
+        color: `rgba(0, 0, 0, ${theme.name === "dark" ? 0.16 : 0})`,
+      },
+    ],
   },
   iconTileHighlight: {
     position: "absolute",

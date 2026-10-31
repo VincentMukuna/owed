@@ -398,11 +398,14 @@ const styles = StyleSheet.create((theme) => ({
     borderColor: theme.colors.border,
     padding: 16,
     gap: 12,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: theme.name === "light" ? 0.025 : 0.05,
-    shadowRadius: theme.name === "light" ? 1.5 : 2,
-    elevation: theme.name === "light" ? 0 : 1,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 1,
+        blurRadius: (theme.name === "light" ? 1.5 : 2) * 2,
+        color: `rgba(0, 0, 0, ${theme.name === "light" ? 0.025 : 0.05})`,
+      },
+    ],
   },
   segmented: {
     flexDirection: "row",

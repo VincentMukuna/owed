@@ -146,11 +146,14 @@ const styles = StyleSheet.create((theme) => ({
     alignItems: "center",
     justifyContent: "center",
     marginBottom: 20,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.15,
-    shadowRadius: 16,
-    elevation: 8,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 8,
+        blurRadius: 16 * 2,
+        color: `rgba(0, 0, 0, ${0.15})`,
+      },
+    ],
   },
   title: {
     fontSize: 28,
@@ -179,11 +182,14 @@ const styles = StyleSheet.create((theme) => ({
     padding: 16,
     borderWidth: 1,
     borderColor: theme.colors.border,
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.08,
-    shadowRadius: 12,
-    elevation: 3,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 4,
+        blurRadius: 12 * 2,
+        color: `rgba(0, 0, 0, ${0.08})`,
+      },
+    ],
   },
   previewRow: {
     flexDirection: "row",
@@ -271,11 +277,14 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 4,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 4,
+        blurRadius: 12 * 2,
+        color: `rgba(0, 0, 0, ${0.15})`,
+      },
+    ],
   },
   primaryBtnText: {
     color: theme.colors.primaryForeground,

@@ -199,11 +199,14 @@ const styles = StyleSheet.create((theme) => ({
     borderWidth: 1,
     borderColor: theme.name === "light" ? theme.colors.borderStrong : theme.colors.border,
     overflow: "hidden",
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 2,
-    elevation: 1,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 1,
+        blurRadius: 2 * 2,
+        color: `rgba(0, 0, 0, ${0.04})`,
+      },
+    ],
   },
   row: {
     flexDirection: "row",

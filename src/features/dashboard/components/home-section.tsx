@@ -64,7 +64,7 @@ export function HomeCarouselPagination({
     return {
       transform: [{ translateX: boundedProgress * 8 }, { scaleX: stretch }],
     };
-  }, [count, reduceMotion]);
+  });
 
   if (count <= 1) return null;
 

@@ -498,11 +498,14 @@ const styles = StyleSheet.create((theme) => ({
     borderRadius: 16,
     paddingVertical: 16,
     alignItems: "center",
-    shadowColor: theme.colors.shadow,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.15,
-    shadowRadius: 12,
-    elevation: 4,
+    boxShadow: [
+      {
+        offsetX: 0,
+        offsetY: 4,
+        blurRadius: 12 * 2,
+        color: `rgba(0, 0, 0, ${0.15})`,
+      },
+    ],
   },
   primaryBtnText: {
     color: theme.colors.primaryForeground,
