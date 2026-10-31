@@ -3,6 +3,7 @@ import { forwardRef, useCallback, useRef } from "react";
 import {
   type StyleProp,
   TextInput,
+  type TextInputInstance,
   type TextInputProps,
   type TextStyle,
   View,
@@ -25,7 +26,7 @@ type ContactPhoneInputProps = Omit<TextInputProps, "onChangeText" | "style" | "v
   contactButtonStyle?: StyleProp<ViewStyle>;
 };
 
-export const ContactPhoneInput = forwardRef<TextInput, ContactPhoneInputProps>(
+export const ContactPhoneInput = forwardRef<TextInputInstance, ContactPhoneInputProps>(
   (
     {
       value,

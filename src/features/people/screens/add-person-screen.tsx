@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, type TextInputInstance, View } from "react-native";
 
 import { type Href, router, useNavigation } from "expo-router";
 
@@ -19,8 +19,8 @@ export function AddPersonScreen() {
   const { theme } = useUnistyles();
   const navigation = useNavigation();
   const addPerson = useAddPerson();
-  const nameRef = useRef<TextInput>(null);
-  const phoneRef = useRef<TextInput>(null);
+  const nameRef = useRef<TextInputInstance>(null);
+  const phoneRef = useRef<TextInputInstance>(null);
 
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");

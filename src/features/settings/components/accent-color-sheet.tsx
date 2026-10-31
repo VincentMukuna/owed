@@ -8,7 +8,7 @@ import {
   useRef,
 } from "react";
 
-import { InteractionManager, Platform, Text, View } from "react-native";
+import { Platform, Text, View } from "react-native";
 
 import {
   BottomSheetBackdrop,
@@ -27,8 +27,7 @@ import { selectionChange } from "@/lib/haptics";
 import { type BrandColorThemeDefinition, brandColorThemeList } from "@/styles/brand-themes";
 
 const SHEET_CONTAINER = (Platform.OS === "ios" ? FullWindowOverlay : undefined) as
-  | ComponentType<{ children?: ReactNode }>
-  | undefined;
+  ComponentType<{ children?: ReactNode }> | undefined;
 
 export type AccentColorSheetRef = {
   present: () => void;
@@ -83,7 +82,7 @@ export const AccentColorSheet = forwardRef<AccentColorSheetRef, AccentColorSheet
         return;
       }
 
-      InteractionManager.runAfterInteractions(() => {
+      requestIdleCallback(() => {
         onSelect(brandId);
       });
     }, [onSelect]);

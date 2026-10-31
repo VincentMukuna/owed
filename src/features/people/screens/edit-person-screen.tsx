@@ -1,6 +1,6 @@
 import { useCallback, useLayoutEffect, useRef, useState } from "react";
 
-import { ScrollView, Text, TextInput, View } from "react-native";
+import { ScrollView, Text, TextInput, type TextInputInstance, View } from "react-native";
 
 import { router, useNavigation } from "expo-router";
 
@@ -26,7 +26,7 @@ export function EditPersonScreen({ personId }: EditPersonScreenProps) {
   const navigation = useNavigation();
   const { data: person, isPending } = usePersonDetail(personId);
   const updatePerson = useUpdatePerson();
-  const phoneRef = useRef<TextInput>(null);
+  const phoneRef = useRef<TextInputInstance>(null);
 
   const [name, setName] = useState<string | null>(null);
   const [phone, setPhone] = useState<string | null>(null);

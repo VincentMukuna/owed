@@ -1,6 +1,6 @@
 import { forwardRef, memo, useCallback, useImperativeHandle, useRef } from "react";
 
-import { Pressable, TextInput, type TextInput as TextInputType, View } from "react-native";
+import { Pressable, TextInput, type TextInputInstance, View } from "react-native";
 
 import { Search, X } from "lucide-react-native";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
@@ -17,7 +17,7 @@ export type DebtSearchBarRef = {
 
 const DebtSearchBarInner = forwardRef<DebtSearchBarRef, DebtSearchBarProps>(
   ({ value, onChangeText, variant = "default" }, ref) => {
-    const inputRef = useRef<TextInputType>(null);
+    const inputRef = useRef<TextInputInstance>(null);
     const { theme } = useUnistyles();
 
     useImperativeHandle(ref, () => ({

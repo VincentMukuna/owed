@@ -94,7 +94,7 @@ iOS:
 
 - Use Expo UI's SwiftUI `ContextMenu` for row long-press menus.
 - Use Expo UI's SwiftUI `Menu` for single-tap header overflow menus.
-- Reference docs: `https://docs.expo.dev/versions/v56.0.0/sdk/ui/swift-ui/contextmenu/`
+- Reference docs: `https://docs.expo.dev/versions/v58.0.0/sdk/ui/swift-ui/contextmenu/`
 
 Android:
 

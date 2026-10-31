@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import { ScrollView, Switch, Text, TextInput, View } from "react-native";
+import { ScrollView, Switch, Text, TextInput, type TextInputInstance, View } from "react-native";
 
 import { router, useLocalSearchParams, useNavigation } from "expo-router";
 
@@ -68,7 +68,7 @@ export function AddDebtScreen() {
   const defaultCurrency = useSettingsStore((state) => state.defaultCurrency);
 
   const pickerRef = useRef<PersonPickerSheetRef>(null);
-  const amountRef = useRef<TextInput>(null);
+  const amountRef = useRef<TextInputInstance>(null);
 
   const [person, setPerson] = useState<PersonRef | null>(() =>
     personId ? { kind: "existing", id: personId } : null,

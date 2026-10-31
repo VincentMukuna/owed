@@ -9,7 +9,7 @@ import {
   useState,
 } from "react";
 
-import { Platform, Text, type TextInput, View } from "react-native";
+import { Platform, Text, type TextInputInstance, View } from "react-native";
 
 import {
   BottomSheetBackdrop,
@@ -32,8 +32,7 @@ import { formatCurrency } from "@/lib/utils/formatters";
 // On iOS, host the sheet in a FullWindowOverlay so the backdrop covers the
 // native nav header too. Android's default container already spans the window.
 const SHEET_CONTAINER = (Platform.OS === "ios" ? FullWindowOverlay : undefined) as
-  | ComponentType<{ children?: ReactNode }>
-  | undefined;
+  ComponentType<{ children?: ReactNode }> | undefined;
 
 export type PersonPickerSheetRef = {
   present: () => void;
@@ -49,7 +48,7 @@ export const PersonPickerSheet = forwardRef<PersonPickerSheetRef, PersonPickerSh
   ({ people, onSelect }, ref) => {
     const { theme } = useUnistyles();
     const sheetRef = useRef<BottomSheetModal>(null);
-    const inputRef = useRef<TextInput>(null);
+    const inputRef = useRef<TextInputInstance>(null);
     const [query, setQuery] = useState("");
     const snapPoints = useMemo(() => ["90%"], []);
     const renderScrollComponent = useBottomSheetScrollableCreator();

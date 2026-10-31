@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { Text, TextInput, View } from "react-native";
+import { Text, TextInput, type TextInputInstance, View } from "react-native";
 
 import { type Href, router } from "expo-router";
 
@@ -42,7 +42,7 @@ export function CurrencyScreen() {
   const insets = useSafeAreaInsets();
   const defaultCurrency = useCurrentCurrency();
   const changeCurrency = useChangeCurrency();
-  const searchInputRef = useRef<TextInput>(null);
+  const searchInputRef = useRef<TextInputInstance>(null);
 
   const [query, setQuery] = useState("");
 

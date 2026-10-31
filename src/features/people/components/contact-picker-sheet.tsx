@@ -11,7 +11,7 @@ import {
   useState,
 } from "react";
 
-import { AppState, Linking, Platform, Text, type TextInput, View } from "react-native";
+import { AppState, Linking, Platform, Text, type TextInputInstance, View } from "react-native";
 
 import { Contact, ContactField, getPermissionsAsync, requestPermissionsAsync } from "expo-contacts";
 
@@ -41,8 +41,7 @@ import {
 const CONTACT_PHONE_FIELDS = [ContactField.FULL_NAME, ContactField.PHONES] as const;
 
 const SHEET_CONTAINER = (Platform.OS === "ios" ? FullWindowOverlay : undefined) as
-  | ComponentType<{ children?: ReactNode }>
-  | undefined;
+  ComponentType<{ children?: ReactNode }> | undefined;
 
 type PickerState = "idle" | "loading" | "ready" | "denied" | "error";
 
@@ -66,7 +65,7 @@ export const ContactPickerSheet = forwardRef<ContactPickerSheetRef, ContactPicke
   ({ initialSearchQuery = "", onSelectPhone }, ref) => {
     const { theme } = useUnistyles();
     const sheetRef = useRef<BottomSheetModal>(null);
-    const inputRef = useRef<TextInput>(null);
+    const inputRef = useRef<TextInputInstance>(null);
     const [state, setState] = useState<PickerState>("idle");
     const [contacts, setContacts] = useState<ContactPhoneView[]>([]);
     const [query, setQuery] = useState("");

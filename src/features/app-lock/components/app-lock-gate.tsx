@@ -1,6 +1,6 @@
 import { type ReactNode, useEffect, useRef } from "react";
 
-import { AppState, type AppStateStatus, View } from "react-native";
+import { AppState, View } from "react-native";
 
 import * as ScreenCapture from "expo-screen-capture";
 
@@ -19,7 +19,7 @@ export function AppLockGate({ children }: { children: ReactNode }) {
   const enabled = useAppLockStore((state) => state.enabled);
   const lockStatus = useAppLockStore((state) => state.lockStatus);
   const privacyCovered = useAppLockStore((state) => state.privacyCovered);
-  const appStateRef = useRef<AppStateStatus>(AppState.currentState);
+  const appStateRef = useRef(AppState.currentState);
   const backgroundedAtRef = useRef<number | null>(null);
 
   useEffect(() => {

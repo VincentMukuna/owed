@@ -15,7 +15,7 @@
 | [reminders-grouping-prd.md](./reminders-grouping-prd.md) | Reminder copy uses `formatCurrency` — must re-sync after conversion |
 | [design-brief.md](./design-brief.md) | Visual tone — calm, private, human |
 
-**Expo version:** SDK 56 — add [`expo-localization`](https://docs.expo.dev/versions/v56.0.0/sdk/localization/) for OS locale detection.
+**Expo version:** SDK 58 — add [`expo-localization`](https://docs.expo.dev/versions/v58.0.0/sdk/localization/) for OS locale detection.
 
 ---
 

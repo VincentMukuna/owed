@@ -16,7 +16,7 @@ This document captures the frozen design decisions for the **second revision** o
 | [performance.md](./performance.md) | List/query performance rules — apply to the sync engine |
 | [design-brief.md](./design-brief.md) | Visual tone — calm, private, human |
 
-**Expo version:** SDK 56 — read [Expo Notifications docs](https://docs.expo.dev/versions/v56.0.0/sdk/notifications/) before implementing.
+**Expo version:** SDK 58 — read [Expo Notifications docs](https://docs.expo.dev/versions/v58.0.0/sdk/notifications/) before implementing.
 
 ---
 

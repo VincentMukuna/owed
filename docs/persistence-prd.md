@@ -15,7 +15,7 @@ This document captures product intent, architecture decisions, and implementatio
 | [design-brief.md](./design-brief.md) | UI/UX — should not change in this sprint |
 | [README.md](./README.md) | Docs index |
 
-**Expo version:** SDK 56 — read [Expo v56 docs](https://docs.expo.dev/versions/v56.0.0/) before adding native modules. Prefer `expo-sqlite` from the Expo SDK.
+**Expo version:** SDK 58 — read [Expo v58 docs](https://docs.expo.dev/versions/v58.0.0/) before adding native modules. Prefer `expo-sqlite` from the Expo SDK.
 
 ---
 

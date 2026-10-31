@@ -14,7 +14,7 @@ This document captures the product decisions agreed during the App Lock grilling
 | [prd.md](./prd.md)                               | Original Owed product vision               |
 | [backup-restore-prd.md](./backup-restore-prd.md) | Portable backup scope and privacy model    |
 
-**Expo version:** SDK 56. Before implementation, read the exact versioned [Expo LocalAuthentication](https://docs.expo.dev/versions/v56.0.0/sdk/local-authentication/) and [Expo SecureStore](https://docs.expo.dev/versions/v56.0.0/sdk/securestore/) documentation. Face ID must be tested in a development build because it is not supported in Expo Go.
+**Expo version:** SDK 58. Before implementation, read the exact versioned [Expo LocalAuthentication](https://docs.expo.dev/versions/v58.0.0/sdk/local-authentication/) and [Expo SecureStore](https://docs.expo.dev/versions/v58.0.0/sdk/securestore/) documentation. Face ID must be tested in a development build because it is not supported in Expo Go.
 
 ---
 

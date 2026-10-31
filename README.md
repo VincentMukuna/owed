@@ -22,10 +22,10 @@ Owwed is a private memory and follow-up tool, not a lending platform. It helps y
 
 ## Stack
 
-- [Expo SDK 56](https://docs.expo.dev/) + [Expo Router](https://docs.expo.dev/router/introduction/) (file-based routing)
-- React Native 0.85, React 19, TypeScript
+- [Expo SDK 58](https://docs.expo.dev/versions/v58.0.0/) + [Expo Router](https://docs.expo.dev/router/introduction/) (file-based routing)
+- React Native 0.88, React 19, TypeScript
 - [Unistyles](https://www.unistyl.es/) for theming
-- [expo-sqlite](https://docs.expo.dev/versions/v56.0.0/sdk/sqlite/) for local persistence (normalized SQLite schema)
+- [expo-sqlite](https://docs.expo.dev/versions/v58.0.0/sdk/sqlite/) for local persistence (normalized SQLite schema)
 - [TanStack Query](https://tanstack.com/query) for data fetching/caching, [Zustand](https://github.com/pmndrs/zustand) for ephemeral UI state
 - [React Hook Form](https://react-hook-form.com/) + [Zod](https://zod.dev/) for forms and validation
 - [Vitest](https://vitest.dev/) for unit tests

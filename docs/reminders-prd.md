@@ -17,7 +17,7 @@ This document captures product intent, frozen design decisions, and implementati
 | [performance.md](./performance.md) | List/query performance — inbox must use `FlashList` |
 | [design-brief.md](./design-brief.md) | Visual tone — calm, private, human |
 
-**Expo version:** SDK 56 — read [Expo Notifications docs](https://docs.expo.dev/versions/v56.0.0/sdk/notifications/) before implementing.
+**Expo version:** SDK 58 — read [Expo Notifications docs](https://docs.expo.dev/versions/v58.0.0/sdk/notifications/) before implementing.
 
 ---
 

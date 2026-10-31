@@ -10,14 +10,7 @@ import {
   useState,
 } from "react";
 
-import {
-  InteractionManager,
-  type LayoutChangeEvent,
-  Platform,
-  Pressable,
-  Text,
-  View,
-} from "react-native";
+import { type LayoutChangeEvent, Platform, Pressable, Text, View } from "react-native";
 
 import { GlassView, isGlassEffectAPIAvailable, isLiquidGlassAvailable } from "expo-glass-effect";
 import { type Href, router, useLocalSearchParams } from "expo-router";
@@ -109,11 +102,10 @@ function parseDashboardDirectionFocus(
 }
 
 const SHEET_CONTAINER = (Platform.OS === "ios" ? FullWindowOverlay : undefined) as
-  | ComponentType<{ children?: ReactNode }>
-  | undefined;
+  ComponentType<{ children?: ReactNode }> | undefined;
 
 function scheduleDashboardFocusClear() {
-  InteractionManager.runAfterInteractions(() => {
+  requestIdleCallback(() => {
     router.setParams({ focusDate: "", focusType: "" });
   });
 }
