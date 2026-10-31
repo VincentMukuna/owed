@@ -110,12 +110,21 @@ export function RecordPaymentScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.subtitle}>
-          {debt.name} · {formatCurrency(debt.remaining, debt.currency)} remaining
-        </Text>
+        <Text style={styles.subtitle}>{debt.name}</Text>
 
         <View style={styles.field}>
-          <Text style={styles.label}>Amount paid</Text>
+          <View style={styles.amountLabelRow}>
+            <Text style={styles.label}>Amount paid</Text>
+            <PressableScale
+              accessibilityRole="button"
+              accessibilityLabel="Use full remaining amount"
+              accessibilityHint="Fills the amount paid. Press Save to record the payment."
+              onPress={fillFullRemaining}
+              style={styles.fullAmountButton}
+            >
+              <Text style={styles.fullAmountLink}>Use full amount</Text>
+            </PressableScale>
+          </View>
           <View style={styles.inputCard}>
             <Animated.View style={amountPulseStyle}>
               <Text style={styles.prefix}>{formatCurrencyPrefix(debt.currency)}</Text>
@@ -132,11 +141,9 @@ export function RecordPaymentScreen() {
               />
             </Animated.View>
           </View>
-          <PressableScale onPress={fillFullRemaining} style={styles.fullAmountButton}>
-            <Text style={styles.fullAmountLink}>
-              Mark full remaining ({formatCurrency(debt.remaining, debt.currency)})
-            </Text>
-          </PressableScale>
+          <Text style={styles.remainingText}>
+            {formatCurrency(debt.remaining, debt.currency)} remaining
+          </Text>
           {parsedAmount > debt.remaining ? (
             <Text style={styles.errorText}>
               Amount cannot exceed {formatCurrency(debt.remaining, debt.currency)} remaining
@@ -232,13 +239,28 @@ const styles = StyleSheet.create((theme) => ({
     fontVariant: ["tabular-nums"],
   },
   fullAmountLink: {
-    fontSize: 12,
-    fontWeight: "700",
+    fontSize: 13,
+    fontWeight: "600",
     color: theme.colors.primary,
   },
   fullAmountButton: {
-    alignSelf: "flex-start",
-    paddingVertical: 2,
+    minHeight: 44,
+    justifyContent: "center",
+    alignItems: "center",
+    paddingHorizontal: 4,
+    paddingVertical: 10,
+  },
+  amountLabelRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    justifyContent: "space-between",
+    gap: 12,
+  },
+  remainingText: {
+    fontSize: 13,
+    color: theme.colors.muted,
+    flexShrink: 1,
   },
   errorText: {
     fontSize: 12,
