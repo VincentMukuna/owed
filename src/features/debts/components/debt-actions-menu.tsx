@@ -5,11 +5,13 @@ import {
   cloneElement,
   isValidElement,
   useRef,
+  useState,
 } from "react";
 
 import {
   type ColorValue,
   type GestureResponderEvent,
+  type LayoutChangeEvent,
   Platform,
   type PressableProps,
   StyleSheet as RNStyleSheet,
@@ -103,6 +105,11 @@ export function DebtActionsMenu({
 }: DebtActionsMenuProps) {
   const { theme } = useUnistyles();
   const menuRef = useRef<MenuComponentRef>(null);
+  const [triggerWidth, setTriggerWidth] = useState(0);
+
+  const measureTrigger = (event: LayoutChangeEvent) => {
+    setTriggerWidth(event.nativeEvent.layout.width);
+  };
 
   const handlePressAction = (event: NativeActionEvent) => {
     const action = event.nativeEvent.event as DebtAction;
@@ -118,6 +125,23 @@ export function DebtActionsMenu({
   };
 
   const actions = buildActions(debt, theme.colors.danger);
+
+  // The detail-header action has its own fixed footprint. Only card triggers
+  // participate in the full-width row measurement below.
+  if (!openOnLongPress) {
+    return (
+      <MenuView
+        actions={actions}
+        onPressAction={handlePressAction}
+        style={styles.menuButton}
+        title={debt.name}
+      >
+        <View collapsable={false} style={styles.menuButton}>
+          {children}
+        </View>
+      </MenuView>
+    );
+  }
 
   // Android MenuView wraps children in a Pressable for long-press menus, which
   // swallows taps before they reach the card's own press handler.
@@ -142,20 +166,31 @@ export function DebtActionsMenu({
   }
 
   return (
-    <MenuView
-      actions={actions}
-      onPressAction={handlePressAction}
-      shouldOpenOnLongPress={openOnLongPress}
-      style={styles.menu}
-      title={debt.name}
-    >
-      <View collapsable={false}>{children}</View>
-    </MenuView>
+    <View onLayout={measureTrigger} style={styles.menu}>
+      <MenuView
+        actions={actions}
+        onPressAction={handlePressAction}
+        shouldOpenOnLongPress={openOnLongPress}
+        style={styles.menu}
+        title={debt.name}
+      >
+        {/* SwiftUI measures this subtree independently of the outer Yoga row.
+            Give its flex children a concrete width instead of an intrinsic proposal. */}
+        <View collapsable={false} style={triggerWidth > 0 ? { width: triggerWidth } : undefined}>
+          {children}
+        </View>
+      </MenuView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
+  menuButton: {
+    width: 36,
+    height: 36,
+  },
   menu: {
+    width: "100%",
     flexShrink: 0,
     position: "relative",
   },

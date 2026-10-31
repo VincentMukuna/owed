@@ -157,9 +157,13 @@ const UpcomingDebtCard = memo(({ debt, onAction, onPress, width }: UpcomingDebtC
   );
 
   return (
-    <DebtActionsMenu debt={debt} onAction={onAction} openOnLongPress>
-      {content}
-    </DebtActionsMenu>
+    // Horizontal list cells need a concrete width outside the SwiftUI menu
+    // boundary so the full-width trigger and FlashList measure the same page.
+    <View style={{ width, height: 144 }}>
+      <DebtActionsMenu debt={debt} onAction={onAction} openOnLongPress>
+        {content}
+      </DebtActionsMenu>
+    </View>
   );
 });
 
