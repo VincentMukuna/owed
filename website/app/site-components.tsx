@@ -3,6 +3,7 @@ import { FiMoon, FiSun } from "react-icons/fi";
 import { SiApple, SiGoogleplay } from "react-icons/si";
 
 import { getStoreLinks, type StoreLink } from "./lib/store-links";
+import { HeaderSurface } from "./header-surface";
 
 export function BrandMark() {
   return (
@@ -160,7 +161,7 @@ export function Header() {
   const showIosCta = ios.kind !== "hidden";
 
   return (
-    <header className="site-header">
+    <HeaderSurface>
       <div className="container nav-shell">
         <Brand />
         <div className="nav-actions">
@@ -177,7 +178,7 @@ export function Header() {
           <ThemeToggle />
         </div>
       </div>
-    </header>
+    </HeaderSurface>
   );
 }
 

@@ -139,7 +139,6 @@ export default function Home() {
                     <span />
                     <span />
                   </div>
-                  <span className="workflow-number">0{index + 1}</span>
                   <div className="workflow-copy">
                     <h3>{title}</h3>
                     <p>{text}</p>
