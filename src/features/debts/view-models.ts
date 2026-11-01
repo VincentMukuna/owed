@@ -71,6 +71,7 @@ export type RecordPaymentInput = {
 };
 
 export type UpdateDebtInput = {
+  direction: DebtDirection;
   originalAmount: number;
   dueDate: string;
   reason?: string;

@@ -14,10 +14,12 @@ import {
   KeyboardDoneAccessory,
 } from "@/components/ui/keyboard-done-accessory";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { DebtDirectionPicker } from "@/features/debts/components/debt-direction-picker";
 import { DueDatePickerModal } from "@/features/debts/components/due-date-picker-modal";
 import { useDebt } from "@/features/debts/hooks/use-debt";
 import { useUpdateDebt } from "@/features/debts/hooks/use-update-debt";
 import { formatDueDate } from "@/features/debts/lib/format-dates";
+import type { DebtDirection } from "@/features/debts/view-models";
 import { selectionChange } from "@/lib/haptics";
 import { formatCurrency, formatCurrencyPrefix, getInitials } from "@/lib/utils/formatters";
 
@@ -28,6 +30,7 @@ export function EditDebtScreen() {
   const { data: debt, isPending } = useDebt(debtId);
   const updateDebt = useUpdateDebt();
 
+  const [direction, setDirection] = useState<DebtDirection>("they_owe_me");
   const [amount, setAmount] = useState("");
   const [dueDateIso, setDueDateIso] = useState("");
   const [reason, setReason] = useState("");
@@ -36,6 +39,7 @@ export function EditDebtScreen() {
   const [hydratedDebtId, setHydratedDebtId] = useState<string | null>(null);
 
   if (debt && hydratedDebtId !== debt.id) {
+    setDirection(debt.direction);
     setAmount(String(debt.amount));
     setDueDateIso(debt.dueDateISO);
     setReason(debt.reason);
@@ -66,6 +70,7 @@ export function EditDebtScreen() {
       {
         debtId,
         input: {
+          direction,
           originalAmount: parsedAmount,
           dueDate: dueDateIso,
           reason: reason.trim() || undefined,
@@ -78,7 +83,18 @@ export function EditDebtScreen() {
         },
       },
     );
-  }, [canSave, debt, debtId, dueDateIso, parsedAmount, reason, reminder, showReminder, updateDebt]);
+  }, [
+    canSave,
+    debt,
+    debtId,
+    direction,
+    dueDateIso,
+    parsedAmount,
+    reason,
+    reminder,
+    showReminder,
+    updateDebt,
+  ]);
 
   useLayoutEffect(() => {
     navigation.setOptions({
@@ -115,6 +131,16 @@ export function EditDebtScreen() {
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
+        <View style={styles.field}>
+          <Text style={styles.sectionTitle}>Direction</Text>
+          <DebtDirectionPicker direction={direction} onChange={setDirection} />
+          {totalPaid > 0 && direction !== debt.direction ? (
+            <Text style={styles.helper}>
+              Existing payments will count toward the new direction.
+            </Text>
+          ) : null}
+        </View>
+
         <Field label="Person">
           <View style={styles.personChipDisabled}>
             <View style={styles.personAvatarDisabled}>

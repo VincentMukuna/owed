@@ -15,6 +15,7 @@ import {
   KEYBOARD_DONE_ACCESSORY_ID,
   KeyboardDoneAccessory,
 } from "@/components/ui/keyboard-done-accessory";
+import { DebtDirectionPicker } from "@/features/debts/components/debt-direction-picker";
 import { DueDatePickerModal } from "@/features/debts/components/due-date-picker-modal";
 import {
   PersonPickerSheet,
@@ -37,10 +38,6 @@ import { HOME_ROUTE } from "@/lib/navigation/routes";
 import { formatCurrencyPrefix, getInitials } from "@/lib/utils/formatters";
 
 const QUICK_DATES = ["Today", "Tomorrow", "Friday", "Next week"];
-const DIRECTION_OPTIONS: { value: DebtDirection; label: string }[] = [
-  { value: "they_owe_me", label: "They owe me" },
-  { value: "i_owe_them", label: "I owe them" },
-];
 
 function exitAddDebt() {
   if (router.canGoBack()) {
@@ -184,25 +181,7 @@ export function AddDebtScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Field bare label="Direction">
-          <View style={styles.segmented}>
-            {DIRECTION_OPTIONS.map((option) => {
-              const selected = direction === option.value;
-              return (
-                <PressableScale
-                  key={option.value}
-                  onPress={() => {
-                    selectionChange();
-                    setDirection(option.value);
-                  }}
-                  style={[styles.segment, selected && styles.segmentSelected]}
-                >
-                  <Text style={[styles.segmentText, selected && styles.segmentTextSelected]}>
-                    {option.label}
-                  </Text>
-                </PressableScale>
-              );
-            })}
-          </View>
+          <DebtDirectionPicker direction={direction} onChange={setDirection} />
         </Field>
 
         <Field label="Person">
@@ -406,33 +385,6 @@ const styles = StyleSheet.create((theme) => ({
         color: `rgba(0, 0, 0, ${theme.name === "light" ? 0.025 : 0.05})`,
       },
     ],
-  },
-  segmented: {
-    flexDirection: "row",
-    gap: 8,
-    backgroundColor: theme.colors.surfaceMuted,
-    borderRadius: 16,
-    padding: 4,
-  },
-  segment: {
-    flex: 1,
-    minHeight: 42,
-    alignItems: "center",
-    justifyContent: "center",
-    borderRadius: 12,
-  },
-  segmentSelected: {
-    backgroundColor: theme.colors.card,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-  },
-  segmentText: {
-    fontSize: 13,
-    fontWeight: "700",
-    color: theme.colors.muted,
-  },
-  segmentTextSelected: {
-    color: theme.colors.text,
   },
   sectionTitle: {
     fontSize: 11,

@@ -23,7 +23,15 @@ import {
 } from "@gorhom/bottom-sheet";
 import type { FlashListRef } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
-import { Calendar, List, Search, SlidersHorizontal, X } from "lucide-react-native";
+import {
+  ArrowDownLeft,
+  ArrowUpRight,
+  Calendar,
+  List,
+  Search,
+  SlidersHorizontal,
+  X,
+} from "lucide-react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { FullWindowOverlay } from "react-native-screens";
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
@@ -144,6 +152,7 @@ type FilterTabItem<TKey extends string> = {
   key: TKey;
   label: string;
   count?: number;
+  icon?: typeof ArrowDownLeft;
 };
 
 type FilterTabsProps<TKey extends string> = {
@@ -206,6 +215,7 @@ function FilterTabs<TKey extends string>({
       ) : null}
       {items.map((tab, index) => {
         const active = selected === tab.key;
+        const Icon = tab.icon;
 
         return (
           <Pressable
@@ -225,6 +235,9 @@ function FilterTabs<TKey extends string>({
             }}
             style={[styles.tab, active && !canUseLiquidGlass && styles.tabActive]}
           >
+            {Icon ? (
+              <Icon size={14} color={active ? theme.colors.text : theme.colors.muted} />
+            ) : null}
             <Text style={[styles.tabText, active && styles.tabTextActive]}>{tab.label}</Text>
           </Pressable>
         );
@@ -455,8 +468,18 @@ export function DebtsScreen() {
   const directionTabs = useMemo(
     () => [
       { key: "all" as const, label: "All", count: directionCounts.all },
-      { key: "they_owe_me" as const, label: "Owed to you", count: directionCounts.they_owe_me },
-      { key: "i_owe_them" as const, label: "You owe", count: directionCounts.i_owe_them },
+      {
+        key: "they_owe_me" as const,
+        label: "Owed to you",
+        icon: ArrowDownLeft,
+        count: directionCounts.they_owe_me,
+      },
+      {
+        key: "i_owe_them" as const,
+        label: "You owe",
+        icon: ArrowUpRight,
+        count: directionCounts.i_owe_them,
+      },
     ],
     [directionCounts],
   );
@@ -1053,6 +1076,8 @@ const styles = StyleSheet.create((theme) => ({
     overflow: "hidden",
   },
   tab: {
+    flexDirection: "row",
+    gap: 4,
     flex: 1,
     paddingVertical: 8,
     borderRadius: 9,

@@ -414,7 +414,8 @@ export const debtRepository = {
 
       await db.runAsync(
         `UPDATE debts
-         SET original_amount = ?,
+         SET direction = ?,
+             original_amount = ?,
              due_date = ?,
              reason = ?,
              reminder_enabled = ?,
@@ -422,6 +423,7 @@ export const debtRepository = {
              updated_at = ?
          WHERE id = ?`,
         [
+          input.direction,
           input.originalAmount,
           input.dueDate,
           reason,
