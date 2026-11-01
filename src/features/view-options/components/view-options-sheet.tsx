@@ -14,8 +14,7 @@ import { StyleSheet } from "react-native-unistyles";
 import { PressableScale } from "@/components/shared/pressable-scale";
 
 const SHEET_CONTAINER = (Platform.OS === "ios" ? FullWindowOverlay : undefined) as
-  | ComponentType<{ children?: ReactNode }>
-  | undefined;
+  ComponentType<{ children?: ReactNode }> | undefined;
 
 type ViewOptionsSheetProps = {
   children: ReactNode;

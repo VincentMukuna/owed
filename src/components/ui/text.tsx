@@ -5,15 +5,7 @@ import { Text as RNText, type TextProps as RNTextProps, type TextStyle } from "r
 import { StyleSheet, useUnistyles } from "react-native-unistyles";
 
 type TextVariant =
-  | "hero"
-  | "title"
-  | "subtitle"
-  | "body"
-  | "caption"
-  | "label"
-  | "amount"
-  | "amountSm"
-  | "muted";
+  "hero" | "title" | "subtitle" | "body" | "caption" | "label" | "amount" | "amountSm" | "muted";
 
 type TextProps = RNTextProps & {
   children: ReactNode;

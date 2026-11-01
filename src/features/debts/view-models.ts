@@ -79,12 +79,7 @@ export type UpdateDebtInput = {
 };
 
 export type ActivityViewType =
-  | "payment"
-  | "add"
-  | "paid"
-  | "amount-changed"
-  | "due-date-changed"
-  | "archived";
+  "payment" | "add" | "paid" | "amount-changed" | "due-date-changed" | "archived";
 
 export type ActivityView = {
   id: string;

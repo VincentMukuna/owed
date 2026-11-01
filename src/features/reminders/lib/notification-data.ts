@@ -14,8 +14,7 @@ export type GroupReminderNotificationData = {
 };
 
 export type ReminderNotificationData =
-  | SingleReminderNotificationData
-  | GroupReminderNotificationData;
+  SingleReminderNotificationData | GroupReminderNotificationData;
 
 function isReminderType(value: unknown): value is ReminderType {
   return value === "due" || value === "overdue";
