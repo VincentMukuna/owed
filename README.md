@@ -1,6 +1,6 @@
 # Owwed
 
-A mobile-first personal credit tracker for informal debts — who owes you, how much, when they promised to pay, and what it was for.
+A personal credit tracker for informal debts. It helps organise who owes you, how much, when they promised to pay, and what it was for.
 
 Owwed is a private memory and follow-up tool, not a lending platform. It helps you stay clear on money owed (in both directions) without digging through chats or relying on memory. Everything is stored locally on your device by default; there is no account and no server sync.
 
